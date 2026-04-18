@@ -704,6 +704,9 @@ function util.SampleList(list)
 	if (not list) or (#list == 0) then
 		return false, false
 	end
+	if #list == 1 then
+		return list[1], 1
+	end
 	local index = math.floor(math.random()*#list) + 1
 	return list[index], index
 end
@@ -732,6 +735,17 @@ function util.NormaliseWeightedList(list)
 		list[i].probability = list[i].probability*factor
 	end
 	return list
+end
+
+function util.NormaliseAndSampleWeightedList(list, rngIn)
+	if (not list) or (#list == 0) then
+		return false, false
+	end
+	if #list == 1 then
+		return list[1], 1
+	end
+	local el, index = util.SampleListWeighted(util.NormaliseWeightedList(list), rngIn)
+	return el, index
 end
 
 function util.SampleMap(map)

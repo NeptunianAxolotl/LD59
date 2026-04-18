@@ -11,7 +11,7 @@ return {
 	road = {
 		{
 			pos = {
-				0,
+				1,
 				-3,
 			},
 			roadType = "corner",
@@ -75,11 +75,11 @@ return {
 		},
 		{
 			pos = {
+				-3,
 				-2,
-				-1,
 			},
-			roadType = "straight",
-			rot = 2,
+			roadType = "t_road",
+			rot = 3,
 		},
 		{
 			pos = {
@@ -123,19 +123,19 @@ return {
 		},
 		{
 			pos = {
+				0,
 				-3,
-				-2,
 			},
 			roadType = "straight",
-			rot = 1,
+			rot = 0,
 		},
 		{
 			pos = {
-				0,
+				-2,
 				-2,
 			},
-			roadType = "straight",
-			rot = 1,
+			roadType = "t_road",
+			rot = 0,
 		},
 		{
 			pos = {
@@ -163,10 +163,10 @@ return {
 		},
 		{
 			pos = {
+				-2,
 				-1,
-				0,
 			},
-			roadType = "corner",
+			roadType = "t_road",
 			rot = 2,
 		},
 		{
@@ -180,10 +180,10 @@ return {
 		{
 			pos = {
 				-1,
-				-3,
+				-2,
 			},
-			roadType = "straight",
-			rot = 0,
+			roadType = "t_road",
+			rot = 2,
 		},
 		{
 			pos = {
@@ -233,6 +233,45 @@ return {
 			roadType = "source",
 			rot = 2,
 		},
+		{
+			pos = {
+				0,
+				-2,
+			},
+			roadType = "t_road",
+			rot = 0,
+		},
+		{
+			pos = {
+				-1,
+				-3,
+			},
+			roadType = "t_road",
+			rot = 0,
+		},
+		{
+			pos = {
+				1,
+				-2,
+			},
+			roadType = "corner",
+			rot = 2,
+		},
+		{
+			pos = {
+				-1,
+				0,
+			},
+			roadType = "t_road",
+			rot = 2,
+		},
+		{
+			pos = {
+				0,
+				0,
+			},
+			roadType = "source",
+			rot = 2,
+		},
 	},
 }
-

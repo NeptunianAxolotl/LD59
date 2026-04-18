@@ -37,7 +37,7 @@ local globals = {
 	INIT_LEVEL = "mainMap",
 	GRID_SIZE = 100,
 	VIEW_PADDING = 50,
-	DRIVE_OFFSET = 0.12,
+	DRIVE_OFFSET = 0.22,
 	
 	WINDOW_X = 1960,
 	WINDOW_Y = 1080,

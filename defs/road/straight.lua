@@ -12,6 +12,7 @@ return {
 			entry = 0,
 			destination = 2,
 			length = 1,
+			turn = "straight",
 		},
 		{ -- left to right
 			posFunc = function (t)
@@ -23,6 +24,7 @@ return {
 			entry = 2,
 			destination = 0,
 			length = 1,
+			turn = "straight",
 		},
 	},
 }

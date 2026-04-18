@@ -13,8 +13,8 @@ function roadUtil.GetCurvePos(sPos, ePos, t, dir)
 	end
 end
 
-function roadUtil.GetCurveDir(t, dir)
-	return math.pi - (t - (dir - 1)/2) * dir * math.pi / 2
+function roadUtil.GetCurveDir(t, dir, entry)
+	return math.pi - (t + (entry or 0)) * dir * math.pi / 2
 end
 
 return roadUtil

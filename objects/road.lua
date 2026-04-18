@@ -15,14 +15,23 @@ local function NewRoad(self, terrain)
 	self.worldPos = {(self.pos[1] + 0.5) * LevelHandler.TileSize(), (self.pos[2] + 0.5) * LevelHandler.TileSize()}
 	self.worldRot = self.rotation*math.pi/2
 	
-	function self.GetPathAndNextRoad(entry, dest)
+	function self.GetPathAndNextRoad(choiceRatio, entry, dest)
 		local trackSpaceEntry = (entry - self.rotation)%4
+		local choices = {}
 		for i = 1, #self.def.paths do
 			local path = self.def.paths[i]
 			if (trackSpaceEntry == path.entry) then
 				local worldSpaceDest = (path.destination + self.rotation)%4
-				return path, worldSpaceDest
+				choices[#choices + 1] = {
+					probability = choiceRatio[path.turn],
+					path = path,
+					worldSpaceDest = worldSpaceDest,
+				}
 			end
+		end
+		local element = util.NormaliseAndSampleWeightedList(choices)
+		if element then
+			return element.path, element.worldSpaceDest
 		end
 		return false
 	end

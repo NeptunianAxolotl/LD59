@@ -18,6 +18,7 @@ return {
 			entry = 0,
 			destination = 1,
 			length = innerLength,
+			turn = "left",
 		},
 		{ -- Outer corner, bottom to right
 			posFunc = function (t)
@@ -35,7 +36,7 @@ return {
 					return -math.pi/2
 				elseif t < 0.25 + outLength then
 					t = (t - 0.25)/outLength
-					return roadUtil.GetCurveDir(t, -1)
+					return roadUtil.GetCurveDir(t, -1, 1)
 				else
 					return 0
 				end
@@ -43,6 +44,7 @@ return {
 			entry = 1,
 			destination = 0,
 			length = 0.5 + outLength,
+			turn = "right",
 		},
 	},
 }

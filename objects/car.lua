@@ -5,7 +5,7 @@ local function EnterRoad(self, nextRoad, entry, dest)
 	if not nextRoad then
 		return false
 	end
-	local newPath, newDestination = nextRoad.GetPathAndNextRoad(entry, dest)
+	local newPath, newDestination = nextRoad.GetPathAndNextRoad(self.def.choiceRatio, entry, dest)
 	if not newPath then
 		return false
 	end
