@@ -1,49 +1,29 @@
 
-local outLength = roadUtil.GetCurveLength(Global.DRIVE_OFFSET + 0.25)
-local innerLength = roadUtil.GetCurveLength(0.5 - Global.DRIVE_OFFSET)
-
-
 return {
 	baseImage = "corner_small",
 	paths = {
 		{ -- Inner corner, right to bottom
 			posFunc = function (t)
-				t = t/innerLength
-				return roadUtil.GetCurvePos({0.5, Global.DRIVE_OFFSET}, {Global.DRIVE_OFFSET, 0.5}, t, 1)
+				return roadUtil.InnerCornerPos(t)
 			end,
 			dirFunc = function (t)
-				t = t/innerLength
-				return roadUtil.GetCurveDir(t, 1)
+				return roadUtil.InnerCornerDir(t)
 			end,
 			entry = 0,
 			destination = 1,
-			length = innerLength,
+			length = roadUtil.GetInnerLength(),
 			turn = "left",
 		},
 		{ -- Outer corner, bottom to right
 			posFunc = function (t)
-				if t < 0.25 then
-					return {-Global.DRIVE_OFFSET, 0.5 - t}
-				elseif t < 0.25 + outLength then
-					t = (t - 0.25)/outLength
-					return roadUtil.GetCurvePos({-Global.DRIVE_OFFSET, 0.25}, {0.25, -Global.DRIVE_OFFSET}, t, -1)
-				else
-					return {t - outLength, -Global.DRIVE_OFFSET}
-				end
+				return roadUtil.OuterCornerPos(t)
 			end,
 			dirFunc = function (t)
-				if t < 0.25 then
-					return -math.pi/2
-				elseif t < 0.25 + outLength then
-					t = (t - 0.25)/outLength
-					return roadUtil.GetCurveDir(t, -1, 1)
-				else
-					return 0
-				end
+				return roadUtil.OuterCornerDir(t)
 			end,
 			entry = 1,
 			destination = 0,
-			length = 0.5 + outLength,
+			length = roadUtil.GetFullOuterLength(),
 			turn = "right",
 		},
 	},
