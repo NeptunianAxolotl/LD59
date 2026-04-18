@@ -649,7 +649,30 @@ end
 
 --------------------------------------------------
 --------------------------------------------------
+-- Number Theory
+
+function util.GreatestCommonDivisor(a, b)
+	local t = false
+	while b > 0 do
+		t = b
+		b = a % b
+		a = t
+	end
+	return a
+end
+
+function util.LeastCommonMultiple(a, b)
+	return a * b / util.GreatestCommonDivisor(a, b)
+end
+
+--------------------------------------------------
+--------------------------------------------------
 -- Probability
+
+
+function util.RandomIntegerInRange(bot, top)
+	return bot + math.floor(math.random()*(top - bot + 1))
+end
 
 function util.WeightsToDistribution(weights)
 	local sum = 0
@@ -683,6 +706,32 @@ function util.SampleList(list)
 	end
 	local index = math.floor(math.random()*#list) + 1
 	return list[index], index
+end
+
+function util.SampleListWeighted(list, rngIn)
+	-- List elements must be maps with a key "probability"
+	-- Probabilities must sum to at least one, and overflow is lost.
+	local rngFunc = rngIn or math.random
+	local value = rngFunc()
+	for i = 1, #list do
+		if value < list[i].probability then
+			return list[i]
+		end
+		value = value - list[i].probability
+	end
+	return list[#list]
+end
+
+function util.NormaliseWeightedList(list)
+	local total = 0
+	for i = 1, #list do
+		total = total + list[i].probability
+	end
+	local factor = 1/total
+	for i = 1, #list do
+		list[i].probability = list[i].probability*factor
+	end
+	return list
 end
 
 function util.SampleMap(map)
