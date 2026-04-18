@@ -20,6 +20,7 @@ local function EnterRoad(self, road, entry, dest)
 		return false
 	end
 	self.currentRoad = road
+	self.currentRoadPos = road.GetPos()
 	self.roadWorldPos = road.GetWorldPos()
 	self.roadWorldRot = road.GetWorldRotation()
 	self.currentPath = newPath
@@ -27,20 +28,102 @@ local function EnterRoad(self, road, entry, dest)
 	
 	self.prevDriveOffset = self.driveOffset
 	self.driveOffset = Global.DRIVE_OFFSET
-	local nextRoad = TerrainHandler.GetRoadAtPos(self.currentRoad.GetPos(), self.destination)
-	if nextRoad then
-		self.wantTurn = PickTurnOption(self, nextRoad, (newDestination - 2)%4)
-		if self.wantTurn == "right" and nextRoad.IsIntersection() then
+	self.nextRoad = TerrainHandler.GetRoadAtPos(self.currentRoadPos, self.destination)
+	if self.nextRoad then
+		self.nextRoadEntry = (self.nextRoad.rotation + self.destination)%4
+		self.wantTurn = PickTurnOption(self, self.nextRoad, (newDestination - 2)%4)
+		if self.wantTurn == "right" and self.nextRoad.IsIntersection() then
 			self.driveOffset = Global.DRIVE_OFFSET * 0.05
 		end
+	else
+		self.nextRoadEntry = false
 	end
 	return true
 end
 
-
-local function GetPathDraw(self, path, worldPos, worldRot, travel)
+local function GetPositionOnRoad(self, path, worldPos, worldRot, travel)
 	local worldPos = util.Add(worldPos, util.Mult(LevelHandler.TileSize(), util.RotateVector(path.posFunc(travel, self.prevDriveOffset, self.driveOffset), worldRot)))
 	return worldPos, worldRot + path.dirFunc(travel)
+end
+
+local rayWasHit = false
+local function RayHit()
+	rayWasHit = true
+	return 0
+end
+
+local function CheckImpendingCollision(self)
+	local world = PhysicsHandler.GetPhysicsWorld()
+	local unit = util.PolarToCart(1, self.rotation)
+	local rayStart = self.def.length/2 + self.def.rayStart
+	self.rayStartPos = util.Add(self.pos, util.Mult(rayStart, unit))
+	local rayLength = self.def.rayLength
+	local travelRemaining = 1 - self.travel / self.currentPath.length
+	if self.currentPath.turn == "left" then
+		unit = util.RotateVector(unit, -1.2 * travelRemaining)
+		rayLength = self.def.rayTurnLength
+	elseif self.currentPath.turn == "right" then
+		if self.currentPath.acrossTraffic then
+			if travelRemaining > 0.65 and not self.sneakingThrough then
+				self.rayStartPos = util.Add(self.rayStartPos, util.Mult(26*math.min(travelRemaining, 0.9)/0.9, util.RotateVector(unit, 0.8)))
+				rayLength = self.def.crossTrafficRay
+				unit = util.RotateVector(unit, math.min(travelRemaining, 0.9)*2.45 - 2.1)
+			else
+				self.rayStartPos = util.Add(self.rayStartPos, util.Mult(8, util.RotateVector(unit, -0.8)))
+				rayLength = self.def.rayTurnLength
+			end
+		else
+			rayLength = self.def.rayTurnLength
+			unit = util.RotateVector(unit, 0.6 * travelRemaining)
+		end
+	else
+		if self.wantStop then
+			rayLength = rayLength * 0.7
+		elseif self.stoppedTimer then
+			rayLength = rayLength * 0.35
+		end
+		if (self.prevDriveOffset or 0) > (self.driveOffset or 0) then -- Going to centre.
+			unit = util.RotateVector(unit, 0.22)
+		else
+			unit = util.RotateVector(unit, 0.1)
+		end
+	end
+	self.rayEndPos = util.Add(self.rayStartPos, util.Mult(rayLength, unit))
+	rayWasHit = false
+	world:rayCast(self.rayStartPos[1], self.rayStartPos[2], self.rayEndPos[1], self.rayEndPos[2], RayHit)
+	return rayWasHit
+end
+
+local function CheckCurrentRoadStop(self)
+	if not self.currentRoad or self.currentRoad.destroyed or not self.currentRoad.stopSignal  then
+		return false
+	end
+	local travelRemaining = 1 - self.travel / self.currentPath.length
+	if travelRemaining > 0.88 and ((self.currentRoad.stopSignal%2 == self.currentPath.entry%2) or self.nextRoad.OrangeSignal()) then
+		return true
+	end
+	return false
+end
+
+local function CheckNextRoadStop(self)
+	if not self.nextRoad or self.nextRoad.destroyed or not self.nextRoad.stopSignal or not self.nextRoadEntry then
+		return false, false
+	end
+	local travelRemaining = 1 - self.travel / self.currentPath.length
+	if self.currentPath.length < 1 then
+		travelRemaining = travelRemaining * 0.5
+	end
+	local myLightsBlocked = ((self.nextRoad.stopSignal%2 == self.nextRoadEntry%2) or self.nextRoad.OrangeSignal())
+	if travelRemaining < 0.15 and myLightsBlocked then
+		return true, false
+	end
+	return false, myLightsBlocked
+end
+
+
+local function CheckStopSignal(self)
+	local currentBlocked, sneakingThrough = CheckCurrentRoadStop(self)
+	return currentBlocked or CheckNextRoadStop(self), sneakingThrough
 end
 
 local function NewCar(self, new_gridPos, entry, dest)
@@ -52,6 +135,11 @@ local function NewCar(self, new_gridPos, entry, dest)
 	self.driveOffset = Global.DRIVE_OFFSET
 	self.prevDriveOffset = Global.DRIVE_OFFSET
 	EnterRoad(self, TerrainHandler.GetRoadAtPos(new_gridPos), entry, dest)
+	self.pos, self.rotation = GetPositionOnRoad(self, self.currentPath, self.roadWorldPos, self.roadWorldRot, self.travel)
+	
+	self.body = love.physics.newBody(PhysicsHandler.GetPhysicsWorld(), self.pos[1], self.pos[2], "dynamic")
+	local shape = love.physics.newRectangleShape(self.def.length, self.def.width)
+	local fixture = love.physics.newFixture(self.body, shape, 1)
 	
 	function self.SetCarrying(newCarry)
 		self.cargo = newCarry
@@ -64,49 +152,50 @@ local function NewCar(self, new_gridPos, entry, dest)
 		local deccelMult = 1
 		local mult = 1
 		
-		local travelFullSpeed = true
-		local wantStop = false
+		self.stopSignal, self.sneakingThrough = CheckStopSignal(self)
+		self.collision = CheckImpendingCollision(self)
+		self.wantStop = self.collision or self.stopSignal
+		local travelFullSpeed = not self.wantStop
 		if travelFullSpeed then
 			self.speed = math.min(self.def.maxSpeed, self.speed + dt*self.def.accel*mult)
 		else
-			if (self.speed > -0.05 and wantStop) or (self.speed > 0.5 and not wantStop) then
-				if (self.travel > 0.4 + stopOffset or self.speed > 0.15) or self.travel > 0.55 + stopOffset then
-					self.speed = self.speed - dt*self.def.deccel*mult*deccelMult
-				end
+			if (self.speed > 0 and self.wantStop) then
+				self.speed = self.speed - dt*self.def.deccel*mult*deccelMult
 			end
 			
 			if self.speed < 0.05 then
-				if self.travel < 0.52 + stopOffset then
-					self.speed = 0.15
-				elseif self.travel < 0.6 + stopOffset then
-					self.speed = 0
-				end
+				self.speed = 0
 			end
-			if (self.speed < 0.5 and not wantStop) then
+			if (self.speed < 0.5 and not self.wantStop) then
 				self.speed = math.min(self.def.maxSpeed, self.speed + dt*self.def.accel*mult)
+			end
+		end
+		if self.stoppedTimer or self.speed == 0 then
+			self.stoppedTimer = ((self.speed == 0 or not self.stoppedTimer) and self.def.stopTimer or self.stoppedTimer) - dt
+			if self.stoppedTimer <= 0 then
+				self.stoppedTimer = false
 			end
 		end
 		local travelChange = dt*self.speed*mult
 		self.travel = self.travel + travelChange
-		if not travelFullSpeed then
-			if self.travel >= 0.92 + stopOffset then
-				self.speed = -0.2
-				if self.travel >= 0.99 + stopOffset then
-					self.travel = 0.99 + stopOffset
-				end
-			end
-		end
 		if self.travel >= self.currentPath.length then
-			local nextRoad = TerrainHandler.GetRoadAtPos(self.currentRoad.GetPos(), self.destination)
+			local nextRoad = TerrainHandler.GetRoadAtPos(self.currentRoadPos, self.destination)
 			self.travel = self.travel - self.currentPath.length
 			if not EnterRoad(self, nextRoad, (self.destination + 2)%4) then
 				self.toDestroy = true
 			end
 		end
+		self.pos, self.rotation = GetPositionOnRoad(self, self.currentPath, self.roadWorldPos, self.roadWorldRot, self.travel)
+		self.body:setPosition(self.pos[1], self.pos[2])
+		self.body:setAngle(self.rotation)
 	end
 	
 	function self.Update(dt)
 		if self.toDestroy then
+			if self.body then
+				self.body:destroy()
+				self.body = false
+			end
 			return true
 		end
 		UpdateMovement(dt)
@@ -115,14 +204,22 @@ local function NewCar(self, new_gridPos, entry, dest)
 	function self.Draw(drawQueue)
 		drawQueue:push({y=0; f=function()
 			if not self.toDestroy then
-				local drawPos, drawRotation = GetPathDraw(self, self.currentPath, self.roadWorldPos, self.roadWorldRot, self.travel)
-				Resources.DrawImage(self.def.image, drawPos[1], drawPos[2], drawRotation, false, LevelHandler.TileScale())
+				Resources.DrawImage(self.def.image, self.pos[1], self.pos[2], self.rotation, false, LevelHandler.TileScale())
+				if Global.DRAW_DEBUG then
+					if self.rayStartPos and not self.stopSignal then
+						if self.collision then
+							love.graphics.setLineWidth(4)
+							love.graphics.setColor(0.8, 0, 0, 0.8)
+						else
+							love.graphics.setLineWidth(2)
+							love.graphics.setColor(0, 0.8, 0, 0.8)
+						end
+						love.graphics.line(self.rayStartPos[1], self.rayStartPos[2], self.rayEndPos[1], self.rayEndPos[2])
+					end
+				end
 			end
 		end})
 		
-		if DRAW_DEBUG then
-			love.graphics.circle('line',self.pos[1], self.pos[2], def.radius)
-		end
 	end
 	
 	function self.DrawInterface()

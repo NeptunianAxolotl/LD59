@@ -3,6 +3,7 @@ EffectsHandler = require("effectsHandler")
 TerrainHandler = require("terrainHandler")
 DoodadHandler = require("doodadHandler")
 CarHandler = require("carHandler")
+PhysicsHandler = require("physicsHandler")
 
 LevelHandler = require("levelHandler")
 InterfaceUtil = require("utilities/interfaceUtilities")
@@ -91,6 +92,9 @@ function api.MousePressed(x, y, button)
 		return
 	end
 	if LevelHandler.MousePressed(wPos[1], wPos[2], button) then
+		return
+	end
+	if TerrainHandler.MousePressed(wPos[1], wPos[2], button) then
 		return
 	end
 	if api.GetPaused() then
@@ -196,6 +200,7 @@ function api.Update(dt)
 	EffectsHandler.Update(dt)
 	CarHandler.Update(dt)
 	TerrainHandler.Update(dt)
+	PhysicsHandler.Update(dt)
 	UpdateCamera(dt)
 end
 
@@ -205,6 +210,7 @@ function api.Draw()
 	TerrainHandler.Draw(drawQueue)
 	DoodadHandler.Draw(drawQueue)
 	CarHandler.Draw(drawQueue)
+	PhysicsHandler.Draw(drawQueue)
 	
 	love.graphics.replaceTransform(CameraHandler.GetCameraTransform())
 	while true do
@@ -245,6 +251,7 @@ function api.Initialize(cosmos, levelData)
 	Delay.Initialise()
 	InterfaceUtil.Initialize()
 	EffectsHandler.Initialize(api)
+	PhysicsHandler.Initialize(api)
 	
 	TerrainHandler.Initialize(api)
 	CarHandler.Initialize(api)

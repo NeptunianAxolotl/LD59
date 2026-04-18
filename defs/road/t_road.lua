@@ -5,6 +5,16 @@ local innerLength = roadUtil.GetCurveLength(0.5 - Global.DRIVE_OFFSET)
 return {
 	baseImage = "t_small",
 	intersection = true,
+	hasSignal = true,
+	orangeSignalTime = 0.4,
+	stateImage = {
+		[0] = "road_stop",
+		[1] = "road_stop_single",
+	},
+	signalTimeMax = {
+		[0] = 4,
+		[1] = 7,
+	},
 	paths = {
 		{ -- right to left
 			posFunc = function (t, enterOffset, destOffset)
@@ -78,6 +88,7 @@ return {
 			destination = 1,
 			length = roadUtil.GetFullLanedOuterLength(),
 			turn = "right",
+			acrossTraffic = true,
 		},
 	},
 }

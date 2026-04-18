@@ -77,6 +77,10 @@ function api.ScrollSpeedChange(change)
 	self.keyScrollSpeed = self.keyScrollSpeed * change
 end
 
+function api.DrawPhysicsEnabled()
+	return Global.DRAW_PHYSICS
+end
+
 --------------------------------------------------
 -- Draw
 --------------------------------------------------

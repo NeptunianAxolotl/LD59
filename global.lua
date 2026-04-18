@@ -34,7 +34,7 @@ local globals = {
 	TEXT_COL            = {9/255, 11/255, 17/255},
 	FLOATING_TEXT_COL   = {0.95,0.95,0.9},
 	
-	INIT_LEVEL = "crossMap",
+	INIT_LEVEL = "bigMap",
 	GRID_SIZE = 100,
 	VIEW_PADDING = 50,
 	DRIVE_OFFSET = 0.22,
@@ -51,6 +51,8 @@ local globals = {
 	DEFAULT_MUSIC_DURATION = 174.69,
 	CROSSFADE_TIME = 0,
 	DEV_TOOLS_ENABLED = false,
+	DRAW_PHYSICS = true,
+	DRAW_DEBUG = true,
 	
 	ZOOM_OUT = 1,
 	CAMERA_SPEED = 2,

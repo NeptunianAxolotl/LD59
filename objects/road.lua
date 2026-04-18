@@ -11,6 +11,8 @@ local function NewRoad(self, terrain)
 	end
 	self.toDestroy = false
 	self.state = 1
+	self.stopSignal = self.def.hasSignal and 1 or false
+	self.signalTime = self.stopSignal and self.def.signalTimeMax[self.stopSignal]
 	
 	self.worldPos = {(self.pos[1] + 0.5) * LevelHandler.TileSize(), (self.pos[2] + 0.5) * LevelHandler.TileSize()}
 	self.worldRot = self.rotation*math.pi/2
@@ -46,6 +48,10 @@ local function NewRoad(self, terrain)
 			return self.GetPathAndNextRoad(false, entry, dest)
 		end
 		return false
+	end
+	
+	function self.OrangeSignal()
+		return self.orangeSignalTime
 	end
 	
 	function self.ShouldTrainSlow(train)
@@ -148,24 +154,10 @@ local function NewRoad(self, terrain)
 	end
 	
 	function self.MousePressed()
-		local heldType, heldRotation = ShopHandler.GetHeldTrack()
-		if heldType and self.def.removable and not self.IsInUse(false, true) and TrackDefs[heldType].isCrowbar then
-			ShopHandler.UseHeldTrack()
-			ShopHandler.UpdateShopIfEmpty()
-			TerrainHandler.DestroyTrack(self.pos)
-			SoundHandler.PlaySound("put")
-		elseif heldType and TrackDefs[heldType].overwrite and TrackDefs[heldType].overwrite[self.roadType] and not self.IsInUse(false, true) then
-			local overwriteRot = TrackDefs[heldType].overwrite[self.roadType].rot
-			local relativeRot = (heldRotation - self.rotation)%4
-			if overwriteRot[relativeRot] then
-				ShopHandler.UseHeldTrack()
-				ShopHandler.UpdateShopIfEmpty()
-				TerrainHandler.AddTrack(self.pos, heldType, heldRotation)
-				SoundHandler.PlaySound("put")
-			end
-		elseif self.def.toggleStates then
-			self.state = self.state%self.def.toggleStates + 1
-			SoundHandler.PlaySound("switch")
+		if self.signalTime then
+			self.stopSignal = 1 - self.stopSignal
+			self.signalTime = self.def.signalTimeMax[self.stopSignal]*2
+			self.orangeSignalTime = self.def.orangeSignalTime
 		end
 	end
 	
@@ -173,13 +165,27 @@ local function NewRoad(self, terrain)
 		if self.def.updateFunc then
 			self.def.updateFunc(self, dt)
 		end
+		if self.signalTime then
+			self.signalTime = self.signalTime - dt
+			if self.signalTime <= 0 then
+				self.stopSignal = 1 - self.stopSignal
+				self.signalTime = self.def.signalTimeMax[self.stopSignal]
+				self.orangeSignalTime = self.def.orangeSignalTime
+			end
+			if self.orangeSignalTime then
+				self.orangeSignalTime = self.orangeSignalTime - dt
+				if self.orangeSignalTime <= 0 then
+					self.orangeSignalTime = false
+				end
+			end
+		end
 		return self.toDestroy
 	end
 	
 	function self.Draw(drawQueue)
-		if self.def.stateImage then
+		if self.def.stateImage and self.stopSignal then
 			drawQueue:push({y=0 + self.pos[2]*0.01; f=function()
-				Resources.DrawImage(self.def.stateImage[self.state], self.worldPos[1], self.worldPos[2], self.worldRot, false, LevelHandler.TileScale())
+				Resources.DrawImage(self.def.stateImage[self.stopSignal], self.worldPos[1], self.worldPos[2], self.worldRot + self.stopSignal*math.pi/2, false, LevelHandler.TileScale())
 			end})
 		end
 		if self.def.baseImage then

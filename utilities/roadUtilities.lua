@@ -39,19 +39,25 @@ function roadUtil.GetFullLanedOuterLength()
 end
 
 function roadUtil.GetStraightPos(t, enterOffset, destOffset)
-	local offset = util.AverageScalar(enterOffset, destOffset, 1 - Ease(1 - t))
+	local offset = util.AverageScalar(enterOffset, destOffset, Ease(t))
 	return {0.5 - t, offset}
 end
 
 function roadUtil.InnerCornerPos(t, enterOffset, destOffset)
-	local offset = util.AverageScalar(enterOffset, destOffset, 1 - Ease(1 - t/roadUtil.GetInnerLength()))
+	local offset = util.AverageScalar(enterOffset, destOffset, Ease(t/roadUtil.GetInnerLength()))
 	t = t/innerLength
 	return roadUtil.GetCurvePos({0.5, offset}, {offset, 0.5}, t, 1)
 end
 
 function roadUtil.InnerCornerDir(t)
 	t = t/innerLength
-	return roadUtil.GetCurveDir(t, 1)
+	if t < 0.12 then
+		return math.pi
+	elseif t < 0.88 then
+		return roadUtil.GetCurveDir((t - 0.14)/0.76, 1)
+	else
+		return math.pi/2
+	end
 end
 
 function roadUtil.OuterCornerPos(t, enterOffset, destOffset)

@@ -2,7 +2,7 @@
 return {
 	baseImage = "source_small",
 	spawnCar = {
-		period = 2,
+		period = 1.25,
 		carType = "basic_car",
 		entry = 2,
 	},
