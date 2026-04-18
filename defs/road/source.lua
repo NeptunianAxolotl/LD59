@@ -15,8 +15,9 @@ return {
 	end,
 	paths = {
 		{ -- left to right
-			posFunc = function (t)
-				return {t, -Global.DRIVE_OFFSET}
+			posFunc = function (t, enterOffset, destOffset)
+				local offset = util.AverageScalar(enterOffset, destOffset, t*2)
+				return {t, -offset}
 			end,
 			dirFunc = function (t)
 				return 0
@@ -26,8 +27,9 @@ return {
 			length = 0.5,
 		},
 		{ -- right to left
-			posFunc = function (t)
-				return {0.5 - t, Global.DRIVE_OFFSET}
+			posFunc = function (t, enterOffset, destOffset)
+				local offset = util.AverageScalar(enterOffset, destOffset, t*2)
+				return {0.5 - t, offset}
 			end,
 			dirFunc = function (t)
 				return math.pi

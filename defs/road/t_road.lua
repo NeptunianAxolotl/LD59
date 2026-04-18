@@ -4,10 +4,11 @@ local innerLength = roadUtil.GetCurveLength(0.5 - Global.DRIVE_OFFSET)
 
 return {
 	baseImage = "t_small",
+	intersection = true,
 	paths = {
 		{ -- right to left
-			posFunc = function (t)
-				return {0.5 - t, Global.DRIVE_OFFSET}
+			posFunc = function (t, enterOffset, destOffset)
+				return roadUtil.GetStraightPos(t, enterOffset, destOffset)
 			end,
 			dirFunc = function (t)
 				return math.pi
@@ -18,8 +19,8 @@ return {
 			turn = "straight",
 		},
 		{ -- left to right
-			posFunc = function (t)
-				return {t - 0.5, -Global.DRIVE_OFFSET}
+			posFunc = function (t, enterOffset, destOffset)
+				return util.RotateVector(roadUtil.GetStraightPos(t, enterOffset, destOffset), math.pi)
 			end,
 			dirFunc = function (t)
 				return 0
@@ -30,8 +31,8 @@ return {
 			turn = "straight",
 		},
 		{ -- Inner corner, right to bottom
-			posFunc = function (t)
-				return roadUtil.InnerCornerPos(t)
+			posFunc = function (t, enterOffset, destOffset)
+				return roadUtil.InnerCornerPos(t, enterOffset, destOffset)
 			end,
 			dirFunc = function (t)
 				return roadUtil.InnerCornerDir(t)
@@ -42,8 +43,8 @@ return {
 			turn = "left",
 		},
 		{ -- Inner corner, bottom to left
-			posFunc = function (t)
-				return util.RotateVector(roadUtil.InnerCornerPos(t), math.pi/2)
+			posFunc = function (t, enterOffset, destOffset)
+				return util.RotateVector(roadUtil.InnerCornerPos(t, enterOffset, destOffset), math.pi/2)
 			end,
 			dirFunc = function (t)
 				return roadUtil.InnerCornerDir(t) + math.pi/2
@@ -54,20 +55,20 @@ return {
 			turn = "left",
 		},
 		{ -- Outer corner, bottom to right
-			posFunc = function (t)
-				return roadUtil.OuterLanedCornerPos(t)
+			posFunc = function (t, enterOffset, destOffset)
+				return roadUtil.OuterLanedCornerPos(t, enterOffset, destOffset)
 			end,
 			dirFunc = function (t)
 				return roadUtil.OuterLanedCornerDir(t)
 			end,
 			entry = 1,
 			destination = 0,
-			length = roadUtil.GetFullOuterLength(),
+			length = roadUtil.GetFullLanedOuterLength(),
 			turn = "right",
 		},
 		{ -- Outer corner, left to bottom
-			posFunc = function (t)
-				return util.RotateVector(roadUtil.OuterLanedCornerPos(t), math.pi/2)
+			posFunc = function (t, enterOffset, destOffset)
+				return util.RotateVector(roadUtil.OuterLanedCornerPos(t, enterOffset, destOffset), math.pi/2)
 			end,
 			dirFunc = function (t)
 				return roadUtil.OuterLanedCornerDir(t) + math.pi/2
@@ -75,7 +76,7 @@ return {
 			
 			entry = 2,
 			destination = 1,
-			length = roadUtil.GetFullOuterLength(),
+			length = roadUtil.GetFullLanedOuterLength(),
 			turn = "right",
 		},
 	},

@@ -3,8 +3,8 @@ return {
 	baseImage = "straight_small",
 	paths = {
 		{ -- right to left
-			posFunc = function (t)
-				return {0.5 - t, Global.DRIVE_OFFSET}
+			posFunc = function (t, enterOffset, destOffset)
+				return roadUtil.GetStraightPos(t, enterOffset, destOffset)
 			end,
 			dirFunc = function (t)
 				return math.pi
@@ -15,8 +15,8 @@ return {
 			turn = "straight",
 		},
 		{ -- left to right
-			posFunc = function (t)
-				return {t - 0.5, -Global.DRIVE_OFFSET}
+			posFunc = function (t, enterOffset, destOffset)
+				return util.RotateVector(roadUtil.GetStraightPos(t, enterOffset, destOffset), math.pi)
 			end,
 			dirFunc = function (t)
 				return 0

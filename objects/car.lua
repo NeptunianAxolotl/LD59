@@ -1,24 +1,45 @@
 
 local CarDefs = util.LoadDefDirectory("defs/cars")
 
-local function EnterRoad(self, nextRoad, entry, dest)
-	if not nextRoad then
+local function PickTurnOption(self, road, entry)
+	local turnOptions = road.GetTurnOptions(self.def.choiceRatio, entry)
+	local turnSelected = turnOptions and util.NormaliseAndSampleWeightedList(turnOptions)
+	turnSelected = turnSelected and turnSelected.path.turn
+	return turnSelected
+end
+
+local function EnterRoad(self, road, entry, dest)
+	if not road then
 		return false
 	end
-	local newPath, newDestination = nextRoad.GetPathAndNextRoad(self.def.choiceRatio, entry, dest)
+	if not self.wantTurn then
+		self.wantTurn = PickTurnOption(self, road, entry)
+	end
+	local newPath, newDestination = road.GetPathAndNextRoad(self.wantTurn, entry, dest)
 	if not newPath then
 		return false
 	end
-	self.currentRoad = nextRoad
-	self.roadWorldPos = nextRoad.GetWorldPos()
-	self.roadWorldRot = nextRoad.GetWorldRotation()
+	self.currentRoad = road
+	self.roadWorldPos = road.GetWorldPos()
+	self.roadWorldRot = road.GetWorldRotation()
 	self.currentPath = newPath
 	self.destination = newDestination
+	
+	self.prevDriveOffset = self.driveOffset
+	self.driveOffset = Global.DRIVE_OFFSET
+	local nextRoad = TerrainHandler.GetRoadAtPos(self.currentRoad.GetPos(), self.destination)
+	if nextRoad then
+		self.wantTurn = PickTurnOption(self, nextRoad, (newDestination - 2)%4)
+		if self.wantTurn == "right" and nextRoad.IsIntersection() then
+			self.driveOffset = Global.DRIVE_OFFSET * 0.05
+		end
+	end
 	return true
 end
 
-local function GetPathDraw(path, worldPos, worldRot, travel)
-	local worldPos = util.Add(worldPos, util.Mult(LevelHandler.TileSize(), util.RotateVector(path.posFunc(travel), worldRot)))
+
+local function GetPathDraw(self, path, worldPos, worldRot, travel)
+	local worldPos = util.Add(worldPos, util.Mult(LevelHandler.TileSize(), util.RotateVector(path.posFunc(travel, self.prevDriveOffset, self.driveOffset), worldRot)))
 	return worldPos, worldRot + path.dirFunc(travel)
 end
 
@@ -28,7 +49,8 @@ local function NewCar(self, new_gridPos, entry, dest)
 	self.travel = 0
 	self.speed = 1.2
 	self.toDestroy = false
-
+	self.driveOffset = Global.DRIVE_OFFSET
+	self.prevDriveOffset = Global.DRIVE_OFFSET
 	EnterRoad(self, TerrainHandler.GetRoadAtPos(new_gridPos), entry, dest)
 	
 	function self.SetCarrying(newCarry)
@@ -93,7 +115,7 @@ local function NewCar(self, new_gridPos, entry, dest)
 	function self.Draw(drawQueue)
 		drawQueue:push({y=0; f=function()
 			if not self.toDestroy then
-				local drawPos, drawRotation = GetPathDraw(self.currentPath, self.roadWorldPos, self.roadWorldRot, self.travel)
+				local drawPos, drawRotation = GetPathDraw(self, self.currentPath, self.roadWorldPos, self.roadWorldRot, self.travel)
 				Resources.DrawImage(self.def.image, drawPos[1], drawPos[2], drawRotation, false, LevelHandler.TileScale())
 			end
 		end})

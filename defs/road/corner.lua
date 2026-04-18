@@ -3,8 +3,8 @@ return {
 	baseImage = "corner_small",
 	paths = {
 		{ -- Inner corner, right to bottom
-			posFunc = function (t)
-				return roadUtil.InnerCornerPos(t)
+			posFunc = function (t, enterOffset, destOffset)
+				return roadUtil.InnerCornerPos(t, enterOffset, destOffset)
 			end,
 			dirFunc = function (t)
 				return roadUtil.InnerCornerDir(t)
@@ -15,8 +15,8 @@ return {
 			turn = "left",
 		},
 		{ -- Outer corner, bottom to right
-			posFunc = function (t)
-				return roadUtil.OuterCornerPos(t)
+			posFunc = function (t, enterOffset, destOffset)
+				return roadUtil.OuterCornerPos(t, enterOffset, destOffset)
 			end,
 			dirFunc = function (t)
 				return roadUtil.OuterCornerDir(t)

@@ -19,6 +19,7 @@ end
 
 local outLength = roadUtil.GetCurveLength(Global.DRIVE_OFFSET + 0.25)
 local innerLength = roadUtil.GetCurveLength(0.5 - Global.DRIVE_OFFSET)
+local laneOutLength = outLength * 0.8
 
 function roadUtil.GetInnerLength()
 	return innerLength
@@ -28,9 +29,18 @@ function roadUtil.GetFullOuterLength()
 	return outLength + 0.5
 end
 
-function roadUtil.InnerCornerPos(t)
+function roadUtil.GetFullLanedOuterLength()
+	return laneOutLength + 0.25
+end
+
+function roadUtil.GetStraightPos(t, enterOffset, destOffset)
+	local offset = util.AverageScalar(enterOffset, destOffset, t)
+	return {0.5 - t, offset}
+end
+
+function roadUtil.InnerCornerPos(t, enterOffset, destOffset)
 	t = t/innerLength
-	return roadUtil.GetCurvePos({0.5, Global.DRIVE_OFFSET}, {Global.DRIVE_OFFSET, 0.5}, t, 1)
+	return roadUtil.GetCurvePos({0.5, enterOffset}, {destOffset, 0.5}, t, 1)
 end
 
 function roadUtil.InnerCornerDir(t)
@@ -38,14 +48,14 @@ function roadUtil.InnerCornerDir(t)
 	return roadUtil.GetCurveDir(t, 1)
 end
 
-function roadUtil.OuterCornerPos(t)
+function roadUtil.OuterCornerPos(t, enterOffset, destOffset)
 	if t < 0.25 then
-		return {-Global.DRIVE_OFFSET, 0.5 - t}
+		return {-enterOffset, 0.5 - t}
 	elseif t < 0.25 + outLength then
 		t = (t - 0.25)/outLength
-		return roadUtil.GetCurvePos({-Global.DRIVE_OFFSET, 0.25}, {0.25, -Global.DRIVE_OFFSET}, t, -1)
+		return roadUtil.GetCurvePos({-enterOffset, 0.25}, {0.25, -destOffset}, t, -1)
 	else
-		return {t - outLength, -Global.DRIVE_OFFSET}
+		return {t - outLength, -destOffset}
 	end
 end
 
@@ -60,22 +70,22 @@ function roadUtil.OuterCornerDir(t)
 	end
 end
 
-function roadUtil.OuterLanedCornerPos(t)
-	if t < 0.25 then
-		return {-Global.DRIVE_OFFSET, 0.5 - t}
-	elseif t < 0.25 + outLength then
-		t = (t - 0.25)/outLength
-		return roadUtil.GetCurvePos({-Global.DRIVE_OFFSET, 0.25}, {0.25, -Global.DRIVE_OFFSET}, t, -1)
+function roadUtil.OuterLanedCornerPos(t, enterOffset, destOffset)
+	if t < 0.1 then
+		return {-enterOffset, 0.5 - t}
+	elseif t < 0.1 + laneOutLength then
+		t = (t - 0.1)/laneOutLength
+		return roadUtil.GetCurvePos({-enterOffset, 0.4}, {0.35, -destOffset}, t, -1)
 	else
-		return {t - outLength, -Global.DRIVE_OFFSET}
+		return {t - laneOutLength + 0.25, -destOffset}
 	end
 end
 
 function roadUtil.OuterLanedCornerDir(t)
-	if t < 0.25 then
+	if t < 0.1 then
 		return -math.pi/2
-	elseif t < 0.25 + outLength then
-		t = (t - 0.25)/outLength
+	elseif t < 0.1 + laneOutLength then
+		t = (t - 0.1)/laneOutLength
 		return roadUtil.GetCurveDir(t, -1, 1)
 	else
 		return 0

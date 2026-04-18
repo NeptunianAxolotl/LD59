@@ -15,7 +15,7 @@ local function NewRoad(self, terrain)
 	self.worldPos = {(self.pos[1] + 0.5) * LevelHandler.TileSize(), (self.pos[2] + 0.5) * LevelHandler.TileSize()}
 	self.worldRot = self.rotation*math.pi/2
 	
-	function self.GetPathAndNextRoad(choiceRatio, entry, dest)
+	function self.GetTurnOptions(choiceRatio, entry)
 		local trackSpaceEntry = (entry - self.rotation)%4
 		local choices = {}
 		for i = 1, #self.def.paths do
@@ -29,9 +29,21 @@ local function NewRoad(self, terrain)
 				}
 			end
 		end
-		local element = util.NormaliseAndSampleWeightedList(choices)
-		if element then
-			return element.path, element.worldSpaceDest
+		return choices
+	end
+	
+	function self.GetPathAndNextRoad(wantTurn, entry, dest)
+		local trackSpaceEntry = (entry - self.rotation)%4
+		local choices = {}
+		for i = 1, #self.def.paths do
+			local path = self.def.paths[i]
+			if (trackSpaceEntry == path.entry) and ((not wantTurn) or wantTurn == path.turn) then
+				local worldSpaceDest = (path.destination + self.rotation)%4
+				return path, worldSpaceDest
+			end
+		end
+		if wantTurn then
+			return self.GetPathAndNextRoad(false, entry, dest)
 		end
 		return false
 	end
@@ -49,6 +61,10 @@ local function NewRoad(self, terrain)
 		else
 			self.inUse = newState
 		end
+	end
+	
+	function self.IsIntersection()
+		return self.def.intersection
 	end
 	
 	function self.GetPos()
