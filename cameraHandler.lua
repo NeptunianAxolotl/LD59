@@ -7,12 +7,8 @@ function api.GetCameraTransform()
 end
 
 function api.Update(dt, pad)
-	local cameraX, cameraY, cameraScale = Camera.UpdateCameraToViewPoints(false, 
-		{
-			{pos = {0, 0}, xOff = pad and pad[1] or 20, yOff = pad and pad[2] or 20},
-			{pos = {self.levelData.width, self.levelData.height}, xOff = pad and pad[3] or 20, yOff = pad and pad[4] or 20},
-		}
-	)
+	local viewPoints = Camera.PointsToViewPoints(TerrainHandler.GetViewRestriction(), Global.VIEW_PADDING)
+	local cameraX, cameraY, cameraScale = Camera.UpdateCameraToViewPoints(false, viewPoints)
 	self.cameraPos[1] = cameraX
 	self.cameraPos[2] = cameraY
 	self.cameraScale = cameraScale
@@ -33,11 +29,9 @@ function api.GetCameraTransform()
 	return self.cameraTransform
 end
 
-function api.Initialize(world, levelData, padding)
-	levelData = levelData or {width = 600, height = 500}
+function api.Initialize(world, padding)
 	self = {
 		world = world,
-		levelData = levelData,
 	}
 	
 	self.cameraTransform = love.math.newTransform()
@@ -46,12 +40,8 @@ function api.Initialize(world, levelData, padding)
 		windowPadding = padding,
 	})
 	
-	local cameraX, cameraY, cameraScale = Camera.UpdateCameraToViewPoints(false, 
-		{
-			{pos = {0, 0}, xOff = 20, yOff = 20},
-			{pos = {self.levelData.width, self.levelData.height}, xOff = 20, yOff = 20},
-		}
-	)
+	local viewPoints = Camera.PointsToViewPoints(TerrainHandler.GetViewRestriction(), Global.VIEW_PADDING)
+	local cameraX, cameraY, cameraScale = Camera.UpdateCameraToViewPoints(false, viewPoints)
 	self.cameraPos[1] = cameraX
 	self.cameraPos[2] = cameraY
 	self.cameraScale = cameraScale

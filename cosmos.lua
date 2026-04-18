@@ -156,9 +156,6 @@ function api.Initialize()
 		realTime = 0,
 		inbuiltLevelName = Global.INIT_LEVEL,
 		musicEnabled = true,
-		mouseScrollSpeed = Global.MOUSE_SCROLL_MULT,
-		keyScrollSpeed = Global.KEYBOARD_SCROLL_MULT,
-		grabInput = Global.MOUSE_SCROLL_MULT > 0,
 	}
 	self.curLevelData = LevelDefs[self.inbuiltLevelName]
 	MusicHandler.Initialize(api)

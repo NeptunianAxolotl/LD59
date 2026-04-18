@@ -202,13 +202,17 @@ function api.Draw()
 		d.f()
 	end
 	
+	-- Interface transform
 	local windowX, windowY = love.window.getMode()
-	if windowX/windowY > 16/9 then
-		self.interfaceTransform:setTransformation(0, 0, 0, windowY/1080, windowY/1080, 0, 0)
+	self.aspectRatio = windowX * Global.WINDOW_Y / (windowY * Global.WINDOW_X)
+	if windowX/windowY > Global.WINDOW_X/Global.WINDOW_Y then
+		local edge = (windowX - Global.WINDOW_X*windowY/Global.WINDOW_Y) / 2
+		self.interfaceTransform:setTransformation(edge, 0, 0, windowY/Global.WINDOW_Y, windowY/Global.WINDOW_Y, 0, 0)
 	else
-		self.interfaceTransform:setTransformation(0, 0, 0, windowX/1920, windowX/1920, 0, 0)
+		local edge = (windowY - Global.WINDOW_Y*windowX/Global.WINDOW_X) / 2
+		self.interfaceTransform:setTransformation(0, edge, 0, windowX/Global.WINDOW_X, windowX/Global.WINDOW_X, 0, 0)
 	end
-	love.graphics.replaceTransform(self.emptyTransform)
+	--love.graphics.replaceTransform(self.emptyTransform)
 	
 	-- Draw interface
 	GameHandler.DrawInterface()

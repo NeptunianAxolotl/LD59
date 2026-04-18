@@ -27,11 +27,6 @@ function api.MousePressed(x, y)
 	local drawPos = world.ScreenToInterface({windowX, 0})
 end
 
-function api.GetViewRestriction()
-	local pointsToView = {{0, 0}, {800, 800}}
-	return pointsToView
-end
-
 --------------------------------------------------
 -- Updating
 --------------------------------------------------

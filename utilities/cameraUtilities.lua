@@ -19,6 +19,18 @@ local function UpdateCameraToPlayer(dt, playerPos, playerVelocity, playerSpeed, 
 	return self.cameraPos[1], self.cameraPos[2], self.cameraScale
 end
 
+local function PointsToViewPoints(points, offset)
+	local viewPoints = {}
+	for i = 1, #points do
+		viewPoints[i] = {
+			pos = points[i],
+			xOff = offset,
+			yOff = offset,
+		}
+	end
+	return viewPoints
+end
+
 local function UpdateCameraToViewPoints(dt, pointList, moveSmooth, scaleSmooth)
 	local left, right, top, bottom
 	
@@ -148,6 +160,7 @@ end
 return {
 	UpdateCameraToPlayer = UpdateCameraToPlayer,
 	UpdateCameraToViewPoints = UpdateCameraToViewPoints,
+	PointsToViewPoints = PointsToViewPoints,
 	UpdateTransform = UpdateTransform,
 	PushCamera = PushCamera,
 	ZoomCamera = ZoomCamera,
