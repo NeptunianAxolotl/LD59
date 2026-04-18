@@ -2,6 +2,7 @@
 EffectsHandler = require("effectsHandler")
 TerrainHandler = require("terrainHandler")
 DoodadHandler = require("doodadHandler")
+CarHandler = require("carHandler")
 
 LevelHandler = require("levelHandler")
 InterfaceUtil = require("utilities/interfaceUtilities")
@@ -193,6 +194,8 @@ function api.Update(dt)
 	Delay.Update(dt)
 	InterfaceUtil.Update(dt)
 	EffectsHandler.Update(dt)
+	CarHandler.Update(dt)
+	TerrainHandler.Update(dt)
 	UpdateCamera(dt)
 end
 
@@ -201,6 +204,7 @@ function api.Draw()
 	EffectsHandler.Draw(drawQueue)
 	TerrainHandler.Draw(drawQueue)
 	DoodadHandler.Draw(drawQueue)
+	CarHandler.Draw(drawQueue)
 	
 	love.graphics.replaceTransform(CameraHandler.GetCameraTransform())
 	while true do
@@ -243,6 +247,7 @@ function api.Initialize(cosmos, levelData)
 	EffectsHandler.Initialize(api)
 	
 	TerrainHandler.Initialize(api)
+	CarHandler.Initialize(api)
 	DoodadHandler.Initialize(api)
 	GameHandler.Initialize(api)
 	LevelHandler.Initialize(api, levelData)

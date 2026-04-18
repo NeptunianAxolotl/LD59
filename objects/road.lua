@@ -15,14 +15,11 @@ local function NewRoad(self, terrain)
 	self.worldPos = {(self.pos[1] + 0.5) * LevelHandler.TileSize(), (self.pos[2] + 0.5) * LevelHandler.TileSize()}
 	self.worldRot = self.rotation*math.pi/2
 	
-	function self.GetPathAndNextTrack(entry, isSpawn, ignoreState)
-		if self.IsPermanentlyBlocked(entry) then
-			return false
-		end
+	function self.GetPathAndNextRoad(entry, dest)
 		local trackSpaceEntry = (entry - self.rotation)%4
 		for i = 1, #self.def.paths do
 			local path = self.def.paths[i]
-			if (isSpawn and path.isSpawnPath) or (trackSpaceEntry == path.entry and (ignoreState or (not path.requiredState) or (self.state == path.requiredState))) then
+			if (trackSpaceEntry == path.entry) then
 				local worldSpaceDest = (path.destination + self.rotation)%4
 				return path, worldSpaceDest
 			end
@@ -36,11 +33,6 @@ local function NewRoad(self, terrain)
 		end
 	end
 	
-	function self.GetPathDraw(path, travel)
-		local worldPos = util.Add(self.worldPos, util.Mult(LevelHandler.TileSize(), util.RotateVector(path.posFunc(travel), self.worldRot)))
-		return worldPos, self.worldRot + path.dirFunc(travel)
-	end
-	
 	function self.SetUsedState(newState, entry)
 		if self.def.entryUseIndexMap then
 			entry = (entry - self.rotation)%4
@@ -52,6 +44,14 @@ local function NewRoad(self, terrain)
 	
 	function self.GetPos()
 		return self.pos
+	end
+	
+	function self.GetWorldRotation()
+		return self.worldRot
+	end
+	
+	function self.GetWorldPos()
+		return self.worldPos
 	end
 	
 	function self.IsInUse(entry, ignoreOff)
@@ -152,7 +152,6 @@ local function NewRoad(self, terrain)
 	end
 	
 	function self.Draw(drawQueue)
-		local drawRot = (self.spawnTimer or 0)*0.4*math.pi
 		if self.def.stateImage then
 			drawQueue:push({y=0 + self.pos[2]*0.01; f=function()
 				Resources.DrawImage(self.def.stateImage[self.state], self.worldPos[1], self.worldPos[2], self.worldRot, false, LevelHandler.TileScale())
@@ -164,8 +163,8 @@ local function NewRoad(self, terrain)
 					return
 				end
 			end
-			drawQueue:push({y=100 + self.pos[2]*0.01; f=function()
-				Resources.DrawImage(self.def.baseImage, self.worldPos[1], self.worldPos[2], self.worldRot + drawRot, false, LevelHandler.TileScale())
+			drawQueue:push({y=-100 + self.pos[2]*0.01; f=function()
+				Resources.DrawImage(self.def.baseImage, self.worldPos[1], self.worldPos[2], self.worldRot, false, LevelHandler.TileScale())
 				if self.def.extraDrawFunc then
 					self.def.extraDrawFunc(self, self.worldPos, self.worldRot)
 				end

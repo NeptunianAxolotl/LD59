@@ -224,11 +224,12 @@ function IterableMap.ApplySelfMapToList(self, funcName, ...)
 end
 
 function IterableMap.ApplySelfRandomOrder(self, funcName, ...)
-	local permutation = util.GetRandomPermutation(self.indexMax)
+	local initialSize = self.indexMax -- Destroying can cause indexMax to reduce
+	local permutation = util.GetRandomPermutation(initialSize)
 	local i = 1
-	while i <= self.indexMax do
+	while i <= initialSize do
 		local key = self.keyByIndex[permutation[i]]
-		if self.dataByKey[key][funcName](...) then
+		if key and self.dataByKey[key][funcName](...) then
 			-- Return true to remove element
 			IterableMap.Remove(self, key)
 		else

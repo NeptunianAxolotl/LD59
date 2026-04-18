@@ -20,8 +20,8 @@ return {
 			dirFunc = function (t)
 				return 0
 			end,
-			entry = 0,
-			destination = 2,
+			entry = 2,
+			destination = 0,
 			length = 1,
 		},
 	},
