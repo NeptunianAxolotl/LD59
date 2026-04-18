@@ -3,7 +3,7 @@ local World = require("world")
 SoundHandler = require("soundHandler")
 MusicHandler = require("musicHandler")
 
-local LevelDefs = util.LoadDefDirectory("defs/levels")
+local MapDefs = util.LoadDefDirectory("defs/maps")
 
 local self = {}
 local api = {}
@@ -41,18 +41,18 @@ end
 
 function api.SwitchLevel(goNext)
 	local nameKey = (goNext and "nextLevel") or "prevLevel"
-	local newLevelName = LevelDefs[self.inbuiltLevelName][nameKey]
+	local newLevelName = MapDefs[self.inbuiltLevelName][nameKey]
 	if not newLevelName then
 		return
 	end
 	self.inbuiltLevelName = newLevelName
-	self.curLevelData = LevelDefs[self.inbuiltLevelName]
+	self.curLevelData = MapDefs[self.inbuiltLevelName]
 	World.Initialize(api, self.curLevelData)
 end
 
 function api.TestSwitchLevel(goNext)
 	local nameKey = (goNext and "nextLevel") or "prevLevel"
-	local newLevelName = LevelDefs[self.inbuiltLevelName][nameKey]
+	local newLevelName = MapDefs[self.inbuiltLevelName][nameKey]
 	if not newLevelName then
 		return false
 	end
@@ -157,7 +157,7 @@ function api.Initialize()
 		inbuiltLevelName = Global.INIT_LEVEL,
 		musicEnabled = true,
 	}
-	self.curLevelData = LevelDefs[self.inbuiltLevelName]
+	self.curLevelData = MapDefs[self.inbuiltLevelName]
 	MusicHandler.Initialize(api)
 	SoundHandler.Initialize(api)
 	World.Initialize(api, self.curLevelData)

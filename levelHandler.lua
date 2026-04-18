@@ -1,50 +1,64 @@
 
-local Font = require("include/font")
-
-local MapDefs = util.LoadDefDirectory("defs/maps")
-
 local self = {}
 local api = {}
 
-function api.GetLevelData()
-	return self.levelData
-end
-
 function api.Width()
-	return self.levelData.width
+	return self.width
 end
 
 function api.Height()
-	return self.levelData.height
+	return self.height
 end
 
 function api.TileSize()
-	return Global.GRID_SIZE
+	return self.tileSize
 end
 
 function api.TileScale()
-	return 1
+	return self.tileSize / Global.GRID_SIZE
 end
 
-function api.GetDifficulty()
-	return self.difficulty
+function api.GetLevelHumanName()
+	return self.humanName
+end
+
+function api.IsFinalMap()
+	return self.finalLevel
+end
+
+function api.GetMapData()
+	return self.map
+end
+
+function api.WorldToGrid(pos)
+	local x, y = math.floor(pos[1]/self.tileSize), math.floor(pos[2] / self.tileSize)
+	return {x, y}
+end
+
+local function SetupLevel()
+	TerrainHandler.SetDimensions(self.map.dimensions)
+	DoodadHandler.SetupLevel()
+	for i = 1, #self.map.road do
+		local road = self.map.road[i]
+		TerrainHandler.AddRoad(road.pos, road.roadType, road.rot)
+	end
 end
 
 function api.LoadLevel(name)
 	print("load level")
-	local contents = love.filesystem.read("levels/" .. name .. ".lua")
+	local contents = love.filesystem.read("levels/" .. name)
 	if not contents then
-		EffectsHandler.SpawnEffect("error_popup", {1000, 15}, {text = "Level file not found.", velocity = {0, 4}})
+		EffectsHandler.SpawnEffect("error_popup", {480, 15}, {text = "Level file not found.", velocity = {0, 4}})
 		return
 	end
-	local levelFunc = loadstring(contents)
+	local levelFunc = loadstring("return "..contents)
 	if not levelFunc then
-		EffectsHandler.SpawnEffect("error_popup", {1000, 15}, {text = "Error loading level.", velocity = {0, 4}})
+		EffectsHandler.SpawnEffect("error_popup", {480, 15}, {text = "Error loading level.", velocity = {0, 4}})
 		return
 	end
 	local success, levelData = pcall(levelFunc)
 	if not success then
-		EffectsHandler.SpawnEffect("error_popup", {1000, 15}, {text = "Level format error.", velocity = {0, 4}})
+		EffectsHandler.SpawnEffect("error_popup", {480, 15}, {text = "Level format error.", velocity = {0, 4}})
 		return
 	end
 	
@@ -56,22 +70,47 @@ function api.SaveLevel(name)
 	love.filesystem.createDirectory("levels")
 	self.humanName = name
 	
-	local save = util.CopyTable(self.levelData)
-	save.terrain, save.tiles, save.invasionMask = TerrainHandler.GetSaveData()
-	save.doodads = DoodadHandler.ExportObjects()
+	local save = {
+		humanName = self.humanName,
+		dimensions = TerrainHandler.GetDimensions(),
+		road = TerrainHandler.ExportObjects(),
+		doodads = DoodadHandler.ExportObjects(),
+	}
 	
-	local saveTable = util.TableToString(save, Global.SAVE_ORDER, util.ListToMask(Global.SAVE_INLINE))
-	saveTable = "local data = " .. saveTable .. [[
-
-return data
-]]
+	local saveTable = util.TableToString(save)
 	local success, message = love.filesystem.write("levels/" .. name .. ".lua", saveTable)
 	if success then
-		EffectsHandler.SpawnEffect("error_popup", {1000, 15}, {text = "Level saved to " .. (love.filesystem.getSaveDirectory() or "DIR_ERROR") .. "/" .. name .. ".", velocity = {0, 4}})
+		EffectsHandler.SpawnEffect("error_popup", {0, 0}, {text = "Level saved to " .. name .. ".", velocity = {0, 4}})
 	else
-		EffectsHandler.SpawnEffect("error_popup", {1000, 15}, {text = "Save error: " .. (message or "NO MESSAGE"), velocity = {0, 4}})
+		EffectsHandler.SpawnEffect("error_popup", {0, 0}, {text = "Save error: " .. (message or "NO MESSAGE"), velocity = {0, 4}})
 	end
 	return success
+end
+
+function api.InEditMode()
+	return self.editMode
+end
+
+function api.IsMenuOpen()
+	return self.loadingLevelGetName or self.saveLevelGetName
+end
+
+function api.MousePressed(mx, my, button)
+	if self.loadingLevelGetName or self.saveLevelGetName then
+		return true
+	end
+	if not self.editMode then
+		return
+	end
+	local clickPos = api.WorldToGrid({mx, my})
+	if not TerrainHandler.IsInBounds(clickPos) then
+		return
+	end
+	if self.editor.tile == "delete" then
+		TerrainHandler.RemoveRoad(clickPos)
+	else
+		TerrainHandler.AddRoad(clickPos, self.editor.tile, self.editor.rotation)
+	end
 end
 
 function api.KeyPressed(key, scancode, isRepeat)
@@ -105,89 +144,33 @@ function api.KeyPressed(key, scancode, isRepeat)
 		return true
 	end
 	
-	if self.setDifficultyMode then
-		if key == "1" or key == "kp1" then
-			self.world.GetCosmos().RestartWithDifficulty({
-				workerSpeed = 1,
-				heatBoost = 1,
-				armyRequireMult = 1,
-			})
-			return true
-		elseif key == "2" or key == "kp2" then
-			self.world.GetCosmos().RestartWithDifficulty({
-				workerSpeed = 2/3,
-				heatBoost = 3/2,
-				armyRequireMult = 1,
-				difficultyName = "Winter Mode",
-			})
-			return true
-		elseif key == "3" or key == "kp3" then
-			self.world.GetCosmos().RestartWithDifficulty({
-				workerSpeed = 2/3,
-				heatBoost = 3/2,
-				armyRequireMult = 3/2,
-				difficultyName = "Ice Age Mode",
-			})
-			return true
-		end
-	end
-	
 	if key == "l" and (love.keyboard.isDown("lctrl") or love.keyboard.isDown("rctrl")) then
 		self.loadingLevelGetName = true
-		return true
 	end
 	if key == "k" and (love.keyboard.isDown("lctrl") or love.keyboard.isDown("rctrl")) then
 		self.saveLevelGetName = true
-		return true
 	end
-	if key == "h" and (love.keyboard.isDown("lctrl") or love.keyboard.isDown("rctrl")) then
-		self.setDifficultyMode = not self.setDifficultyMode
-		return true
+	if key == "j" and (love.keyboard.isDown("lctrl") or love.keyboard.isDown("rctrl")) then
+		print("editMode", self.editMode)
+		self.editMode = not self.editMode
 	end
-end
-
-function api.Draw(drawQueue)
-	if not self.levelData.hints then
+	
+	if not self.editMode then
 		return
 	end
-	drawQueue:push({y=100000; f=function()
-		for i = 1, #self.levelData.hints do
-			local hint = self.levelData.hints[i]
-			local pos = TerrainHandler.GridToWorld(hint.pos)
-			local size = util.Mult(api.TileSize()*4, hint.size)
-			
-			if hint.arrowDest then
-				local arrowDest = TerrainHandler.GridToWorld(hint.arrowDest)
-				love.graphics.setColor(0, 0, 0, 1)
-				love.graphics.setLineWidth(12)
-				if hint.arrow == "right" then
-					love.graphics.line(pos[1] + size[1], pos[2] + size[2], arrowDest[1], arrowDest[2])
-				end
-				if hint.arrow == "left" then
-					love.graphics.line(pos[1], pos[2] + size[2], arrowDest[1], arrowDest[2])
-				end
-				if hint.arrow == "topRight" then
-					love.graphics.line(pos[1] + size[1], pos[2], arrowDest[1], arrowDest[2])
-				end
-				if hint.arrow == "midRight" then
-					love.graphics.line(pos[1] + size[1], pos[2] + size[2]*0.5, arrowDest[1], arrowDest[2])
-				end
-				if hint.arrow == "mid" then
-					love.graphics.line(pos[1] + size[1]*0.5, pos[2] + size[2], arrowDest[1], arrowDest[2])
-				end
-			end
-			
-			Font.SetSize(1)
-			love.graphics.setColor(unpack(Global.HINT_BACK))
-			love.graphics.setLineWidth(4)
-			love.graphics.rectangle("fill", pos[1], pos[2], size[1], size[2], 8, 8, 16)
-			love.graphics.setColor(unpack(Global.HINT_OUTLINE))
-			love.graphics.setLineWidth(12)
-			love.graphics.rectangle("line", pos[1], pos[2], size[1], size[2], 8, 8, 16)
-			love.graphics.setColor(0, 0, 0, 1)
-			love.graphics.printf(hint.text, pos[1] + 25, pos[2] + 10, size[1] - 50, "left")
-		end
-	end})
+	
+	local varyRate = ((love.keyboard.isDown("lshift") or love.keyboard.isDown("rshift")) and 5) or 1
+	if key == "r" then
+		self.editor.rotation = (self.editor.rotation + 1)%4
+	elseif key == "e" then
+		self.editor.rotation = (self.editor.rotation - 1)%4
+	elseif key == "q" then
+		self.editor.tile = "straight"
+	elseif key == "w" then
+		self.editor.tile = "corner"
+	elseif key == "z" then
+		self.editor.tile = "delete"
+	end
 end
 
 function api.DrawInterface()
@@ -198,7 +181,7 @@ function api.DrawInterface()
 	local overY = windowY*0.3
 	local overHeight = windowY*0.4
 	
-	local drawWindow = self.loadingLevelGetName or self.saveLevelGetName or self.townWantConf or self.setDifficultyMode
+	local drawWindow = self.loadingLevelGetName or self.saveLevelGetName or self.townWantConf
 	if drawWindow then
 		love.graphics.setColor(Global.PANEL_COL[1], Global.PANEL_COL[2], Global.PANEL_COL[3], 0.97)
 		love.graphics.setLineWidth(4)
@@ -206,9 +189,7 @@ function api.DrawInterface()
 		love.graphics.setColor(0, 0, 0, 0.8)
 		love.graphics.setLineWidth(10)
 		love.graphics.rectangle("line", overX, overY, overWidth, overHeight, 8, 8, 16)
-		
 	end
-	
 	if self.loadingLevelGetName then
 		Font.SetSize(0)
 		love.graphics.setColor(0, 0, 0, 0.8)
@@ -219,7 +200,6 @@ function api.DrawInterface()
 		
 		Font.SetSize(3)
 		love.graphics.printf("Loading from " .. (love.filesystem.getSaveDirectory() or "DIR_ERROR") .. "/levels", overX + overWidth*0.05, overY + overHeight * 0.65, overWidth*0.9, "center")
-
 	elseif self.saveLevelGetName then
 		Font.SetSize(0)
 		love.graphics.setColor(0, 0, 0, 0.8)
@@ -230,27 +210,42 @@ function api.DrawInterface()
 		
 		Font.SetSize(3)
 		love.graphics.printf("Saving to " .. (love.filesystem.getSaveDirectory() or "DIR_ERROR") .. "/levels", overX + overWidth*0.05, overY + overHeight * 0.65, overWidth*0.9, "center")
-	elseif self.setDifficultyMode then
-		Font.SetSize(0)
-		love.graphics.setColor(0, 0, 0, 0.8)
-		love.graphics.printf("Select difficulty", overX, overY + overHeight * 0.04, overWidth, "center")
-		Font.SetSize(3)
-		love.graphics.printf(
-			"Press a number key to select difficulty\n" ..
-			"1: Standard Mode - The default game\n" ..
-			"2: Winter Mode -  Workers move at 2/3 speed. Heating houses restores them to normal speed (implementing the original intended 50% speed boost).\n"..
-			"3: Ice Age Mode - Winter mode, plus 50% higher scouting thresholds.", 
-			overX + overWidth*0.05, overY + overHeight * 0.32 , overWidth*0.9, "left")
+	end
+	
+	if self.editMode then
+		Font.SetSize(2)
+		offset = 20
+		love.graphics.printf("Editing Level", 20, offset, 500, "left")
+		offset = offset + 40
+		love.graphics.printf("Piece: " .. self.editor.tile, 20, offset, 500, "left")
+		offset = offset + 40
+		love.graphics.printf("Rotation: " .. self.editor.rotation, 20, offset, 500, "left")
+		offset = offset + 40
+		
+		offset = offset + 40
+		love.graphics.printf([[
+R - Rotate
+E - Rotate backwards
+Q - Straight Road
+W - Curve
+Z - Delete
+]], 20, offset, 500, "left")
+		offset = offset + 40
 	end
 	return drawWindow
 end
 
-function api.Initialize(world, levelData, difficulty)
+function api.Initialize(world, levelData)
 	self = {
 		world = world,
-		levelData = levelData,
-		difficulty = difficulty,
+		tileSize = Global.GRID_SIZE,
+		editor = {
+			rotation = 0,
+			tile = "straight",
+		},
 	}
+	self.map = levelData
+	SetupLevel()
 end
 
 return api

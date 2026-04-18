@@ -1,10 +1,12 @@
 
 EffectsHandler = require("effectsHandler")
 TerrainHandler = require("terrainHandler")
+DoodadHandler = require("doodadHandler")
 
 LevelHandler = require("levelHandler")
 InterfaceUtil = require("utilities/interfaceUtilities")
 Delay = require("utilities/delay")
+Font = require("include/font")
 
 CameraHandler = require("cameraHandler")
 Camera = require("utilities/cameraUtilities")
@@ -77,10 +79,17 @@ function api.KeyPressed(key, scancode, isRepeat)
 	if GameHandler.KeyPressed and GameHandler.KeyPressed(key, scancode, isRepeat) then
 		return
 	end
+	if LevelHandler.KeyPressed and LevelHandler.KeyPressed(key, scancode, isRepeat) then
+		return
+	end
 end
 
 function api.MousePressed(x, y, button)
-	if GameHandler.MousePressed(x, y, button) then
+	local wPos = api.ScreenToWorld({x, y})
+	if GameHandler.MousePressed(wPos[1], wPos[2], button) then
+		return
+	end
+	if LevelHandler.MousePressed(wPos[1], wPos[2], button) then
 		return
 	end
 	if api.GetPaused() then
@@ -90,9 +99,6 @@ function api.MousePressed(x, y, button)
 	
 	if api.GetGameOver() then
 		return -- No doing actions
-	end
-	if DialogueHandler.MousePressedInterface(uiX, uiY, button) then
-		return
 	end
 	x, y = CameraHandler.GetCameraTransform():inverse():transformPoint(x, y)
 	
@@ -194,6 +200,7 @@ function api.Draw()
 	local drawQueue = PriorityQueue.new(function(l, r) return l.y < r.y end)
 	EffectsHandler.Draw(drawQueue)
 	TerrainHandler.Draw(drawQueue)
+	DoodadHandler.Draw(drawQueue)
 	
 	love.graphics.replaceTransform(CameraHandler.GetCameraTransform())
 	while true do
@@ -212,9 +219,10 @@ function api.Draw()
 		local edge = (windowY - Global.WINDOW_Y*windowX/Global.WINDOW_X) / 2
 		self.interfaceTransform:setTransformation(0, edge, 0, windowX/Global.WINDOW_X, windowX/Global.WINDOW_X, 0, 0)
 	end
-	--love.graphics.replaceTransform(self.emptyTransform)
+	love.graphics.replaceTransform(self.interfaceTransform)
 	
 	-- Draw interface
+	LevelHandler.DrawInterface()
 	GameHandler.DrawInterface()
 	EffectsHandler.DrawInterface()
 	
@@ -234,8 +242,10 @@ function api.Initialize(cosmos, levelData)
 	InterfaceUtil.Initialize()
 	EffectsHandler.Initialize(api)
 	
-	TerrainHandler.Initialize(api, levelData)
+	TerrainHandler.Initialize(api)
+	DoodadHandler.Initialize(api)
 	GameHandler.Initialize(api)
+	LevelHandler.Initialize(api, levelData)
 	
 	CameraHandler.Initialize(api)
 end
