@@ -170,6 +170,8 @@ function api.KeyPressed(key, scancode, isRepeat)
 		self.editor.tile = "corner"
 	elseif key == "a" then
 		self.editor.tile = "t_road"
+	elseif key == "s" then
+		self.editor.tile = "cross_road"
 	elseif key == "z" then
 		self.editor.tile = "delete"
 	elseif key == "x" then
@@ -233,6 +235,7 @@ E - Rotate backwards
 Q - Straight Road
 W - Curve
 A - T-Int
+S - Cross
 Z - Delete
 X - Car source
 ]], 20, offset, 500, "left")

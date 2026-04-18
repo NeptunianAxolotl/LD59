@@ -3,8 +3,8 @@ return {
 	maxSpeed = 1.2,
 	accel = 2,
 	choiceRatio = {
-		straight = 0.4,
+		straight = 0.04,
 		left = 0.25,
-		right = 10.45,
+		right = 0.45,
 	}
 }
