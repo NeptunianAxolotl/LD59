@@ -92,7 +92,7 @@ local function NewCar(self, new_gridPos, entry, dest)
 	
 	function self.Draw(drawQueue)
 		drawQueue:push({y=0; f=function()
-			if not toDestroy then
+			if not self.toDestroy then
 				local drawPos, drawRotation = GetPathDraw(self.currentPath, self.roadWorldPos, self.roadWorldRot, self.travel)
 				Resources.DrawImage(self.def.image, drawPos[1], drawPos[2], drawRotation, false, LevelHandler.TileScale())
 			end
