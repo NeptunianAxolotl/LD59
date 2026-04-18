@@ -1,21 +1,14 @@
 
 EffectsHandler = require("effectsHandler")
-DialogueHandler = require("dialogueHandler")
 TerrainHandler = require("terrainHandler")
---ShadowHandler = require("--ShadowHandler")
 
 LevelHandler = require("levelHandler")
-PlayerHandler = require("playerHandler")
-
 InterfaceUtil = require("utilities/interfaceUtilities")
 Delay = require("utilities/delay")
 
-local PhysicsHandler = require("physicsHandler")
 CameraHandler = require("cameraHandler")
 Camera = require("utilities/cameraUtilities")
 
-ChatHandler = require("chatHandler")
-DeckHandler = require("deckHandler")
 GameHandler = require("gameHandler") -- Handles the gamified parts of the game, such as score, progress and interface.
 
 local PriorityQueue = require("include/PriorityQueue")
@@ -168,10 +161,6 @@ function api.GetCameraExtents(buffer)
 	return topLeftPos[1] - buffer, topLeftPos[2] - buffer, botRightPos[1] + buffer, botRightPos[2] + buffer
 end
 
-function api.GetPhysicsWorld()
-	return PhysicsHandler.GetPhysicsWorld()
-end
-
 local function UpdateCamera(dt)
 	CameraHandler.Update(dt)
 end
@@ -197,31 +186,13 @@ function api.Update(dt)
 	self.lifetime = self.lifetime + dt
 	Delay.Update(dt)
 	InterfaceUtil.Update(dt)
-	PlayerHandler.Update(dt)
-	--ShadowHandler.Update(api)
-	
-	PhysicsHandler.Update(dt)
-
-	ChatHandler.Update(dt)
 	EffectsHandler.Update(dt)
 	UpdateCamera(dt)
 end
 
 function api.Draw()
-	local preShadowQueue = PriorityQueue.new(function(l, r) return l.y < r.y end)
 	local drawQueue = PriorityQueue.new(function(l, r) return l.y < r.y end)
-
-	-- Draw world
-	love.graphics.replaceTransform(CameraHandler.GetCameraTransform())
-	while true do
-		local d = preShadowQueue:pop()
-		if not d then break end
-		d.f()
-	end
-	
-	--ShadowHandler.DrawGroundShadow(self.cameraTransform)
 	EffectsHandler.Draw(drawQueue)
-	PlayerHandler.Draw(drawQueue)
 	TerrainHandler.Draw(drawQueue)
 	
 	love.graphics.replaceTransform(CameraHandler.GetCameraTransform())
@@ -230,21 +201,18 @@ function api.Draw()
 		if not d then break end
 		d.f()
 	end
-	--ShadowHandler.DrawVisionShadow(CameraHandler.GetCameraTransform())
 	
-	--local windowX, windowY = love.window.getMode()
-	--if windowX/windowY > 16/9 then
-	--	self.interfaceTransform:setTransformation(0, 0, 0, windowY/1080, windowY/1080, 0, 0)
-	--else
-	--	self.interfaceTransform:setTransformation(0, 0, 0, windowX/1920, windowX/1920, 0, 0)
-	--end
+	local windowX, windowY = love.window.getMode()
+	if windowX/windowY > 16/9 then
+		self.interfaceTransform:setTransformation(0, 0, 0, windowY/1080, windowY/1080, 0, 0)
+	else
+		self.interfaceTransform:setTransformation(0, 0, 0, windowX/1920, windowX/1920, 0, 0)
+	end
 	love.graphics.replaceTransform(self.emptyTransform)
 	
 	-- Draw interface
 	GameHandler.DrawInterface()
 	EffectsHandler.DrawInterface()
-	DialogueHandler.DrawInterface()
-	ChatHandler.DrawInterface()
 	
 	love.graphics.replaceTransform(self.emptyTransform)
 end
@@ -262,15 +230,7 @@ function api.Initialize(cosmos, levelData)
 	InterfaceUtil.Initialize()
 	EffectsHandler.Initialize(api)
 	
-	PhysicsHandler.Initialize(api)
-	PlayerHandler.Initialize(api)
-	ChatHandler.Initialize(api)
-	DialogueHandler.Initialize(api)
-	
 	TerrainHandler.Initialize(api, levelData)
-	--ShadowHandler.Initialize(api)
-	
-	DeckHandler.Initialize(api)
 	GameHandler.Initialize(api)
 	
 	CameraHandler.Initialize(api)
