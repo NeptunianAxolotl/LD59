@@ -134,4 +134,14 @@ function roadUtil.IsOccupied(self, vector)
 	return rayWasHit
 end
 
+local clearZones = {}
+clearZones[0] = {{0, -Global.DRIVE_OFFSET}, {0.5, -Global.DRIVE_OFFSET}}
+clearZones[1] = {util.RotateVector(clearZones[0][1], math.pi/2), util.RotateVector(clearZones[0][2], math.pi/2)}
+clearZones[2] = {util.RotateVector(clearZones[1][1], math.pi/2), util.RotateVector(clearZones[1][2], math.pi/2)}
+clearZones[3] = {util.RotateVector(clearZones[2][1], math.pi/2), util.RotateVector(clearZones[2][2], math.pi/2)}
+
+function roadUtil.GetClearZone(direction)
+	return clearZones[direction]
+end
+
 return roadUtil

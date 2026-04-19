@@ -29,9 +29,6 @@ local function SpawnRegularCar(self)
 	if not self.roadSpawn then
 		return
 	end
-	--if not roadUtil.IsOccupied(self.roadSpawn, occupyVector) then
-	--	CarHandler.AddCar(self.def.spawnCar.carType, self.pos, (self.def.spawnCar.entry + self.rotation)%4)
-	--end
 	local roadPos = self.roadSpawn.GetPos()
 	local targetType = util.SampleListWeighted(self.def.spawnCar.targets)
 	if not targetType then
@@ -43,6 +40,9 @@ local function SpawnRegularCar(self)
 	end
 	local targetRoadPos = targetBuilding.roadSpawn.GetPos()
 	local direction = carUtil.GetBestMatchingDirectionTowards(roadPos, targetRoadPos, self.roadSpawn.worldEntryFilter)
+	if roadUtil.IsOccupied(self.roadSpawn, roadUtil.GetClearZone(direction)) then
+		return
+	end
 	CarHandler.AddCar(self.def.spawnCar.carType, roadPos, targetRoadPos, (direction - 2)%4, direction, self.def.spawnCar.spawnFullSpeed)
 end
 
@@ -74,6 +74,9 @@ local function NewBuilding(self)
 	end
 	
 	function self.Export(objList)
+		if self.def.noExport then
+			return
+		end
 		local exportData = {pos = self.pos, buildingType = self.buildingType}
 		objList[#objList + 1] = exportData
 	end

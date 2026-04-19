@@ -1,6 +1,7 @@
 
 return {
 	baseImage = "straight_large",
+	noExport = true,
 	paths = {
 		{ -- right to left
 			posFunc = function (t, enterOffset, destOffset)

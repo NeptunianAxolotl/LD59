@@ -102,6 +102,9 @@ local function NewRoad(self, terrain)
 	end
 	
 	function self.Export(objList)
+		if self.def.noExport then
+			return
+		end
 		local exportData = {pos = self.pos, rot = self.rotation, roadType = self.roadType}
 		objList[#objList + 1] = exportData
 	end

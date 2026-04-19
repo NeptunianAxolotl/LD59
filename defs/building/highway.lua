@@ -2,6 +2,7 @@
 return {
 	baseImage = "highway",
 	destinationType = "highway",
+	noExport = true,
 	spawnRoads = {
 		straight_large = true,
 	},
