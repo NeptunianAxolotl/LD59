@@ -12,6 +12,7 @@ return {
 			entry = 0,
 			destination = 1,
 			length = roadUtil.GetInnerLength(),
+			centreLimit = 0.25,
 			turn = "left",
 		},
 		{ -- Outer corner, bottom to right

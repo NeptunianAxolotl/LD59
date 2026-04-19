@@ -18,6 +18,11 @@ local function Ease(t)
 	return pow2*(1 - t*t*t) + pow2*pow2
 end
 
+local function EaseFlatter(t)
+	local pow2 = t*t
+	return pow2*(1 - t) + pow2
+end
+
 function roadUtil.GetCurveDir(t, dir, entry)
 	return math.pi - (t + (entry or 0)) * dir * math.pi / 2
 end
@@ -39,12 +44,12 @@ function roadUtil.GetFullLanedOuterLength()
 end
 
 function roadUtil.GetStraightPos(t, enterOffset, destOffset)
-	local offset = util.AverageScalar(enterOffset, destOffset, Ease(t))
+	local offset = util.AverageScalar(enterOffset, destOffset, EaseFlatter(t))
 	return {0.5 - t, offset}
 end
 
 function roadUtil.InnerCornerPos(t, enterOffset, destOffset)
-	local offset = util.AverageScalar(enterOffset, destOffset, Ease(t/roadUtil.GetInnerLength()))
+	local offset = util.AverageScalar(enterOffset, destOffset, EaseFlatter(t/roadUtil.GetInnerLength()))
 	t = t/innerLength
 	return roadUtil.GetCurvePos({0.5, offset}, {offset, 0.5}, t, 1)
 end

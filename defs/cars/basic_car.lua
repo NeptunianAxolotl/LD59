@@ -1,8 +1,8 @@
 return {
 	image = "basic_car",
 	maxSpeed = 1.2,
-	accel = 2,
-	deccel = 4,
+	accel = 2.2,
+	deccel = 4.5,
 	choiceRatio = {
 		straight = 0.35,
 		left = 0.25,
@@ -14,5 +14,6 @@ return {
 	rayLength = 32,
 	rayTurnLength = 36,
 	crossTrafficRay = 98,
+	sideRayLength = 52,
 	stopTimer = 0.4,
 }

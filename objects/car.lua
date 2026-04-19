@@ -33,7 +33,7 @@ local function EnterRoad(self, road, entry, dest)
 		self.nextRoadEntry = (self.nextRoad.rotation + self.destination)%4
 		self.wantTurn = PickTurnOption(self, self.nextRoad, (newDestination - 2)%4)
 		if self.wantTurn == "right" and self.nextRoad.IsIntersection() then
-			self.driveOffset = Global.DRIVE_OFFSET * 0.05
+			self.driveOffset = Global.DRIVE_OFFSET * (self.currentPath.centreLimit or 0.05)
 		end
 	else
 		self.nextRoadEntry = false
@@ -55,21 +55,29 @@ end
 local function CheckImpendingCollision(self)
 	local world = PhysicsHandler.GetPhysicsWorld()
 	local unit = util.PolarToCart(1, self.rotation)
+	local baseUnit = util.PolarToCart(1, self.rotation)
 	local rayStart = self.def.length/2 + self.def.rayStart
-	self.rayStartPos = util.Add(self.pos, util.Mult(rayStart, unit))
+	self.ray = {}
+	self.ray[1] = util.Add(self.pos, util.Mult(rayStart, unit))
 	local rayLength = self.def.rayLength
 	local travelRemaining = 1 - self.travel / self.currentPath.length
-	if self.currentPath.turn == "left" then
+	self.suddenStop = false
+	if self.currentPath.trafficFromRight and travelRemaining > 0.9 then
+		self.ray[1] = util.Add(self.ray[1], util.Mult(33, util.RotateVector(unit, 1.4)))
+		unit = util.RotateVector(unit, -0.9)
+		rayLength = self.def.rayTurnLength * 1.5
+		self.suddenStop = 4
+	elseif self.currentPath.turn == "left" then
 		unit = util.RotateVector(unit, -1.2 * travelRemaining)
 		rayLength = self.def.rayTurnLength
 	elseif self.currentPath.turn == "right" then
 		if self.currentPath.acrossTraffic then
 			if travelRemaining > 0.65 and not self.sneakingThrough then
-				self.rayStartPos = util.Add(self.rayStartPos, util.Mult(26*math.min(travelRemaining, 0.9)/0.9, util.RotateVector(unit, 0.8)))
+				self.ray[1] = util.Add(self.ray[1], util.Mult(26*math.min(travelRemaining, 0.9)/0.9, util.RotateVector(unit, 0.8)))
 				rayLength = self.def.crossTrafficRay
 				unit = util.RotateVector(unit, math.min(travelRemaining, 0.9)*2.45 - 2.1)
 			else
-				self.rayStartPos = util.Add(self.rayStartPos, util.Mult(8, util.RotateVector(unit, -0.8)))
+				self.ray[1] = util.Add(self.ray[1], util.Mult(8, util.RotateVector(unit, -0.8)))
 				rayLength = self.def.rayTurnLength
 			end
 		else
@@ -88,36 +96,47 @@ local function CheckImpendingCollision(self)
 			unit = util.RotateVector(unit, 0.1)
 		end
 	end
-	self.rayEndPos = util.Add(self.rayStartPos, util.Mult(rayLength, unit))
+	if self.currentPath.turn == "straight" and self.wantTurn ~= "right" then
+		self.secondRay = {}
+		self.secondRay[1] = util.Add(self.pos, util.Mult(14, util.RotateVector(baseUnit, -0.8)))
+		self.secondRay[2] = util.Add(self.secondRay[1], util.Mult(self.def.sideRayLength, baseUnit))
+	else
+		self.secondRay = false
+	end
+	self.ray[2] = util.Add(self.ray[1], util.Mult(rayLength, unit))
 	rayWasHit = false
-	world:rayCast(self.rayStartPos[1], self.rayStartPos[2], self.rayEndPos[1], self.rayEndPos[2], RayHit)
+	world:rayCast(self.ray[1][1], self.ray[1][2], self.ray[2][1], self.ray[2][2], RayHit)
+	if self.secondRay then
+		world:rayCast(self.secondRay[1][1], self.secondRay[1][2], self.secondRay[2][1], self.secondRay[2][2], RayHit)
+	end
 	return rayWasHit
 end
 
 local function CheckCurrentRoadStop(self)
 	if not self.currentRoad or self.currentRoad.destroyed or not self.currentRoad.stopSignal  then
-		return false
+		return false, false
 	end
 	local travelRemaining = 1 - self.travel / self.currentPath.length
-	if travelRemaining > 0.88 and ((self.currentRoad.stopSignal%2 == self.currentPath.entry%2) or self.nextRoad.OrangeSignal()) then
-		return true
+	local signalBlocked = ((self.currentRoad.stopSignal%2 == self.currentPath.entry%2) or self.nextRoad.OrangeSignal())
+	if travelRemaining > 0.94 and signalBlocked then
+		return true, false
 	end
-	return false
+	return false, signalBlocked
 end
 
 local function CheckNextRoadStop(self)
 	if not self.nextRoad or self.nextRoad.destroyed or not self.nextRoad.stopSignal or not self.nextRoadEntry then
-		return false, false
+		return false
 	end
 	local travelRemaining = 1 - self.travel / self.currentPath.length
 	if self.currentPath.length < 1 then
 		travelRemaining = travelRemaining * 0.5
 	end
 	local myLightsBlocked = ((self.nextRoad.stopSignal%2 == self.nextRoadEntry%2) or self.nextRoad.OrangeSignal())
-	if travelRemaining < 0.15 and myLightsBlocked then
-		return true, false
+	if travelRemaining < 0.12 and myLightsBlocked then
+		return true
 	end
-	return false, myLightsBlocked
+	return false
 end
 
 
@@ -155,6 +174,10 @@ local function NewCar(self, new_gridPos, entry, dest)
 		self.stopSignal, self.sneakingThrough = CheckStopSignal(self)
 		self.collision = CheckImpendingCollision(self)
 		self.wantStop = self.collision or self.stopSignal
+		local rapidDecel = self.collision and self.suddenStop
+		if rapidDecel then
+			deccelMult = deccelMult * self.suddenStop
+		end
 		local travelFullSpeed = not self.wantStop
 		if travelFullSpeed then
 			self.speed = math.min(self.def.maxSpeed, self.speed + dt*self.def.accel*mult)
@@ -206,15 +229,21 @@ local function NewCar(self, new_gridPos, entry, dest)
 			if not self.toDestroy then
 				Resources.DrawImage(self.def.image, self.pos[1], self.pos[2], self.rotation, false, LevelHandler.TileScale())
 				if Global.DRAW_DEBUG then
-					if self.rayStartPos and not self.stopSignal then
-						if self.collision then
+					if self.ray and not self.stopSignal then
+						if self.sneakingThrough then
+							love.graphics.setLineWidth(3)
+							love.graphics.setColor(0.8, 0.8, 0, 0.8)
+						elseif self.collision then
 							love.graphics.setLineWidth(4)
 							love.graphics.setColor(0.8, 0, 0, 0.8)
 						else
 							love.graphics.setLineWidth(2)
 							love.graphics.setColor(0, 0.8, 0, 0.8)
 						end
-						love.graphics.line(self.rayStartPos[1], self.rayStartPos[2], self.rayEndPos[1], self.rayEndPos[2])
+						love.graphics.line(self.ray[1][1], self.ray[1][2], self.ray[2][1], self.ray[2][2])
+					end
+					if self.secondRay and not self.stopSignal then
+						love.graphics.line(self.secondRay[1][1], self.secondRay[1][2], self.secondRay[2][1], self.secondRay[2][2])
 					end
 				end
 			end

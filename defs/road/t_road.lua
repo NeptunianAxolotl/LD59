@@ -63,6 +63,7 @@ return {
 			destination = 2,
 			length = roadUtil.GetInnerLength(),
 			turn = "left",
+			trafficFromRight = true,
 		},
 		{ -- Outer corner, bottom to right
 			posFunc = function (t, enterOffset, destOffset)

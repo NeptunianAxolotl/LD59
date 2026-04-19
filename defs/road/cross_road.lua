@@ -27,6 +27,7 @@ return {
 			destination = 2,
 			length = 1,
 			turn = "straight",
+			trafficFromRight = true,
 		},
 		{ -- left to right
 			posFunc = function (t, enterOffset, destOffset)
@@ -39,6 +40,7 @@ return {
 			destination = 0,
 			length = 1,
 			turn = "straight",
+			trafficFromRight = true,
 		},
 		{ -- bot to top
 			posFunc = function (t, enterOffset, destOffset)
@@ -51,6 +53,7 @@ return {
 			destination = 3,
 			length = 1,
 			turn = "straight",
+			trafficFromRight = true,
 		},
 		{ -- top to bot
 			posFunc = function (t, enterOffset, destOffset)
@@ -63,6 +66,7 @@ return {
 			destination = 1,
 			length = 1,
 			turn = "straight",
+			trafficFromRight = true,
 		},
 		{ -- Inner corner, right to bottom
 			posFunc = function (t, enterOffset, destOffset)
@@ -75,6 +79,7 @@ return {
 			destination = 1,
 			length = roadUtil.GetInnerLength(),
 			turn = "left",
+			trafficFromRight = true,
 		},
 		{ -- Inner corner, bottom to left
 			posFunc = function (t, enterOffset, destOffset)
@@ -87,6 +92,7 @@ return {
 			destination = 2,
 			length = roadUtil.GetInnerLength(),
 			turn = "left",
+			trafficFromRight = true,
 		},
 		{ -- Inner corner, left to top
 			posFunc = function (t, enterOffset, destOffset)
@@ -99,6 +105,7 @@ return {
 			destination = 3,
 			length = roadUtil.GetInnerLength(),
 			turn = "left",
+			trafficFromRight = true,
 		},
 		{ -- Inner corner, top to right
 			posFunc = function (t, enterOffset, destOffset)
@@ -111,6 +118,7 @@ return {
 			destination = 0,
 			length = roadUtil.GetInnerLength(),
 			turn = "left",
+			trafficFromRight = true,
 		},
 		{ -- Outer corner, bottom to right
 			posFunc = function (t, enterOffset, destOffset)
