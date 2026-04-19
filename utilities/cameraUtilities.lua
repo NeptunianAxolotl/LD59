@@ -47,6 +47,8 @@ local function UpdateCameraToViewPoints(dt, pointList, moveSmooth, scaleSmooth)
 		left, right, top, bottom = self.oldLeft, self.oldRight, self.oldTop, self.oldBottom
 	end
 	self.oldLeft, self.oldRight, self.oldTop, self.oldBottom = left, right, top, bottom
+	top = top * self.squashRatio
+	bottom = bottom * self.squashRatio
 	
 	if self.pinY then
 		if self.pinY[2] == 1 then
@@ -126,7 +128,7 @@ local function UpdateTransform(cameraTransform, cameraX, cameraY, cameraScale, f
 		windowX * (focusOffset and focusOffset[1] or 0.5) + fullX * self.windowPadding.left,
 		windowY * (focusOffset and focusOffset[2] or 0.5) + fullY * self.windowPadding.top,
 		0,
-		scale, scale,
+		scale, scale * self.squashRatio,
 		cameraX, cameraY)
 end
 
@@ -149,6 +151,7 @@ local function Initialize(data)
 		windowPadding = data.windowPadding or {left = 0, right = 0, top = 0, bot = 0},
 		pinX = data.pinX,
 		pinY = data.pinY,
+		squashRatio = data.squashRatio or 1,
 		minScale = data.minScale,
 	}
 	

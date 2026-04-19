@@ -15,7 +15,7 @@ local function NewRoad(self, terrain)
 	end
 	self.toDestroy = false
 	self.state = 1
-	self.stopSignal = self.def.hasSignal and 1 or false
+	self.stopSignal = self.def.hasSignal and 0 or false
 	self.signalTime = self.stopSignal and self.def.signalTimeMax[self.stopSignal]
 	
 	self.worldPos = CalculateWorldPos(self)
@@ -97,6 +97,10 @@ local function NewRoad(self, terrain)
 		return self.worldPos
 	end
 	
+	function self.WaitingCar(entry)
+		-- TODO idk?
+	end
+	
 	function self.UpdateWorldPos()
 		self.worldPos = CalculateWorldPos()
 	end
@@ -147,8 +151,8 @@ local function NewRoad(self, terrain)
 		if self.def.stateImage and self.stopSignal then
 			drawQueue:push({y=100 + self.pos[2]*0.01; f=function()
 				local goState = 1 - self.stopSignal
-				local stopColor = self.orangeSignalTime and Global.TRAFFIC_ORANGE or Global.TRAFFIC_RED
-				local goColor = self.orangeSignalTime and Global.TRAFFIC_RED or Global.TRAFFIC_GREEN
+				local stopColor = Global.TRAFFIC_RED
+				local goColor = Global.TRAFFIC_GREEN
 				local timeProp = self.signalTime / self.def.signalTimeMax[self.stopSignal] / Global.MANUAL_CLICK_BOOST
 				local alpha = math.min(1, timeProp + 0.5)
 				Resources.DrawImage(self.def.stateImage[self.stopSignal], self.worldPos[1], self.worldPos[2], self.worldRot + self.stopSignal*math.pi/2, alpha, LevelHandler.TileScale(), stopColor)

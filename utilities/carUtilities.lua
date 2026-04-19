@@ -16,9 +16,9 @@ function carUtil.GetBestMatchingDirectionTowards(pos, target, filter, notAllowed
 	end
 	local secondBest
 	if best%2 == 0 then
-		secondBest = (pos[2] > target[2]) and 3 or 1
+		secondBest = (pos[2] > target[2] - 0.5 + math.random()) and 3 or 1
 	else
-		secondBest = (pos[1] > target[1]) and 2 or 0
+		secondBest = (pos[1] > target[1] - 0.5 + math.random()) and 2 or 0
 	end
 	if filter[secondBest] and secondBest ~= notAllowed then
 		return secondBest

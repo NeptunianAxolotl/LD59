@@ -9,14 +9,14 @@ local function FindRoadSpawn(self, pos)
 	pos = pos or self.pos
 	for i = 1, 3, 2 do
 		local road = TerrainHandler.GetRoadAtPos(pos, i)
-		if road and self.def.spawnRoads[road.def.name] then
-			return road
+		if road and self.def.attachRoachTypes[road.def.name] then
+			return road, i
 		end
 	end
 	for i = 0, 2, 2 do
 		local road = TerrainHandler.GetRoadAtPos(pos, i)
-		if road and self.def.spawnRoads[road.def.name] then
-			return road
+		if road and self.def.attachRoachTypes[road.def.name] then
+			return road, i
 		end
 	end
 end
@@ -43,7 +43,19 @@ local function SpawnRegularCar(self)
 	if roadUtil.IsOccupied(self.roadSpawn, roadUtil.GetClearZone((direction - self.roadSpawn.rotation)%4)) then
 		return false
 	end
-	CarHandler.AddCar(self.def.spawnCar.carType, roadPos, targetRoadPos, targetBuilding.GetPos(), (direction - 2)%4, direction, self.def.spawnCar.spawnFullSpeed)
+	local wrongSideSpawn = (direction%4 ~= (self.roadDirectionFromSelf - 1)%4)
+	if wrongSideSpawn and roadUtil.IsAnythingOnRoad(self.roadSpawn) then
+		if self.def.spawnOtherIfBlocked then
+			direction = (direction - 2)%4
+			wrongSideSpawn = false
+		else
+			return false
+		end
+	end
+	CarHandler.AddCar(self.def.spawnCar.carType, roadPos, targetRoadPos, targetBuilding.GetPos(), wrongSideSpawn, (direction - 2)%4, direction, self.def.spawnCar.spawnFullSpeed)
+	if self.def.onDispatchCar then
+		self.def.onDispatchCar(self, targetBuilding)
+	end
 	return true
 end
 
@@ -52,14 +64,14 @@ local function NewBuilding(self)
 	
 	self.toDestroy = false
 	self.worldPos = CalculateWorldPos(self)
-	self.roadSpawn = FindRoadSpawn(self)
+	self.roadSpawn, self.roadDirectionFromSelf = FindRoadSpawn(self)
 	
 	function self.GetPos()
 		return self.pos
 	end
 	
 	function self.FindRoad()
-		self.roadSpawn = FindRoadSpawn(self)
+		self.roadSpawn, self.roadDirectionFromSelf = FindRoadSpawn(self)
 	end
 	
 	function self.GetWorldRotation()
@@ -93,6 +105,8 @@ local function NewBuilding(self)
 	function self.Visited(car)
 		if car.def.cureSickness and self.sickness then
 			self.sickness = false
+			self.medicOnTheWayTimer = false
+			return true -- Medic needs to return
 		end
 	end
 	
@@ -106,6 +120,7 @@ local function NewBuilding(self)
 		if self.sickness then
 			self.sickness = self.sickness + dt
 		end
+		self.medicOnTheWayTimer = util.UpdateTimer(self.medicOnTheWayTimer, dt)
 		self.spawnTimer = (self.spawnTimer or GetSpawnTime(self)) - dt
 		if self.spawnTimer <= 0 then
 			if SpawnRegularCar(self) then
@@ -138,6 +153,11 @@ local function NewBuilding(self)
 						love.graphics.setColor(0, 0.8, 0, 0.8)
 						love.graphics.line(self.worldPos[1], self.worldPos[2], roadPos[1], roadPos[2])
 					end
+					--if self.medicOnTheWayTimer then
+					--	Font.SetSize(3)
+					--	love.graphics.setColor(0, 0, 0, 1)
+					--	love.graphics.printf(self.medicOnTheWayTimer, self.worldPos[1], self.worldPos[2], 50, "center")
+					--end
 				end
 			end})
 		end

@@ -25,10 +25,6 @@ local function UpdateCamera(dt, vector)
 	self.cameraPos[2] = cameraY
 end
 
-function api.GetCameraTransform()
-	return self.cameraTransform
-end
-
 function api.Initialize(world, padding)
 	self = {
 		world = world,
@@ -38,6 +34,7 @@ function api.Initialize(world, padding)
 	self.cameraPos = {0, 0}
 	Camera.Initialize({
 		windowPadding = padding,
+		squashRatio = 1,
 	})
 	
 	local viewPoints = Camera.PointsToViewPoints(TerrainHandler.GetViewRestriction(), Global.VIEW_PADDING)

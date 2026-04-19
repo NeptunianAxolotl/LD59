@@ -134,8 +134,77 @@ function roadUtil.IsOccupied(self, vector)
 	return rayWasHit
 end
 
+function roadUtil.IsAnythingOnRoad(self)
+	local world = PhysicsHandler.GetPhysicsWorld()
+	local scale = LevelHandler.TileSize() * 0.4
+	rayWasHit = false
+	world:queryBoundingBox(self.worldPos[1] - scale, self.worldPos[2] - scale, self.worldPos[1] + scale, self.worldPos[2] + scale, RayHit)
+	return rayWasHit
+end
+
+
+local circleLength = 1.3
+
+local function DoFullTurn(t, enterOffset, destOffset)
+	if t < circleLength then
+		local prop = math.pi*t/circleLength
+		local radius = (enterOffset + destOffset)*0.36
+		local cent = {0, destOffset - radius}
+		return {cent[1] + radius * math.sin(prop), cent[2] - radius * math.cos(prop)}
+	else
+		return {circleLength - t, destOffset}
+	end
+end
+
+local function FullTurnDirection(t, entry, worldRot)
+	if t < 1.3 then
+		local prop = math.pi*t/circleLength
+		return prop + entry*math.pi/2 - worldRot
+	end
+	return (entry + 2)*math.pi/2 - worldRot
+end
+
+function roadUtil.GetWrongSideSpawnPath(car, entry, dest, worldRot)
+	worldRot = worldRot or 0
+	return {
+		posFunc = function (t, enterOffset, destOffset)
+			local result = DoFullTurn(t, enterOffset, destOffset)
+			return util.RotateVector(result, entry*math.pi/2 - worldRot)
+		end,
+		dirFunc = function (t)
+			return FullTurnDirection(t, entry, worldRot)
+		end,
+		entry = entry,
+		destination = dest,
+		length = circleLength + 0.5,
+		ignoreCollisionUntil = 0.6,
+		turn = "right",
+	}
+end
+
+function roadUtil.GetWrongSideArrivePath(car, entry, dest, worldRot)
+	worldRot = worldRot or 0
+	return {
+		posFunc = function (t, enterOffset, destOffset)
+			t = circleLength + 0.5 - t
+			local result = DoFullTurn(t, destOffset, enterOffset)
+			result[1] = -result[1]
+			return util.RotateVector(result, entry*math.pi/2 - worldRot)
+		end,
+		dirFunc = function (t)
+			t = circleLength + 0.5 - t
+			return -FullTurnDirection(t, entry, worldRot)
+		end,
+		entry = entry,
+		destination = dest,
+		ignoreCollisionAfter = 0.4,
+		length = circleLength + 0.65,
+		turn = "right",
+	}
+end
+
 local clearZones = {}
-clearZones[0] = {{-0.15, -Global.DRIVE_OFFSET*1.8}, {0.5, -Global.DRIVE_OFFSET * 0.6}}
+clearZones[0] = {{-0.15, -0.6}, {0.45, -Global.DRIVE_OFFSET * 0.35}}
 clearZones[1] = {util.RotateVector(clearZones[0][1], math.pi/2), util.RotateVector(clearZones[0][2], math.pi/2)}
 clearZones[2] = {util.RotateVector(clearZones[1][1], math.pi/2), util.RotateVector(clearZones[1][2], math.pi/2)}
 clearZones[3] = {util.RotateVector(clearZones[2][1], math.pi/2), util.RotateVector(clearZones[2][2], math.pi/2)}

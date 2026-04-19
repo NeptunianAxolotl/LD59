@@ -3,7 +3,7 @@ return {
 	baseImage = "house",
 	destinationType = "house",
 	canBeSick = true,
-	spawnRoads = {
+	attachRoachTypes = {
 		straight = true,
 	},
 	spawnCar = {
@@ -21,6 +21,4 @@ return {
 			},
 		})
 	},
-	updateFunc = function (self, dt)
-	end,
 }

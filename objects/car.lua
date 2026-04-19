@@ -18,6 +18,16 @@ local function PickTurnOption(self, road, targetPos, entry)
 	return turnSelected, (pathSelected and pathSelected.path)
 end
 
+local function CheckArriveWrongSide(self, road, entry)
+	local building = BuildingHandler.GetBuildingAtPos(self.targetBuildingPos)
+	if not (building and building.roadDirectionFromSelf) then
+		return false
+	end
+	local direction = (entry + 2)%4
+	local wrongSideEntry = (direction%4 ~= (building.roadDirectionFromSelf - 1)%4)
+	return wrongSideEntry
+end
+
 local function EnterRoad(self, road, entry)
 	if not road then
 		return false
@@ -41,6 +51,14 @@ local function EnterRoad(self, road, entry)
 	if util.Eq(self.currentRoadPos, self.targetPos) then
 		self.arriveAtTarget = true
 		self.driveOffset = Global.SPAWN_OFFSET
+		if CheckArriveWrongSide(self, road, entry) then
+			self.destination = (self.destination + 2)%4
+			self.currentPath = roadUtil.GetWrongSideArrivePath(self, entry, dest, self.roadWorldRot)
+			self.arriveTravelReq = self.currentPath.length - 0.35
+			self.arriveWrongSide = true
+		else
+			self.arriveTravelReq = Global.ARRIVE_TRAVEL
+		end
 	end
 	
 	self.nextRoad = TerrainHandler.GetRoadAtPos(self.currentRoadPos, self.destination)
@@ -181,10 +199,37 @@ local function CheckStopSignal(self)
 	if self.def.ignoreSignal then
 		return false, sneakingThrough
 	end
-	return currentBlocked or CheckNextRoadStop(self), sneakingThrough
+	local nextBlocked = CheckNextRoadStop(self)
+	if currentBlocked then
+		self.currentRoad.WaitingCar(self.currentPath.entry)
+	elseif currentBlocked then
+		self.nextRoad.WaitingCar(self.nextRoadEntry)
+	end
+	return currentBlocked or nextBlocked, sneakingThrough
 end
 
-local function NewCar(self, new_gridPos, targetPos, targetBuildingPos, carID, entry, dest, fullSpeed)
+local function FindReturnAfterVisit(self)
+	local targetBuilding = BuildingHandler.GetRandomMatchingBuilding(self.def.returnAfterVisit)
+	if not (targetBuilding and targetBuilding.roadSpawn) then
+		return false
+	end
+	self.targetPos = targetBuilding.roadSpawn.GetPos()
+	self.targetBuildingPos = targetBuilding.pos
+	self.returning = true
+	self.driveOffset = Global.DRIVE_OFFSET
+	self.prevDriveOffset = Global.RETURN_SPAWN_OFFSET * 0.75
+	
+	if self.arriveWrongSide then
+		if self.currentRoad then
+			self.currentPath = self.currentRoad.GetPathAndNextRoad(false, (self.destination + 2)%4)
+		end
+		self.wantTurn = false
+		self.travel = Global.SPAWN_TRAVEL + 0.05
+	end
+	return true
+end
+
+local function NewCar(self, new_gridPos, targetPos, targetBuildingPos, wrongSideSpawn, carID, entry, dest, fullSpeed)
 	self.def = CarDefs[self.carType]
 	
 	self.spawnTimer = (not fullSpeed) and Global.SPAWN_FADE_TIME
@@ -196,7 +241,11 @@ local function NewCar(self, new_gridPos, targetPos, targetBuildingPos, carID, en
 	self.targetBuildingPos = targetBuildingPos
 	EnterRoad(self, TerrainHandler.GetRoadAtPos(new_gridPos), entry, dest)
 	if not fullSpeed then
-		self.prevDriveOffset = Global.SPAWN_OFFSET -- Override when spawning
+		self.prevDriveOffset = Global.SPAWN_OFFSET -- Side of the road
+		if wrongSideSpawn then
+			self.travel = 0
+			self.currentPath = roadUtil.GetWrongSideSpawnPath(self, entry, dest, self.roadWorldRot)
+		end
 	end
 	self.pos, self.rotation = GetPositionOnRoad(self, self.currentPath, self.roadWorldPos, self.roadWorldRot, self.travel)
 	
@@ -233,9 +282,18 @@ local function NewCar(self, new_gridPos, targetPos, targetBuildingPos, carID, en
 		
 		self.stopSignal, self.sneakingThrough = CheckStopSignal(self)
 		self.collision = CheckImpendingCollision(self)
+		if self.collision and self.currentPath and self.currentPath.ignoreCollisionUntil and self.travel < self.currentPath.ignoreCollisionUntil then
+			self.collision = false
+		end
+		if self.collision and self.currentPath and self.currentPath.ignoreCollisionAfter and self.travel > self.currentPath.ignoreCollisionAfter then
+			self.collision = false
+		end
 		self.wantStop = self.collision or self.stopSignal
-		if self.arriveTimer or (self.arriveAtTarget and self.travel > Global.ARRIVE_TRAVEL) then
+		if self.arriveTimer or (self.arriveAtTarget and self.travel > self.arriveTravelReq) then
 			self.wantStop = true
+			if not self.arriveWrongSide then
+				self.travel = Global.ARRIVE_TRAVEL
+			end
 			self.arriveTimer = self.arriveTimer or Global.ARRIVE_FADE_TIME
 		end
 		local rapidDecel = self.collision and self.suddenStop
@@ -269,7 +327,7 @@ local function NewCar(self, new_gridPos, targetPos, targetBuildingPos, carID, en
 		end
 		local travelChange = dt*self.speed*mult
 		self.travel = self.travel + travelChange
-		if self.travel >= self.currentPath.length then
+		if self.travel >= self.currentPath.length and not self.arriveTimer then
 			local nextRoad = TerrainHandler.GetRoadAtPos(self.currentRoadPos, self.destination)
 			self.travel = self.travel - self.currentPath.length
 			if not EnterRoad(self, nextRoad, (self.destination + 2)%4) then
@@ -292,15 +350,17 @@ local function NewCar(self, new_gridPos, targetPos, targetBuildingPos, carID, en
 		self.spawnTimer = util.UpdateTimer(self.spawnTimer, dt)
 		self.arriveTimer, self.arrived = util.UpdateTimer(self.arriveTimer, dt)
 		if self.arrived then
-			if self.targetBuildingPos then
-				BuildingHandler.VisitBuilding(targetBuildingPos, self)
+			self.arrived = false
+			self.arriveAtTarget = false
+			local visitMightReturn = self.targetBuildingPos and BuildingHandler.VisitBuilding(targetBuildingPos, self)
+			if (not visitMightReturn) or self.returning or (not self.def.returnAfterVisit) or not FindReturnAfterVisit(self) then
+				self.toDestroy = true
+				if self.body then
+					self.body:destroy()
+					self.body = nil
+				end
+				return true
 			end
-			self.toDestroy = true
-			if self.body then
-				self.body:destroy()
-				self.body = nil
-			end
-			return true
 		end
 		UpdateMovement(dt)
 	end
@@ -309,7 +369,7 @@ local function NewCar(self, new_gridPos, targetPos, targetBuildingPos, carID, en
 		drawQueue:push({y=0; f=function()
 			if not self.toDestroy then
 				local alpha = 1 - (self.spawnTimer or 0) / Global.SPAWN_FADE_TIME
-				if self.arriveTimer then
+				if self.arriveTimer and ((not self.def.returnAfterVisit) or self.returning) then
 					alpha = (self.arriveTimer or 0) / Global.ARRIVE_FADE_TIME
 				end
 				Resources.DrawImage(self.def.image, self.pos[1], self.pos[2], self.rotation, alpha, LevelHandler.TileScale())

@@ -9,7 +9,7 @@ local api = {}
 	for i = ends[1], ends[2] do
 		local pos = {i, 0}
 		if not api.GetRoadAtPos(pos) then
-			api.AddRoad(pos, "straight_large", 2)
+			api.AddRoad(pos, "straight_large", 0)
 		end
 	end
 	BuildingHandler.ReplaceHighwayEnds(ends)endfunction api.IsInBounds(gPos)	return self.dimensions.left <= gPos[1] and self.dimensions.right > gPos[1] and self.dimensions.top <= gPos[2] and self.dimensions.bottom > gPos[2]endfunction api.RemoveRoad(pos)	local x, y = pos[1], pos[2]	if self.roadPos[x] and self.roadPos[x][y] then		local oldRoad = IterableMap.Get(self.roadList, self.roadPos[x][y])		if oldRoad then			oldRoad.toDestroy = true		end		IterableMap.Remove(self.roadList, self.roadPos[x][y])

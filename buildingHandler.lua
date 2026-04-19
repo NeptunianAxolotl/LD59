@@ -27,7 +27,7 @@ end
 function api.VisitBuilding(pos, car)
 	local building = api.GetBuildingAtPos(pos)
 	if building then
-		building.Visited(car)
+		return building.Visited(car)
 	end
 end
 

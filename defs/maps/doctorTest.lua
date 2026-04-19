@@ -4,21 +4,7 @@ return {
 			buildingType = "doctor",
 			pos = {
 				2,
-				1,
-			},
-		},
-		{
-			buildingType = "house",
-			pos = {
-				0,
-				-4,
-			},
-		},
-		{
-			buildingType = "house",
-			pos = {
-				1,
-				-2,
+				-1,
 			},
 		},
 		{
@@ -28,19 +14,12 @@ return {
 				-4,
 			},
 		},
-		{
-			buildingType = "house",
-			pos = {
-				2,
-				-4,
-			},
-		},
 	},
 	dimensions = {
-		bottom = 8,
-		left = -13,
-		right = 13,
-		top = -8,
+		bottom = 3,
+		left = -3,
+		right = 6,
+		top = -4,
 	},
 	doodads = {
 	},
@@ -48,16 +27,16 @@ return {
 	road = {
 		{
 			pos = {
-				4,
-				-1,
+				3,
+				-3,
 			},
 			roadType = "straight",
-			rot = 1,
+			rot = 2,
 		},
 		{
 			pos = {
-				1,
-				-3,
+				3,
+				-2,
 			},
 			roadType = "straight",
 			rot = 2,
@@ -67,31 +46,47 @@ return {
 				4,
 				0,
 			},
-			roadType = "t_road",
-			rot = 2,
+			roadType = "corner",
+			rot = 0,
 		},
 		{
 			pos = {
-				-1,
-				-3,
+				3,
+				0,
 			},
 			roadType = "corner",
 			rot = 0,
 		},
 		{
 			pos = {
-				4,
-				-3,
+				2,
+				0,
 			},
 			roadType = "corner",
-			rot = 1,
+			rot = 0,
 		},
 		{
 			pos = {
-				3,
+				1,
 				-3,
 			},
-			roadType = "straight",
+			roadType = "t_road",
+			rot = 0,
+		},
+		{
+			pos = {
+				1,
+				-2,
+			},
+			roadType = "corner",
+			rot = 3,
+		},
+		{
+			pos = {
+				4,
+				-2,
+			},
+			roadType = "corner",
 			rot = 2,
 		},
 		{
@@ -104,43 +99,19 @@ return {
 		},
 		{
 			pos = {
-				4,
+				2,
 				-2,
 			},
 			roadType = "straight",
-			rot = 1,
-		},
-		{
-			pos = {
-				-1,
-				0,
-			},
-			roadType = "t_road",
 			rot = 2,
 		},
 		{
 			pos = {
-				0,
+				4,
 				-3,
 			},
-			roadType = "straight",
+			roadType = "t_road",
 			rot = 0,
-		},
-		{
-			pos = {
-				-1,
-				-2,
-			},
-			roadType = "straight",
-			rot = 1,
-		},
-		{
-			pos = {
-				-1,
-				-1,
-			},
-			roadType = "straight",
-			rot = 1,
 		},
 	},
 }

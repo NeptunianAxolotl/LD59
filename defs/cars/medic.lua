@@ -18,6 +18,7 @@ local def = {
 	ignoreSignal = true,
 	stopTimer = 0.2,
 	wrongTurnChance = 0,
+	returnAfterVisit = "doctor",
 }
 
 return util.MergeTable(def, shared)

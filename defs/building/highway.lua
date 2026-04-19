@@ -3,7 +3,7 @@ return {
 	baseImage = "highway",
 	destinationType = "highway",
 	noExport = true,
-	spawnRoads = {
+	attachRoachTypes = {
 		straight_large = true,
 	},
 	spawnCar = {
@@ -22,6 +22,4 @@ return {
 			},
 		})
 	},
-	updateFunc = function (self, dt)
-	end,
 }
