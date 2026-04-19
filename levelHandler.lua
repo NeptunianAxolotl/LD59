@@ -38,6 +38,11 @@ function api.WorldToGrid(pos)
 	return {x, y}
 end
 
+function api.GridToWorld(pos)
+	local x, y = (pos[1] + 0.5)*self.tileSize, (pos[2] + 0.5)*self.tileSize
+	return {x, y}
+end
+
 local function SetupLevel()
 	TerrainHandler.SetDimensions(self.map.dimensions)
 	DoodadHandler.SetupLevel()

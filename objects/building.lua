@@ -53,7 +53,7 @@ local function NewBuilding(self)
 	end
 	
 	function self.MatchAndExcludeID(buildingType, excludeID)
-		return (self.buildingID ~= excludeID) and (self.buildingType == buildingType)
+		return (self.buildingID ~= excludeID) and (self.buildingType == buildingType) and self.roadSpawn
 	end
 	
 	function self.Export(objList)

@@ -38,7 +38,7 @@ function api.AddBuilding(pos, buildingType)
 end
 
 function api.GetRandomMatchingBuilding(buildingType, excludeID)
-	return IterableMap.GetFirstSatisfies(self.buildingList, "MatchAndExcludeID", buildingType, excludeID)
+	return IterableMap.GetRandomSatisfies(self.buildingList, "MatchAndExcludeID", buildingType, excludeID)
 end
 
 function api.ExportObjects()

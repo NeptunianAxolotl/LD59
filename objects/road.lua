@@ -21,9 +21,11 @@ local function NewRoad(self, terrain)
 	self.worldPos = CalculateWorldPos(self)
 	self.worldRot = self.rotation*math.pi/2
 	self.worldEntryFilter = {}
+	self.worldDestinationFilter = {}
 	for i = 1, #self.def.paths do
 		local path = self.def.paths[i]
 		self.worldEntryFilter[(path.entry + self.rotation)%4] = true
+		self.worldDestinationFilter[(path.destination + self.rotation)%4] = true
 	end
 	
 	function self.GetTurnOptions(choiceRatio, entry)
@@ -49,6 +51,7 @@ local function NewRoad(self, terrain)
 		local choices = {}
 		for i = 1, #self.def.paths do
 			local path = self.def.paths[i]
+			print(roadSpaceEntry, roadSpaceDest, path.entry, path.destination)
 			if (roadSpaceEntry == path.entry) and ((not wantTurn) or wantTurn == path.turn) and ((not roadSpaceDest) or roadSpaceDest == path.destination) then
 				local worldSpaceDest = (path.destination + self.rotation)%4
 				return path, worldSpaceDest

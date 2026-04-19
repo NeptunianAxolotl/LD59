@@ -4,13 +4,14 @@ local CarDefs = util.LoadDefDirectory("defs/cars")
 local function PickTurnOption(self, road, targetPos, entry)
 	targetPos = targetPos and (math.random() >= self.def.wrongTurnChance) and targetPos
 	if targetPos then
-		local bestDirection = carUtil.GetBestMatchingDirectionTowards(road.GetPos(), targetPos, road.worldEntryFilter)
+		local bestDirection = carUtil.GetBestMatchingDirectionTowards(road.GetPos(), targetPos, road.worldDestinationFilter, entry)
 		local newPath, newDestination = road.GetPathAndNextRoad(false, entry, bestDirection)
 		if newPath then
 			return newPath.turn, newPath
 		end
+		print("bestDirection", bestDirection, "rot", road.rotation, "entry", entry)
+		--error("Custom Message") 
 	end
-	print("random")
 	local turnOptions = road.GetTurnOptions(self.def.choiceRatio, entry)
 	local pathSelected = turnOptions and util.NormaliseAndSampleWeightedList(turnOptions)
 	local turnSelected = pathSelected and pathSelected.path.turn
@@ -290,6 +291,14 @@ local function NewCar(self, new_gridPos, targetPos, carID, entry, dest)
 					end
 					if self.secondRay and not self.stopSignal then
 						love.graphics.line(self.secondRay[1][1], self.secondRay[1][2], self.secondRay[2][1], self.secondRay[2][2])
+					end
+				end
+				if Global.DRAW_DEBUG then
+					if self.targetPos then
+						local draw = LevelHandler.GridToWorld(self.targetPos)
+						love.graphics.setLineWidth(2)
+						love.graphics.setColor(0, 0.8, 0, 0.8)
+						love.graphics.line(self.pos[1], self.pos[2], draw[1], draw[2])
 					end
 				end
 			end
