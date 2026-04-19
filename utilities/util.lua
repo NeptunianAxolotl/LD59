@@ -1061,6 +1061,16 @@ function util.CopyTable(tableToCopy, deep, appendTo)
 	return copy
 end
 
+function util.MergeTable(primary, secondary)
+	primary = util.CopyTable(primary)
+	for key, value in pairs(secondary) do
+		if not primary[key] then
+			primary[key] = value
+		end
+	end
+	return primary
+end
+
 function util.ListToMask(listTable)
 	local mapTable = {}
 	for i = 1, #listTable do
