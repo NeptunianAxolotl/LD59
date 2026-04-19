@@ -7,7 +7,7 @@ return {
 		straight_large = true,
 	},
 	spawnCar = {
-		baseRate = 1.25,
+		baseRate = 2.7,
 		randomProp = 0.2,
 		carType = "basic_car",
 		spawnFullSpeed = true,

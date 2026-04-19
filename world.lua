@@ -21,6 +21,11 @@ local PriorityQueue = require("include/PriorityQueue")
 local self = {}
 local api = {}
 
+-- Global
+function DrawDebug()
+	return self.cosmos.DrawDebug()
+end
+
 function api.SetMenuState(newState)
 	self.menuState = newState
 end

@@ -78,7 +78,15 @@ function api.ScrollSpeedChange(change)
 end
 
 function api.DrawPhysicsEnabled()
-	return Global.DRAW_PHYSICS
+	return self.drawDebug
+end
+
+function api.DrawDebug()
+	return self.drawDebug
+end
+
+function api.ToggleDebug()
+	self.drawDebug = not self.drawDebug
 end
 
 --------------------------------------------------
@@ -111,6 +119,10 @@ end
 function api.KeyPressed(key, scancode, isRepeat)
 	if key == "r" and (love.keyboard.isDown("lctrl") or love.keyboard.isDown("rctrl")) then
 		api.RestartWorld()
+		return true
+	end
+	if key == "d" and (love.keyboard.isDown("lctrl") or love.keyboard.isDown("rctrl")) then
+		api.ToggleDebug()
 		return true
 	end
 	if key == "m" and (love.keyboard.isDown("lctrl") or love.keyboard.isDown("rctrl")) then
@@ -160,6 +172,7 @@ function api.Initialize()
 		realTime = 0,
 		inbuiltLevelName = Global.INIT_LEVEL,
 		musicEnabled = true,
+		drawDebug = Global.DRAW_DEBUG,
 	}
 	self.curLevelData = MapDefs[self.inbuiltLevelName]
 	MusicHandler.Initialize(api)

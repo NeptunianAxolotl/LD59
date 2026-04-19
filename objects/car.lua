@@ -302,7 +302,7 @@ local function NewCar(self, new_gridPos, targetPos, carID, entry, dest, fullSpee
 					alpha = (self.arriveTimer or 0) / Global.ARRIVE_FADE_TIME
 				end
 				Resources.DrawImage(self.def.image, self.pos[1], self.pos[2], self.rotation, alpha, LevelHandler.TileScale())
-				if Global.DRAW_DEBUG then
+				if DrawDebug() then
 					if self.ray and not self.stopSignal then
 						if self.sneakingThrough then
 							love.graphics.setLineWidth(3)
@@ -320,7 +320,7 @@ local function NewCar(self, new_gridPos, targetPos, carID, entry, dest, fullSpee
 						love.graphics.line(self.secondRay[1][1], self.secondRay[1][2], self.secondRay[2][1], self.secondRay[2][2])
 					end
 				end
-				if Global.DRAW_DEBUG then
+				if DrawDebug() then
 					if self.targetPos then
 						local draw = LevelHandler.GridToWorld(self.targetPos)
 						love.graphics.setLineWidth(1)

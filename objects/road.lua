@@ -159,7 +159,7 @@ local function NewRoad(self, terrain)
 					self.def.extraDrawFunc(self, self.worldPos, self.worldRot)
 				end
 				
-				if Global.DRAW_DEBUG then
+				if DrawDebug() then
 					if self.ray then
 						love.graphics.setLineWidth(2)
 						love.graphics.setColor(0.8, 0.8, 0.8, 0.8)

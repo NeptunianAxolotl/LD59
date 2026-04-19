@@ -111,7 +111,7 @@ local function NewBuilding(self)
 				if self.def.extraDrawFunc then
 					self.def.extraDrawFunc(self, self.worldPos, self.worldRot)
 				end
-				if Global.DRAW_DEBUG then
+				if DrawDebug() then
 					if self.roadSpawn then
 						local roadPos = self.roadSpawn.GetWorldPos()
 						love.graphics.setLineWidth((self.spawnTimer or 0)*10)

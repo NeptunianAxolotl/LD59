@@ -34,7 +34,7 @@ local globals = {
 	TEXT_COL            = {9/255, 11/255, 17/255},
 	FLOATING_TEXT_COL   = {0.95,0.95,0.9},
 	
-	BIG_ROAD_SPEED = 1.45,
+	BIG_ROAD_SPEED = 1.35,
 	HIGHWAY_EXTRA = 2,
 	
 	INIT_LEVEL = "mainMap",
@@ -59,7 +59,6 @@ local globals = {
 	DEFAULT_MUSIC_DURATION = 174.69,
 	CROSSFADE_TIME = 0,
 	DEV_TOOLS_ENABLED = false,
-	DRAW_PHYSICS = false,
 	DRAW_DEBUG = true,
 	
 	ZOOM_OUT = 1,

@@ -57,7 +57,7 @@ function api.Update(dt)
 end
 
 function api.Draw(drawQueue)
-	if not self.world.GetCosmos().DrawPhysicsEnabled() then
+	if not DrawDebug() then
 		return
 	end
 	drawQueue:push({y=120; f=function()
