@@ -1,10 +1,10 @@
 local shared = util.CopyTable(require('defs/cars/shared'))
 
 local def = {
-	image = "basic_car",
-	maxSpeed = 1.15,
+	image = "medic",
+	maxSpeed = 1.2,
 	accel = 2.2,
-	deccel = 4.5,
+	deccel = 4.2,
 	slowDeccel = 2,
 	choiceRatio = {
 		straight = 0.35,
@@ -14,7 +14,8 @@ local def = {
 	length = 20,
 	width = 12,
 	friendlyCollision = true,
-	stopTimer = 0.4,
+	ignoreSignal = true,
+	stopTimer = 0.2,
 	wrongTurnChance = 0,
 }
 

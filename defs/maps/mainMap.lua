@@ -3,15 +3,22 @@ return {
 		{
 			buildingType = "house",
 			pos = {
-				0,
+				-1,
 				-4,
 			},
 		},
 		{
 			buildingType = "house",
 			pos = {
-				-1,
+				0,
 				-4,
+			},
+		},
+		{
+			buildingType = "doctor",
+			pos = {
+				2,
+				1,
 			},
 		},
 	},

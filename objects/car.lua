@@ -174,6 +174,9 @@ end
 
 local function CheckStopSignal(self)
 	local currentBlocked, sneakingThrough = CheckCurrentRoadStop(self)
+	if self.def.ignoreSignal then
+		return false, sneakingThrough
+	end
 	return currentBlocked or CheckNextRoadStop(self), sneakingThrough
 end
 

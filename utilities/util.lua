@@ -299,6 +299,10 @@ function util.GetAngleBetweenUnitVectors(u, v)
 	return math.acos(util.Dot(u, v))
 end
 
+function util.UnitThenDot(u, v)
+	return util.Dot(util.Unit(u), util.Unit(v))
+end
+
 -- Get the average position between two vectors
 function util.Average(u, v, uFactor)
 	uFactor = uFactor or 0.5

@@ -108,8 +108,8 @@ end
 function roadUtil.OuterLanedCornerDir(t)
 	if t < 0.1 then
 		return -math.pi/2
-	elseif t < 0.1 + laneOutLength then
-		t = (t - 0.1)/laneOutLength
+	elseif t < 0.2 + laneOutLength then
+		t = (t - 0.1)/(laneOutLength + 0.1)
 		return roadUtil.GetCurveDir(t, -1, 1)
 	else
 		return 0
@@ -135,7 +135,7 @@ function roadUtil.IsOccupied(self, vector)
 end
 
 local clearZones = {}
-clearZones[0] = {{-0.15, -Global.DRIVE_OFFSET*1.5}, {0.5, -Global.DRIVE_OFFSET * 0.6}}
+clearZones[0] = {{-0.15, -Global.DRIVE_OFFSET*1.8}, {0.5, -Global.DRIVE_OFFSET * 0.6}}
 clearZones[1] = {util.RotateVector(clearZones[0][1], math.pi/2), util.RotateVector(clearZones[0][2], math.pi/2)}
 clearZones[2] = {util.RotateVector(clearZones[1][1], math.pi/2), util.RotateVector(clearZones[1][2], math.pi/2)}
 clearZones[3] = {util.RotateVector(clearZones[2][1], math.pi/2), util.RotateVector(clearZones[2][2], math.pi/2)}

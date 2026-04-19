@@ -187,6 +187,8 @@ function api.KeyPressed(key, scancode, isRepeat)
 		self.editor.tile = "straight_large"
 	elseif key == "h" then
 		self.editor.tile = "house"
+	elseif key == "b" then
+		self.editor.tile = "doctor"
 	elseif key == "w" then
 		self.editor.tile = "corner"
 	elseif key == "a" then
@@ -256,6 +258,7 @@ E - Rotate backwards
 Q - Straight Road
 D - Straight Road Large
 H - House
+B - Doctor
 W - Curve
 A - T-Int
 S - Cross
