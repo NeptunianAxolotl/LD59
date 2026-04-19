@@ -51,7 +51,6 @@ local function NewRoad(self, terrain)
 		local choices = {}
 		for i = 1, #self.def.paths do
 			local path = self.def.paths[i]
-			print(roadSpaceEntry, roadSpaceDest, path.entry, path.destination)
 			if (roadSpaceEntry == path.entry) and ((not wantTurn) or wantTurn == path.turn) and ((not roadSpaceDest) or roadSpaceDest == path.destination) then
 				local worldSpaceDest = (path.destination + self.rotation)%4
 				return path, worldSpaceDest

@@ -3,22 +3,15 @@ return {
 		{
 			buildingType = "highway",
 			pos = {
+				-10,
 				0,
-				-5,
 			},
 		},
 		{
 			buildingType = "highway",
 			pos = {
-				-3,
-				1,
-			},
-		},
-		{
-			buildingType = "highway",
-			pos = {
-				3,
-				1,
+				9,
+				0,
 			},
 		},
 	},
@@ -34,6 +27,62 @@ return {
 	road = {
 		{
 			pos = {
+				-9,
+				0,
+			},
+			roadType = "straight_large",
+			rot = 0,
+		},
+		{
+			pos = {
+				-8,
+				0,
+			},
+			roadType = "straight_large",
+			rot = 0,
+		},
+		{
+			pos = {
+				-7,
+				0,
+			},
+			roadType = "straight_large",
+			rot = 0,
+		},
+		{
+			pos = {
+				-6,
+				0,
+			},
+			roadType = "straight_large",
+			rot = 0,
+		},
+		{
+			pos = {
+				-5,
+				0,
+			},
+			roadType = "straight_large",
+			rot = 0,
+		},
+		{
+			pos = {
+				7,
+				0,
+			},
+			roadType = "straight_large",
+			rot = 0,
+		},
+		{
+			pos = {
+				8,
+				0,
+			},
+			roadType = "straight_large",
+			rot = 0,
+		},
+		{
+			pos = {
 				-3,
 				0,
 			},
@@ -42,7 +91,7 @@ return {
 		},
 		{
 			pos = {
-				-2,
+				6,
 				0,
 			},
 			roadType = "straight_large",
@@ -90,155 +139,107 @@ return {
 		},
 		{
 			pos = {
-				4,
+				-2,
 				0,
 			},
-			roadType = "straight_large",
-			rot = 0,
-		},
-		{
-			pos = {
-				-4,
-				0,
-			},
-			roadType = "cross_road",
-			rot = 0,
-		},
-		{
-			pos = {
-				5,
-				0,
-			},
-			roadType = "cross_road",
-			rot = 0,
-		},
-		{
-			pos = {
-				5,
-				-4,
-			},
-			roadType = "cross_road",
-			rot = 0,
-		},
-		{
-			pos = {
-				-4,
-				-4,
-			},
-			roadType = "cross_road",
-			rot = 0,
+			roadType = "t_road",
+			rot = 2,
 		},
 		{
 			pos = {
 				4,
-				-4,
+				0,
 			},
-			roadType = "straight_large",
-			rot = 0,
-		},
-		{
-			pos = {
-				-3,
-				-4,
-			},
-			roadType = "straight_large",
-			rot = 0,
+			roadType = "t_road",
+			rot = 2,
 		},
 		{
 			pos = {
 				-2,
-				-4,
+				-1,
 			},
-			roadType = "straight_large",
+			roadType = "straight",
+			rot = 3,
+		},
+		{
+			pos = {
+				-2,
+				-2,
+			},
+			roadType = "straight",
+			rot = 3,
+		},
+		{
+			pos = {
+				-2,
+				-3,
+			},
+			roadType = "corner",
 			rot = 0,
+		},
+		{
+			pos = {
+				4,
+				-1,
+			},
+			roadType = "straight",
+			rot = 3,
+		},
+		{
+			pos = {
+				4,
+				-2,
+			},
+			roadType = "straight",
+			rot = 3,
+		},
+		{
+			pos = {
+				3,
+				-3,
+			},
+			roadType = "straight",
+			rot = 0,
+		},
+		{
+			pos = {
+				4,
+				-3,
+			},
+			roadType = "corner",
+			rot = 1,
 		},
 		{
 			pos = {
 				-1,
-				-4,
+				-3,
 			},
-			roadType = "straight_large",
-			rot = 0,
-		},
-		{
-			pos = {
-				1,
-				-4,
-			},
-			roadType = "straight_large",
-			rot = 0,
-		},
-		{
-			pos = {
-				0,
-				-4,
-			},
-			roadType = "straight_large",
+			roadType = "straight",
 			rot = 0,
 		},
 		{
 			pos = {
 				2,
-				-4,
+				-3,
 			},
-			roadType = "straight_large",
+			roadType = "straight",
 			rot = 0,
 		},
 		{
 			pos = {
-				3,
-				-4,
+				1,
+				-3,
 			},
-			roadType = "straight_large",
+			roadType = "straight",
 			rot = 0,
 		},
 		{
 			pos = {
-				-4,
+				0,
 				-3,
 			},
-			roadType = "straight_large",
-			rot = 3,
-		},
-		{
-			pos = {
-				-4,
-				-2,
-			},
-			roadType = "straight_large",
-			rot = 3,
-		},
-		{
-			pos = {
-				-4,
-				-1,
-			},
-			roadType = "straight_large",
-			rot = 3,
-		},
-		{
-			pos = {
-				5,
-				-2,
-			},
-			roadType = "straight_large",
-			rot = 1,
-		},
-		{
-			pos = {
-				5,
-				-3,
-			},
-			roadType = "straight_large",
-			rot = 1,
-		},
-		{
-			pos = {
-				5,
-				-1,
-			},
-			roadType = "straight_large",
-			rot = 1,
+			roadType = "straight",
+			rot = 0,
 		},
 	},
 }

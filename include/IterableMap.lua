@@ -21,6 +21,11 @@ function IterableMap.GetUnusedKey(self)
 	return self.unusedKey
 end
 
+function IterableMap.GetNewUniqueKey(self)
+	self.unusedKey = self.unusedKey + 1
+	return self.unusedKey
+end
+
 function IterableMap.Add(self, key, data)
 	if not key then
 		return

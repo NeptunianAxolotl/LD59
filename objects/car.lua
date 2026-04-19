@@ -9,7 +9,7 @@ local function PickTurnOption(self, road, targetPos, entry)
 		if newPath then
 			return newPath.turn, newPath
 		end
-		print("bestDirection", bestDirection, "rot", road.rotation, "entry", entry)
+		--print("bestDirection", bestDirection, "rot", road.rotation, "entry", entry)
 		--error("Custom Message") 
 	end
 	local turnOptions = road.GetTurnOptions(self.def.choiceRatio, entry)

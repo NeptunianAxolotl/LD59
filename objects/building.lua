@@ -7,7 +7,13 @@ end
 
 local function FindRoadSpawn(self, pos)
 	pos = pos or self.pos
-	for i = 0, 3 do
+	for i = 1, 3, 2 do
+		local road = TerrainHandler.GetRoadAtPos(pos, i)
+		if road and self.def.spawnRoads[road.def.name] then
+			return road
+		end
+	end
+	for i = 0, 2, 2 do
 		local road = TerrainHandler.GetRoadAtPos(pos, i)
 		if road and self.def.spawnRoads[road.def.name] then
 			return road
@@ -24,6 +30,9 @@ local function SpawnRegularCar(self)
 	--end
 	local roadPos = self.roadSpawn.GetPos()
 	local targetBuilding = BuildingHandler.GetRandomMatchingBuilding("highway", self.buildingID)
+	if not targetBuilding then
+		return
+	end
 	local targetRoadPos = targetBuilding.roadSpawn.GetPos()
 	local direction = carUtil.GetBestMatchingDirectionTowards(roadPos, targetRoadPos, self.roadSpawn.worldEntryFilter)
 	CarHandler.AddCar(self.def.spawnCar.carType, roadPos, targetRoadPos, (direction - 2)%4, direction)
@@ -53,7 +62,7 @@ local function NewBuilding(self)
 	end
 	
 	function self.MatchAndExcludeID(buildingType, excludeID)
-		return (self.buildingID ~= excludeID) and (self.buildingType == buildingType) and self.roadSpawn
+		return (self.buildingID ~= excludeID) and (self.buildingType == buildingType) and not self.toDestroy
 	end
 	
 	function self.Export(objList)

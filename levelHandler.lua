@@ -54,6 +54,7 @@ local function SetupLevel()
 		local building = self.map.building[i]
 		BuildingHandler.AddBuilding(building.pos, building.buildingType)
 	end
+	TerrainHandler.SetDimensions(self.map.dimensions)
 end
 
 function api.LoadLevel(name)
@@ -185,7 +186,7 @@ function api.KeyPressed(key, scancode, isRepeat)
 	elseif key == "d" then
 		self.editor.tile = "straight_large"
 	elseif key == "h" then
-		self.editor.tile = "highway"
+		self.editor.tile = "house"
 	elseif key == "w" then
 		self.editor.tile = "corner"
 	elseif key == "a" then
@@ -254,7 +255,7 @@ R - Rotate
 E - Rotate backwards
 Q - Straight Road
 D - Straight Road Large
-H - Highway spawn
+H - House
 W - Curve
 A - T-Int
 S - Cross

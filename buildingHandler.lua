@@ -12,6 +12,7 @@ function api.RemoveBuilding(pos)
 			oldBuilding.toDestroy = true
 		end
 		IterableMap.Remove(self.buildingList, self.buildingPos[x][y])
+		self.buildingPos[x][y] = nil
 	end
 end
 
@@ -27,7 +28,7 @@ function api.AddBuilding(pos, buildingType)
 	local x, y = pos[1], pos[2]
 	self.buildingPos[x] = self.buildingPos[x] or {}
 	api.RemoveBuilding(pos)
-	local buildingID = IterableMap.GetUnusedKey(self.buildingList)
+	local buildingID = IterableMap.GetNewUniqueKey(self.buildingList)
 	local buildingData = {
 		buildingType = buildingType,
 		pos = pos,
@@ -35,6 +36,12 @@ function api.AddBuilding(pos, buildingType)
 	}
 	local building = NewBuilding(buildingData)
 	self.buildingPos[x][y] = IterableMap.Add(self.buildingList, buildingID, building)
+end
+
+function api.ReplaceHighwayEnds(ends)
+	IterableMap.ApplySelf(self.buildingList, "MatchAndExcludeID", "highway") -- Removes
+	api.AddBuilding({ends[1] - 1, 0}, "highway")
+	api.AddBuilding({ends[2] + 1, 0}, "highway")
 end
 
 function api.GetRandomMatchingBuilding(buildingType, excludeID)
