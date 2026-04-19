@@ -57,6 +57,7 @@ local function CheckImpendingCollision(self)
 	local unit = util.PolarToCart(1, self.rotation)
 	local baseUnit = util.PolarToCart(1, self.rotation)
 	local rayStart = self.def.length/2 + self.def.rayStart
+	self.secondRay = false
 	self.ray = {}
 	self.ray[1] = util.Add(self.pos, util.Mult(rayStart, unit))
 	local rayLength = self.def.rayLength
@@ -80,6 +81,13 @@ local function CheckImpendingCollision(self)
 				self.ray[1] = util.Add(self.ray[1], util.Mult(6, util.RotateVector(unit, -0.6)))
 				rayLength = rayLength
 			end
+		elseif self.wantTurn == "left" then
+			rayLength = self.def.rayLength * 0.8
+			self.secondRay = {}
+			self.secondRay[1] = self.ray[1]
+			self.secondRay[2] = util.Add(self.ray[1], util.Mult(rayLength, util.RotateVector(unit, 0.4 * travelRemaining)))
+			self.ray[1] = util.Add(self.ray[1], util.Mult(8, util.RotateVector(unit, -0.8)))
+			unit = util.RotateVector(unit, 0.1 - (1 - travelRemaining) * 0.5)
 		else
 			rayLength = self.def.rayTurnLength
 			unit = util.RotateVector(unit, 0.6 * travelRemaining)
@@ -100,8 +108,6 @@ local function CheckImpendingCollision(self)
 		self.secondRay = {}
 		self.secondRay[1] = util.Add(self.pos, util.Mult(14, util.RotateVector(baseUnit, -0.8)))
 		self.secondRay[2] = util.Add(self.secondRay[1], util.Mult(self.def.sideRayLength, baseUnit))
-	else
-		self.secondRay = false
 	end
 	self.ray[2] = util.Add(self.ray[1], util.Mult(rayLength, unit))
 	rayWasHit = false
@@ -117,6 +123,9 @@ local function CheckCurrentRoadStop(self)
 		return false, false
 	end
 	local travelRemaining = 1 - self.travel / self.currentPath.length
+	if self.currentPath.length < 1 then
+		travelRemaining = travelRemaining * 1.1
+	end
 	local signalBlocked = ((self.currentRoad.stopSignal%2 == self.currentPath.entry%2) or self.currentRoad.OrangeSignal())
 	if travelRemaining > 0.94 and signalBlocked then
 		return true, false
