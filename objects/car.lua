@@ -3,9 +3,9 @@ local CarDefs = util.LoadDefDirectory("defs/cars")
 
 local function PickTurnOption(self, road, entry)
 	local turnOptions = road.GetTurnOptions(self.def.choiceRatio, entry)
-	local turnSelected = turnOptions and util.NormaliseAndSampleWeightedList(turnOptions)
-	turnSelected = turnSelected and turnSelected.path.turn
-	return turnSelected
+	local pathSelected = turnOptions and util.NormaliseAndSampleWeightedList(turnOptions)
+	local turnSelected = pathSelected and pathSelected.path.turn
+	return turnSelected, (pathSelected and pathSelected.path)
 end
 
 local function EnterRoad(self, road, entry, dest)
@@ -31,12 +31,18 @@ local function EnterRoad(self, road, entry, dest)
 	self.nextRoad = TerrainHandler.GetRoadAtPos(self.currentRoadPos, self.destination)
 	if self.nextRoad then
 		self.nextRoadEntry = (self.nextRoad.rotation + self.destination)%4
-		self.wantTurn = PickTurnOption(self, self.nextRoad, (newDestination - 2)%4)
+		self.wantTurn, self.nextPath = PickTurnOption(self, self.nextRoad, (newDestination - 2)%4)
 		if self.wantTurn == "right" and self.nextRoad.IsIntersection() then
 			self.driveOffset = Global.DRIVE_OFFSET * (self.currentPath.centreLimit or 0.05)
 		end
 	else
+		self.nextPath = false
 		self.nextRoadEntry = false
+	end
+	if self.currentPath and self.nextPath then
+		self.maxSpeedMult = math.min(self.currentPath.speedMult or 1, self.nextPath.speedMult or 1)
+	else
+		self.maxSpeedMult = 1
 	end
 	return true
 end
@@ -106,8 +112,11 @@ local function CheckImpendingCollision(self)
 	end
 	if self.currentPath.turn == "straight" and self.wantTurn ~= "right" then
 		self.secondRay = {}
-		self.secondRay[1] = util.Add(self.pos, util.Mult(14, util.RotateVector(baseUnit, -0.8)))
+		self.secondRay[1] = util.Add(self.pos, util.Mult(12, util.RotateVector(baseUnit, -0.8)))
 		self.secondRay[2] = util.Add(self.secondRay[1], util.Mult(self.def.sideRayLength, baseUnit))
+	end
+	if (self.maxSpeedMult or 1) > 1 then
+		rayLength = rayLength * (self.maxSpeedMult or 1)
 	end
 	self.ray[2] = util.Add(self.ray[1], util.Mult(rayLength, unit))
 	rayWasHit = false
@@ -119,16 +128,16 @@ local function CheckImpendingCollision(self)
 end
 
 local function CheckCurrentRoadStop(self)
-	if not self.currentRoad or self.currentRoad.destroyed or not self.currentRoad.stopSignal  then
+	if not self.currentRoad or self.currentRoad.destroyed or not self.currentRoad.stopSignal then
 		return false, false
 	end
 	local travelRemaining = 1 - self.travel / self.currentPath.length
-	if self.currentPath.length < 1 then
-		travelRemaining = travelRemaining * 1.1
+	if self.currentPath.turn == "left" then
+		travelRemaining = travelRemaining*1.2
 	end
 	local signalBlocked = ((self.currentRoad.stopSignal%2 == self.currentPath.entry%2) or self.currentRoad.OrangeSignal())
-	if travelRemaining > 0.94 and signalBlocked then
-		return true, false
+	if travelRemaining > 0.95 and signalBlocked then
+		return true, signalBlocked
 	end
 	return false, signalBlocked
 end
@@ -138,16 +147,15 @@ local function CheckNextRoadStop(self)
 		return false
 	end
 	local travelRemaining = 1 - self.travel / self.currentPath.length
-	if self.currentPath.length < 1 then
+	if self.currentPath.turn == "left" then
 		travelRemaining = travelRemaining * 0.5
 	end
 	local myLightsBlocked = ((self.nextRoad.stopSignal%2 == self.nextRoadEntry%2) or self.nextRoad.OrangeSignal())
-	if travelRemaining < 0.15 and myLightsBlocked then
+	if travelRemaining < 0.15 * (self.maxSpeedMult or 1) and myLightsBlocked then
 		return true
 	end
 	return false
 end
-
 
 local function CheckStopSignal(self)
 	local currentBlocked, sneakingThrough = CheckCurrentRoadStop(self)
@@ -191,7 +199,8 @@ local function NewCar(self, new_gridPos, carID, entry, dest)
 		local oldTravel = self.travel
 		local allBlocked, someBlocked = false, false
 		local stopOffset = 0
-		local deccelMult = 1
+		local deccelMult = (self.maxSpeedMult or 1)
+		local maxSpeed = (self.maxSpeedMult or 1) * self.def.maxSpeed
 		local mult = 1
 		
 		self.stopSignal, self.sneakingThrough = CheckStopSignal(self)
@@ -203,7 +212,11 @@ local function NewCar(self, new_gridPos, carID, entry, dest)
 		end
 		local travelFullSpeed = not self.wantStop
 		if travelFullSpeed then
-			self.speed = math.min(self.def.maxSpeed, self.speed + dt*self.def.accel*mult)
+			if self.speed > maxSpeed*1.01 then
+				self.speed = math.max(maxSpeed, self.speed - dt*self.def.slowDeccel*mult*deccelMult)
+			else
+				self.speed = math.min(maxSpeed, self.speed + dt*self.def.accel*mult)
+			end
 		else
 			if (self.speed > 0 and self.wantStop) then
 				self.speed = self.speed - dt*self.def.deccel*mult*deccelMult
@@ -213,7 +226,7 @@ local function NewCar(self, new_gridPos, carID, entry, dest)
 				self.speed = 0
 			end
 			if (self.speed < 0.5 and not self.wantStop) then
-				self.speed = math.min(self.def.maxSpeed, self.speed + dt*self.def.accel*mult)
+				self.speed = math.min(maxSpeed, self.speed + dt*self.def.accel*mult)
 			end
 		end
 		if self.stoppedTimer or self.speed == 0 then

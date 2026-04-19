@@ -19,10 +19,18 @@ return {
 		},
 		{
 			pos = {
+				-6,
+				2,
+			},
+			roadType = "straight",
+			rot = 0,
+		},
+		{
+			pos = {
 				-8,
 				-1,
 			},
-			roadType = "straight",
+			roadType = "straight_large",
 			rot = 0,
 		},
 		{
@@ -30,15 +38,7 @@ return {
 				-7,
 				-1,
 			},
-			roadType = "straight",
-			rot = 0,
-		},
-		{
-			pos = {
-				-6,
-				-1,
-			},
-			roadType = "straight",
+			roadType = "straight_large",
 			rot = 0,
 		},
 		{
@@ -51,10 +51,18 @@ return {
 		},
 		{
 			pos = {
+				-6,
+				-1,
+			},
+			roadType = "straight_large",
+			rot = 0,
+		},
+		{
+			pos = {
 				-4,
 				-1,
 			},
-			roadType = "straight",
+			roadType = "straight_large",
 			rot = 0,
 		},
 		{
@@ -62,15 +70,7 @@ return {
 				-3,
 				-1,
 			},
-			roadType = "straight",
-			rot = 0,
-		},
-		{
-			pos = {
-				-2,
-				-1,
-			},
-			roadType = "straight",
+			roadType = "straight_large",
 			rot = 0,
 		},
 		{
@@ -83,18 +83,26 @@ return {
 		},
 		{
 			pos = {
-				1,
+				0,
 				-1,
 			},
-			roadType = "straight",
+			roadType = "straight_large",
 			rot = 0,
 		},
 		{
 			pos = {
-				0,
+				-2,
 				-1,
 			},
-			roadType = "straight",
+			roadType = "straight_large",
+			rot = 0,
+		},
+		{
+			pos = {
+				1,
+				-1,
+			},
+			roadType = "straight_large",
 			rot = 0,
 		},
 		{
@@ -102,15 +110,7 @@ return {
 				2,
 				-1,
 			},
-			roadType = "straight",
-			rot = 0,
-		},
-		{
-			pos = {
-				4,
-				-1,
-			},
-			roadType = "straight",
+			roadType = "straight_large",
 			rot = 0,
 		},
 		{
@@ -123,18 +123,18 @@ return {
 		},
 		{
 			pos = {
-				5,
+				4,
 				-1,
 			},
-			roadType = "straight",
+			roadType = "straight_large",
 			rot = 0,
 		},
 		{
 			pos = {
-				6,
+				5,
 				-1,
 			},
-			roadType = "straight",
+			roadType = "straight_large",
 			rot = 0,
 		},
 		{
@@ -499,10 +499,10 @@ return {
 		},
 		{
 			pos = {
-				-6,
-				2,
+				6,
+				-1,
 			},
-			roadType = "straight",
+			roadType = "straight_large",
 			rot = 0,
 		},
 	},

@@ -27,6 +27,7 @@ return {
 			destination = 2,
 			length = 1,
 			turn = "straight",
+			speedMult = Global.BIG_ROAD_SPEED,
 		},
 		{ -- left to right
 			posFunc = function (t, enterOffset, destOffset)
@@ -39,6 +40,7 @@ return {
 			destination = 0,
 			length = 1,
 			turn = "straight",
+			speedMult = Global.BIG_ROAD_SPEED,
 		},
 		{ -- Inner corner, right to bottom
 			posFunc = function (t, enterOffset, destOffset)

@@ -166,6 +166,8 @@ function api.KeyPressed(key, scancode, isRepeat)
 		self.editor.rotation = (self.editor.rotation - 1)%4
 	elseif key == "q" then
 		self.editor.tile = "straight"
+	elseif key == "d" then
+		self.editor.tile = "straight_large"
 	elseif key == "w" then
 		self.editor.tile = "corner"
 	elseif key == "a" then
@@ -233,6 +235,7 @@ function api.DrawInterface()
 R - Rotate
 E - Rotate backwards
 Q - Straight Road
+D - Straight Road Large
 W - Curve
 A - T-Int
 S - Cross

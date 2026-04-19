@@ -32,6 +32,7 @@ return {
 			entry = 2,
 			destination = 0,
 			length = 0.5,
+			speedMult = Global.BIG_ROAD_SPEED,
 		},
 		{ -- right to left
 			posFunc = function (t, enterOffset, destOffset)
@@ -44,6 +45,7 @@ return {
 			entry = 0,
 			destination = 2,
 			length = 0.5,
+			speedMult = Global.BIG_ROAD_SPEED,
 		},
 	},
 }

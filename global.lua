@@ -34,6 +34,8 @@ local globals = {
 	TEXT_COL            = {9/255, 11/255, 17/255},
 	FLOATING_TEXT_COL   = {0.95,0.95,0.9},
 	
+	BIG_ROAD_SPEED = 1.45,
+	
 	INIT_LEVEL = "bigMap",
 	GRID_SIZE = 100,
 	VIEW_PADDING = 50,

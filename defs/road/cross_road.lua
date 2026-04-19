@@ -28,6 +28,7 @@ return {
 			length = 1,
 			turn = "straight",
 			trafficFromRight = true,
+			speedMult = Global.BIG_ROAD_SPEED,
 		},
 		{ -- left to right
 			posFunc = function (t, enterOffset, destOffset)
@@ -41,6 +42,7 @@ return {
 			length = 1,
 			turn = "straight",
 			trafficFromRight = true,
+			speedMult = Global.BIG_ROAD_SPEED,
 		},
 		{ -- bot to top
 			posFunc = function (t, enterOffset, destOffset)
@@ -54,6 +56,7 @@ return {
 			length = 1,
 			turn = "straight",
 			trafficFromRight = true,
+			speedMult = Global.BIG_ROAD_SPEED,
 		},
 		{ -- top to bot
 			posFunc = function (t, enterOffset, destOffset)
@@ -67,6 +70,7 @@ return {
 			length = 1,
 			turn = "straight",
 			trafficFromRight = true,
+			speedMult = Global.BIG_ROAD_SPEED,
 		},
 		{ -- Inner corner, right to bottom
 			posFunc = function (t, enterOffset, destOffset)
