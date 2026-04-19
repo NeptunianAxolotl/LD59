@@ -36,7 +36,7 @@ local globals = {
 	
 	BIG_ROAD_SPEED = 1.45,
 	
-	INIT_LEVEL = "bigMap",
+	INIT_LEVEL = "mainMap",
 	GRID_SIZE = 100,
 	VIEW_PADDING = 50,
 	DRIVE_OFFSET = 0.22,

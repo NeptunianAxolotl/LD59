@@ -18,4 +18,5 @@ return {
 	sideRayLength = 52,
 	stopTimer = 0.4,
 	friendlyCollision = true,
+	wrongTurnChance = 0,
 }

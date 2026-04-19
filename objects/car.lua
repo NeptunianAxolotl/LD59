@@ -1,21 +1,30 @@
 
 local CarDefs = util.LoadDefDirectory("defs/cars")
 
-local function PickTurnOption(self, road, entry)
+local function PickTurnOption(self, road, targetPos, entry)
+	targetPos = targetPos and (math.random() >= self.def.wrongTurnChance) and targetPos
+	if targetPos then
+		local bestDirection = carUtil.GetBestMatchingDirectionTowards(road.GetPos(), targetPos, road.worldEntryFilter)
+		local newPath, newDestination = road.GetPathAndNextRoad(false, entry, bestDirection)
+		if newPath then
+			return newPath.turn, newPath
+		end
+	end
+	print("random")
 	local turnOptions = road.GetTurnOptions(self.def.choiceRatio, entry)
 	local pathSelected = turnOptions and util.NormaliseAndSampleWeightedList(turnOptions)
 	local turnSelected = pathSelected and pathSelected.path.turn
 	return turnSelected, (pathSelected and pathSelected.path)
 end
 
-local function EnterRoad(self, road, entry, dest)
+local function EnterRoad(self, road, entry)
 	if not road then
 		return false
 	end
 	if not self.wantTurn then
-		self.wantTurn = PickTurnOption(self, road, entry)
+		self.wantTurn = PickTurnOption(self, road, self.targetPos, entry)
 	end
-	local newPath, newDestination = road.GetPathAndNextRoad(self.wantTurn, entry, dest)
+	local newPath, newDestination = road.GetPathAndNextRoad(self.wantTurn, entry)
 	if not newPath then
 		return false
 	end
@@ -31,7 +40,7 @@ local function EnterRoad(self, road, entry, dest)
 	self.nextRoad = TerrainHandler.GetRoadAtPos(self.currentRoadPos, self.destination)
 	if self.nextRoad then
 		self.nextRoadEntry = (self.nextRoad.rotation + self.destination)%4
-		self.wantTurn, self.nextPath = PickTurnOption(self, self.nextRoad, (newDestination - 2)%4)
+		self.wantTurn, self.nextPath = PickTurnOption(self, self.nextRoad, self.targetPos, (newDestination - 2)%4)
 		if self.wantTurn == "right" and self.nextRoad.IsIntersection() then
 			self.driveOffset = Global.DRIVE_OFFSET * (self.currentPath.centreLimit or 0.05)
 		end
@@ -128,7 +137,7 @@ local function CheckImpendingCollision(self)
 end
 
 local function CheckCurrentRoadStop(self)
-	if not self.currentRoad or self.currentRoad.destroyed or not self.currentRoad.stopSignal then
+	if not self.currentRoad or self.currentRoad.toDestroy or not self.currentRoad.stopSignal then
 		return false, false
 	end
 	local travelRemaining = 1 - self.travel / self.currentPath.length
@@ -143,7 +152,7 @@ local function CheckCurrentRoadStop(self)
 end
 
 local function CheckNextRoadStop(self)
-	if not self.nextRoad or self.nextRoad.destroyed or not self.nextRoad.stopSignal or not self.nextRoadEntry then
+	if not self.nextRoad or self.nextRoad.toDestroy or not self.nextRoad.stopSignal or not self.nextRoadEntry then
 		return false
 	end
 	local travelRemaining = 1 - self.travel / self.currentPath.length
@@ -162,7 +171,7 @@ local function CheckStopSignal(self)
 	return currentBlocked or CheckNextRoadStop(self), sneakingThrough
 end
 
-local function NewCar(self, new_gridPos, carID, entry, dest)
+local function NewCar(self, new_gridPos, targetPos, carID, entry, dest)
 	self.def = CarDefs[self.carType]
 	
 	self.travel = 0
@@ -170,6 +179,7 @@ local function NewCar(self, new_gridPos, carID, entry, dest)
 	self.toDestroy = false
 	self.driveOffset = Global.DRIVE_OFFSET
 	self.prevDriveOffset = Global.DRIVE_OFFSET
+	self.targetPos = targetPos
 	EnterRoad(self, TerrainHandler.GetRoadAtPos(new_gridPos), entry, dest)
 	self.pos, self.rotation = GetPositionOnRoad(self, self.currentPath, self.roadWorldPos, self.roadWorldRot, self.travel)
 	

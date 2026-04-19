@@ -1,6 +1,10 @@
 
 local RoadDefs = util.LoadDefDirectory("defs/road")
 
+local function CalculateWorldPos(self)
+	return {(self.pos[1] + 0.5) * LevelHandler.TileSize(), (self.pos[2] + 0.5) * LevelHandler.TileSize()}
+end
+
 local function NewRoad(self, terrain)
 	self.def = RoadDefs[self.roadType]
 	
@@ -14,15 +18,20 @@ local function NewRoad(self, terrain)
 	self.stopSignal = self.def.hasSignal and 1 or false
 	self.signalTime = self.stopSignal and self.def.signalTimeMax[self.stopSignal]
 	
-	self.worldPos = {(self.pos[1] + 0.5) * LevelHandler.TileSize(), (self.pos[2] + 0.5) * LevelHandler.TileSize()}
+	self.worldPos = CalculateWorldPos(self)
 	self.worldRot = self.rotation*math.pi/2
+	self.worldEntryFilter = {}
+	for i = 1, #self.def.paths do
+		local path = self.def.paths[i]
+		self.worldEntryFilter[(path.entry + self.rotation)%4] = true
+	end
 	
 	function self.GetTurnOptions(choiceRatio, entry)
-		local trackSpaceEntry = (entry - self.rotation)%4
+		local roadSpaceEntry = (entry - self.rotation)%4
 		local choices = {}
 		for i = 1, #self.def.paths do
 			local path = self.def.paths[i]
-			if (trackSpaceEntry == path.entry) then
+			if (roadSpaceEntry == path.entry) then
 				local worldSpaceDest = (path.destination + self.rotation)%4
 				choices[#choices + 1] = {
 					probability = choiceRatio[path.turn],
@@ -35,11 +44,12 @@ local function NewRoad(self, terrain)
 	end
 	
 	function self.GetPathAndNextRoad(wantTurn, entry, dest)
-		local trackSpaceEntry = (entry - self.rotation)%4
+		local roadSpaceEntry = (entry - self.rotation)%4
+		local roadSpaceDest = dest and (dest - self.rotation)%4
 		local choices = {}
 		for i = 1, #self.def.paths do
 			local path = self.def.paths[i]
-			if (trackSpaceEntry == path.entry) and ((not wantTurn) or wantTurn == path.turn) then
+			if (roadSpaceEntry == path.entry) and ((not wantTurn) or wantTurn == path.turn) and ((not roadSpaceDest) or roadSpaceDest == path.destination) then
 				local worldSpaceDest = (path.destination + self.rotation)%4
 				return path, worldSpaceDest
 			end
@@ -85,73 +95,15 @@ local function NewRoad(self, terrain)
 		return self.worldPos
 	end
 	
-	function self.IsInUse(entry, ignoreOff)
-		if Global.BOSON_MODE then
-			return false
-		end
-		if self.toDestroy then
-			return true
-		end
-		if self.def.entryUseIndexMap then
-			if entry then
-				entry = (entry - self.rotation)%4
-				if self.inUse[self.def.entryUseIndexMap[entry]] then
-					return true
-				end
-				if self.permanentlyBlocked and self.permanentlyBlocked[self.def.entryUseIndexMap[entry]] then
-					return true
-				end
-			else
-				if self.inUse[1] or self.inUse[2] then
-					return true
-				end
-				if self.permanentlyBlocked and self.permanentlyBlocked[1] and self.permanentlyBlocked[2] then
-					return true
-				end
-			end
-		elseif self.inUse or self.permanentlyBlocked then
-			return true
-		end
-		if self.def.offState and not ignoreOff then
-			return (self.state == self.def.offState)
-		end
-		return false
-	end
-	
-	function self.SetPermanentBlock(entry)
-		TerrainHandler.SetUneditable(self.pos[1], self.pos[2])
-		if self.def.entryUseIndexMap then
-			entry = (entry - self.rotation)%4
-			self.permanentlyBlocked = self.permanentlyBlocked or {}
-			self.permanentlyBlocked[self.def.entryUseIndexMap[entry]] = true
-		else
-			self.permanentlyBlocked = true
-		end
-	end
-	
-	function self.IsPermanentlyBlocked(entry)
-		if self.def.entryUseIndexMap then
-			entry = (entry - self.rotation)%4
-			if self.permanentlyBlocked then
-				return self.permanentlyBlocked[self.def.entryUseIndexMap[entry]]
-			end
-		else
-			return self.permanentlyBlocked
-		end
-		return false
+	function self.UpdateWorldPos()
+		self.worldPos = CalculateWorldPos()
 	end
 	
 	function self.Export(objList)
 		local exportData = {pos = self.pos, rot = self.rotation, roadType = self.roadType}
-		if self.def.editorWantGoods then
-			exportData.setData = {progression = self.progression}
-		end
 		objList[#objList + 1] = exportData
 	end
 	
-	function self.UpdateWorldPos()
-		self.worldPos = {(self.pos[1] + 0.5) * LevelHandler.TileSize(), (self.pos[2] + 0.5) * LevelHandler.TileSize()}
-	end
 	
 	function self.MousePressed()
 		if self.signalTime then
@@ -162,6 +114,9 @@ local function NewRoad(self, terrain)
 	end
 	
 	function self.Update(dt)
+		if self.toDestroy then
+			return true
+		end
 		if self.def.updateFunc then
 			self.def.updateFunc(self, dt)
 		end
@@ -179,7 +134,6 @@ local function NewRoad(self, terrain)
 				end
 			end
 		end
-		return self.toDestroy
 	end
 	
 	function self.Draw(drawQueue)

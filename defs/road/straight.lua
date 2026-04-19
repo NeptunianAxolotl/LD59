@@ -13,6 +13,10 @@ return {
 			destination = 2,
 			length = 1,
 			turn = "straight",
+			occupyVector = {
+				{0.6, -Global.DRIVE_OFFSET},
+				{0, -Global.DRIVE_OFFSET},
+			},
 		},
 		{ -- left to right
 			posFunc = function (t, enterOffset, destOffset)
@@ -25,6 +29,10 @@ return {
 			destination = 0,
 			length = 1,
 			turn = "straight",
+			occupyVector = {
+				{-0.6, Global.DRIVE_OFFSET},
+				{0, Global.DRIVE_OFFSET},
+			},
 		},
 	},
 }

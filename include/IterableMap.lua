@@ -157,6 +157,25 @@ function IterableMap.GetFirstSatisfies(self, funcName, ...)
 	end
 end
 
+-- Does the function until a result is found.
+function IterableMap.GetRandomSatisfies(self, funcName, ...)
+	local initialSize = self.indexMax -- Destroying can cause indexMax to reduce
+	local permutation = util.GetRandomPermutation(initialSize)
+	local i = 1
+	while i <= initialSize do
+		local key = self.keyByIndex[permutation[i]]
+		local found, toRemove = self.dataByKey[key][funcName](...)
+		if found then
+			return self.dataByKey[key]
+		elseif toRemove then
+			-- Return true with second argument to remove element
+			IterableMap.Remove(self, key)
+		else
+			i = i + 1
+		end
+	end
+end
+
 function IterableMap.SumWithFunction(self, funcName, ...)
 	local count = 0
 	local i = 1

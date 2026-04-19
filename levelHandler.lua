@@ -2,6 +2,9 @@
 local self = {}
 local api = {}
 
+local RoadDefs = util.LoadDefDirectory("defs/road")
+local BuildingDefs = util.LoadDefDirectory("defs/building")
+
 function api.Width()
 	return self.width
 end
@@ -42,6 +45,10 @@ local function SetupLevel()
 		local road = self.map.road[i]
 		TerrainHandler.AddRoad(road.pos, road.roadType, road.rot)
 	end
+	for i = 1, #self.map.building do
+		local building = self.map.building[i]
+		BuildingHandler.AddBuilding(building.pos, building.buildingType)
+	end
 end
 
 function api.LoadLevel(name)
@@ -74,6 +81,7 @@ function api.SaveLevel(name)
 		humanName = self.humanName,
 		dimensions = TerrainHandler.GetDimensions(),
 		road = TerrainHandler.ExportObjects(),
+		building = BuildingHandler.ExportObjects(),
 		doodads = DoodadHandler.ExportObjects(),
 	}
 	
@@ -108,8 +116,11 @@ function api.MousePressed(mx, my, button)
 	end
 	if self.editor.tile == "delete" then
 		TerrainHandler.RemoveRoad(clickPos)
-	else
+		BuildingHandler.RemoveBuilding(clickPos)
+	elseif RoadDefs[self.editor.tile] then
 		TerrainHandler.AddRoad(clickPos, self.editor.tile, self.editor.rotation)
+	elseif BuildingDefs[self.editor.tile] then
+		BuildingHandler.AddBuilding(clickPos, self.editor.tile)
 	end
 end
 
@@ -168,6 +179,8 @@ function api.KeyPressed(key, scancode, isRepeat)
 		self.editor.tile = "straight"
 	elseif key == "d" then
 		self.editor.tile = "straight_large"
+	elseif key == "h" then
+		self.editor.tile = "highway"
 	elseif key == "w" then
 		self.editor.tile = "corner"
 	elseif key == "a" then
@@ -236,6 +249,7 @@ R - Rotate
 E - Rotate backwards
 Q - Straight Road
 D - Straight Road Large
+H - Highway spawn
 W - Curve
 A - T-Int
 S - Cross

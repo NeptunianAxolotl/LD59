@@ -1,9 +1,9 @@
 return {
 	dimensions = {
-		bottom = 4,
-		left = -9,
-		right = 8,
-		top = -6,
+		bottom = 7,
+		left = -14,
+		right = 14,
+		top = -8,
 	},
 	doodads = {
 	},
