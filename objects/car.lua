@@ -63,6 +63,10 @@ local function EnterRoad(self, road, entry)
 end
 
 local function GetPositionOnRoad(self, path, worldPos, worldRot, travel)
+	if not path then
+		self.toDestroy = true
+		return
+	end
 	local worldPos = util.Add(worldPos, util.Mult(LevelHandler.TileSize(), util.RotateVector(path.posFunc(travel, self.prevDriveOffset, self.driveOffset), worldRot)))
 	return worldPos, worldRot + path.dirFunc(travel)
 end

@@ -37,6 +37,7 @@ local globals = {
 	BIG_ROAD_SPEED = 1.3,
 	HIGHWAY_EXTRA = 2,
 	
+	LIGHTS_CHANGE_THEMSELVES = false,
 	TRAFFIC_RED = {1, 0.25, 0.25},
 	TRAFFIC_ORANGE = {1, 0.8, 0.2},
 	TRAFFIC_GREEN = {0.1, 1, 0.1},

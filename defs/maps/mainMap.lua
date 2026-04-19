@@ -1,10 +1,10 @@
 return {
 	building = {
 		{
-			buildingType = "house",
+			buildingType = "doctor",
 			pos = {
-				-1,
-				-4,
+				2,
+				1,
 			},
 		},
 		{
@@ -15,10 +15,24 @@ return {
 			},
 		},
 		{
-			buildingType = "doctor",
+			buildingType = "house",
+			pos = {
+				1,
+				-2,
+			},
+		},
+		{
+			buildingType = "house",
+			pos = {
+				3,
+				-4,
+			},
+		},
+		{
+			buildingType = "house",
 			pos = {
 				2,
-				1,
+				-4,
 			},
 		},
 	},
@@ -34,10 +48,18 @@ return {
 	road = {
 		{
 			pos = {
-				-2,
-				0,
+				4,
+				-1,
 			},
-			roadType = "t_road",
+			roadType = "straight",
+			rot = 1,
+		},
+		{
+			pos = {
+				1,
+				-3,
+			},
+			roadType = "straight",
 			rot = 2,
 		},
 		{
@@ -50,50 +72,10 @@ return {
 		},
 		{
 			pos = {
-				-2,
 				-1,
-			},
-			roadType = "straight",
-			rot = 3,
-		},
-		{
-			pos = {
-				-2,
-				-2,
-			},
-			roadType = "straight",
-			rot = 3,
-		},
-		{
-			pos = {
-				-2,
 				-3,
 			},
 			roadType = "corner",
-			rot = 0,
-		},
-		{
-			pos = {
-				4,
-				-1,
-			},
-			roadType = "straight",
-			rot = 3,
-		},
-		{
-			pos = {
-				4,
-				-2,
-			},
-			roadType = "straight",
-			rot = 3,
-		},
-		{
-			pos = {
-				3,
-				-3,
-			},
-			roadType = "straight",
 			rot = 0,
 		},
 		{
@@ -106,11 +88,11 @@ return {
 		},
 		{
 			pos = {
-				-1,
+				3,
 				-3,
 			},
 			roadType = "straight",
-			rot = 0,
+			rot = 2,
 		},
 		{
 			pos = {
@@ -118,15 +100,23 @@ return {
 				-3,
 			},
 			roadType = "straight",
-			rot = 0,
+			rot = 2,
 		},
 		{
 			pos = {
-				1,
-				-3,
+				4,
+				-2,
 			},
 			roadType = "straight",
-			rot = 0,
+			rot = 1,
+		},
+		{
+			pos = {
+				-1,
+				0,
+			},
+			roadType = "t_road",
+			rot = 2,
 		},
 		{
 			pos = {
@@ -135,6 +125,22 @@ return {
 			},
 			roadType = "straight",
 			rot = 0,
+		},
+		{
+			pos = {
+				-1,
+				-2,
+			},
+			roadType = "straight",
+			rot = 1,
+		},
+		{
+			pos = {
+				-1,
+				-1,
+			},
+			roadType = "straight",
+			rot = 1,
 		},
 	},
 }

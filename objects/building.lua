@@ -35,12 +35,12 @@ local function SpawnRegularCar(self)
 		return false
 	end
 	local targetBuilding = BuildingHandler.GetRandomMatchingBuilding(targetType.target, self.buildingID, self.def.spawnMatchFunc)
-	if not targetBuilding then
+	if not (targetBuilding and targetBuilding.roadSpawn) then
 		return false
 	end
 	local targetRoadPos = targetBuilding.roadSpawn.GetPos()
 	local direction = carUtil.GetBestMatchingDirectionTowards(roadPos, targetRoadPos, self.roadSpawn.worldEntryFilter)
-	if roadUtil.IsOccupied(self.roadSpawn, roadUtil.GetClearZone(direction)) then
+	if roadUtil.IsOccupied(self.roadSpawn, roadUtil.GetClearZone((direction - self.roadSpawn.rotation)%4)) then
 		return false
 	end
 	CarHandler.AddCar(self.def.spawnCar.carType, roadPos, targetRoadPos, targetBuilding.GetPos(), (direction - 2)%4, direction, self.def.spawnCar.spawnFullSpeed)
@@ -56,6 +56,10 @@ local function NewBuilding(self)
 	
 	function self.GetPos()
 		return self.pos
+	end
+	
+	function self.FindRoad()
+		self.roadSpawn = FindRoadSpawn(self)
 	end
 	
 	function self.GetWorldRotation()
@@ -101,7 +105,6 @@ local function NewBuilding(self)
 		end
 		if self.sickness then
 			self.sickness = self.sickness + dt
-			
 		end
 		self.spawnTimer = (self.spawnTimer or GetSpawnTime(self)) - dt
 		if self.spawnTimer <= 0 then

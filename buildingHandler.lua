@@ -31,6 +31,10 @@ function api.VisitBuilding(pos, car)
 	end
 end
 
+function api.UpdateRoadChanges()
+	IterableMap.ApplySelf(self.buildingList, "FindRoad")
+end
+
 function api.AddBuilding(pos, buildingType)
 	local x, y = pos[1], pos[2]
 	self.buildingPos[x] = self.buildingPos[x] or {}

@@ -123,8 +123,10 @@ function api.MousePressed(mx, my, button)
 	if self.editor.tile == "delete" then
 		TerrainHandler.RemoveRoad(clickPos)
 		BuildingHandler.RemoveBuilding(clickPos)
+		BuildingHandler.UpdateRoadChanges()
 	elseif RoadDefs[self.editor.tile] then
 		TerrainHandler.AddRoad(clickPos, self.editor.tile, self.editor.rotation)
+		BuildingHandler.UpdateRoadChanges()
 	elseif BuildingDefs[self.editor.tile] then
 		BuildingHandler.AddBuilding(clickPos, self.editor.tile)
 	end
@@ -197,8 +199,6 @@ function api.KeyPressed(key, scancode, isRepeat)
 		self.editor.tile = "cross_road"
 	elseif key == "z" then
 		self.editor.tile = "delete"
-	elseif key == "x" then
-		self.editor.tile = "source"
 	end
 end
 
@@ -209,6 +209,8 @@ function api.DrawInterface()
 	local overWidth = windowX*0.36
 	local overY = windowY*0.3
 	local overHeight = windowY*0.4
+	love.graphics.setColor(0, 0, 0, 1)
+	Font.SetSize(2)
 	
 	local drawWindow = self.loadingLevelGetName or self.saveLevelGetName or self.townWantConf
 	if drawWindow then
@@ -263,7 +265,6 @@ W - Curve
 A - T-Int
 S - Cross
 Z - Delete
-X - Car source
 ]], 20, offset, 500, "left")
 		offset = offset + 40
 	end

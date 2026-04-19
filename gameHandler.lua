@@ -43,7 +43,7 @@ function api.Update(dt)
 		if building then
 			building.sickness = 0
 		end
-		self.sicknessTimer = 10
+		self.sicknessTimer = 12
 	end
 end
 

@@ -126,7 +126,9 @@ local function NewRoad(self, terrain)
 			self.def.updateFunc(self, dt)
 		end
 		if self.signalTime then
-			self.signalTime = self.signalTime - dt
+			if Global.LIGHTS_CHANGE_THEMSELVES then
+				self.signalTime = self.signalTime - dt
+			end
 			if self.signalTime <= 0 then
 				self.stopSignal = 1 - self.stopSignal
 				self.signalTime = self.def.signalTimeMax[self.stopSignal]
