@@ -14,6 +14,20 @@ return {
 				0,
 			},
 		},
+		{
+			buildingType = "house",
+			pos = {
+				-1,
+				-4,
+			},
+		},
+		{
+			buildingType = "house",
+			pos = {
+				0,
+				-4,
+			},
+		},
 	},
 	dimensions = {
 		bottom = 3,
@@ -25,6 +39,14 @@ return {
 	},
 	humanName = "test",
 	road = {
+		{
+			pos = {
+				7,
+				0,
+			},
+			roadType = "straight_large",
+			rot = 0,
+		},
 		{
 			pos = {
 				-9,
@@ -59,15 +81,7 @@ return {
 		},
 		{
 			pos = {
-				-5,
-				0,
-			},
-			roadType = "straight_large",
-			rot = 0,
-		},
-		{
-			pos = {
-				7,
+				-4,
 				0,
 			},
 			roadType = "straight_large",
@@ -83,7 +97,7 @@ return {
 		},
 		{
 			pos = {
-				-3,
+				3,
 				0,
 			},
 			roadType = "straight_large",
@@ -131,7 +145,15 @@ return {
 		},
 		{
 			pos = {
-				3,
+				-2,
+				0,
+			},
+			roadType = "t_road",
+			rot = 2,
+		},
+		{
+			pos = {
+				5,
 				0,
 			},
 			roadType = "straight_large",
@@ -139,11 +161,19 @@ return {
 		},
 		{
 			pos = {
-				-2,
+				-3,
 				0,
 			},
-			roadType = "t_road",
-			rot = 2,
+			roadType = "straight_large",
+			rot = 0,
+		},
+		{
+			pos = {
+				-5,
+				0,
+			},
+			roadType = "straight_large",
+			rot = 0,
 		},
 		{
 			pos = {

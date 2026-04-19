@@ -38,6 +38,11 @@ local function EnterRoad(self, road, entry)
 	
 	self.prevDriveOffset = self.driveOffset
 	self.driveOffset = Global.DRIVE_OFFSET
+	if util.Eq(self.currentRoadPos, self.targetPos) then
+		self.arriveAtTarget = true
+		self.driveOffset = Global.SPAWN_OFFSET
+	end
+	
 	self.nextRoad = TerrainHandler.GetRoadAtPos(self.currentRoadPos, self.destination)
 	if self.nextRoad then
 		self.nextRoadEntry = (self.nextRoad.rotation + self.destination)%4
@@ -172,16 +177,19 @@ local function CheckStopSignal(self)
 	return currentBlocked or CheckNextRoadStop(self), sneakingThrough
 end
 
-local function NewCar(self, new_gridPos, targetPos, carID, entry, dest)
+local function NewCar(self, new_gridPos, targetPos, carID, entry, dest, fullSpeed)
 	self.def = CarDefs[self.carType]
 	
-	self.travel = 0
-	self.speed = 1.2
+	self.spawnTimer = (not fullSpeed) and Global.SPAWN_FADE_TIME
+	self.travel = fullSpeed and 0 or Global.SPAWN_TRAVEL
+	self.speed = fullSpeed and self.def.maxSpeed or 0
 	self.toDestroy = false
 	self.driveOffset = Global.DRIVE_OFFSET
-	self.prevDriveOffset = Global.DRIVE_OFFSET
 	self.targetPos = targetPos
 	EnterRoad(self, TerrainHandler.GetRoadAtPos(new_gridPos), entry, dest)
+	if not fullSpeed then
+		self.prevDriveOffset = Global.SPAWN_OFFSET -- Override when spawning
+	end
 	self.pos, self.rotation = GetPositionOnRoad(self, self.currentPath, self.roadWorldPos, self.roadWorldRot, self.travel)
 	
 	self.body = love.physics.newBody(PhysicsHandler.GetPhysicsWorld(), self.pos[1], self.pos[2], "dynamic")
@@ -208,15 +216,20 @@ local function NewCar(self, new_gridPos, targetPos, carID, entry, dest)
 	
 	local function UpdateMovement(dt)
 		local oldTravel = self.travel
+		local spawn = 1 - (self.spawnTimer or 0) / Global.SPAWN_FADE_TIME
 		local allBlocked, someBlocked = false, false
 		local stopOffset = 0
 		local deccelMult = (self.maxSpeedMult or 1)
-		local maxSpeed = (self.maxSpeedMult or 1) * self.def.maxSpeed
-		local mult = 1
+		local maxSpeed = (self.maxSpeedMult or 1) * self.def.maxSpeed * spawn
+		local mult = spawn
 		
 		self.stopSignal, self.sneakingThrough = CheckStopSignal(self)
 		self.collision = CheckImpendingCollision(self)
 		self.wantStop = self.collision or self.stopSignal
+		if self.arriveTimer or (self.arriveAtTarget and self.travel > Global.ARRIVE_TRAVEL) then
+			self.wantStop = true
+			self.arriveTimer = self.arriveTimer or Global.ARRIVE_FADE_TIME
+		end
 		local rapidDecel = self.collision and self.suddenStop
 		if rapidDecel then
 			deccelMult = deccelMult * self.suddenStop
@@ -264,7 +277,17 @@ local function NewCar(self, new_gridPos, targetPos, carID, entry, dest)
 		if self.toDestroy then
 			if self.body then
 				self.body:destroy()
-				self.body = false
+				self.body = nil
+			end
+			return true
+		end
+		self.spawnTimer = util.UpdateTimer(self.spawnTimer, dt)
+		self.arriveTimer, self.arrived = util.UpdateTimer(self.arriveTimer, dt)
+		if self.arrived then
+			self.toDestroy = true
+			if self.body then
+				self.body:destroy()
+				self.body = nil
 			end
 			return true
 		end
@@ -274,7 +297,11 @@ local function NewCar(self, new_gridPos, targetPos, carID, entry, dest)
 	function self.Draw(drawQueue)
 		drawQueue:push({y=0; f=function()
 			if not self.toDestroy then
-				Resources.DrawImage(self.def.image, self.pos[1], self.pos[2], self.rotation, false, LevelHandler.TileScale())
+				local alpha = 1 - (self.spawnTimer or 0) / Global.SPAWN_FADE_TIME
+				if self.arriveTimer then
+					alpha = (self.arriveTimer or 0) / Global.ARRIVE_FADE_TIME
+				end
+				Resources.DrawImage(self.def.image, self.pos[1], self.pos[2], self.rotation, alpha, LevelHandler.TileScale())
 				if Global.DRAW_DEBUG then
 					if self.ray and not self.stopSignal then
 						if self.sneakingThrough then
@@ -296,8 +323,8 @@ local function NewCar(self, new_gridPos, targetPos, carID, entry, dest)
 				if Global.DRAW_DEBUG then
 					if self.targetPos then
 						local draw = LevelHandler.GridToWorld(self.targetPos)
-						love.graphics.setLineWidth(2)
-						love.graphics.setColor(0, 0.8, 0, 0.8)
+						love.graphics.setLineWidth(1)
+						love.graphics.setColor(0.8, 0.8, 0.8, 0.5)
 						love.graphics.line(self.pos[1], self.pos[2], draw[1], draw[2])
 					end
 				end

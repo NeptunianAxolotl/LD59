@@ -7,8 +7,10 @@ return {
 	},
 	spawnCar = {
 		baseRate = 1.25,
+		randomProp = 0.2,
 		carType = "basic_car",
-		targets = {
+		spawnFullSpeed = true,
+		targets = util.NormaliseWeightedList({
 			{
 				target = "highway",
 				probability = 2,
@@ -17,7 +19,7 @@ return {
 				target = "house",
 				probability = 1,
 			},
-		}
+		})
 	},
 	updateFunc = function (self, dt)
 	end,

@@ -21,21 +21,29 @@ local function FindRoadSpawn(self, pos)
 	end
 end
 
+local function GetSpawnTime(self)
+	return self.def.spawnCar.baseRate * (1 - self.def.spawnCar.randomProp * math.random())
+end
+
 local function SpawnRegularCar(self)
 	if not self.roadSpawn then
 		return
 	end
-	--if not roadUtil.IsOccupied(self, occupyVector) then
+	--if not roadUtil.IsOccupied(self.roadSpawn, occupyVector) then
 	--	CarHandler.AddCar(self.def.spawnCar.carType, self.pos, (self.def.spawnCar.entry + self.rotation)%4)
 	--end
 	local roadPos = self.roadSpawn.GetPos()
-	local targetBuilding = BuildingHandler.GetRandomMatchingBuilding("highway", self.buildingID)
+	local targetType = util.SampleListWeighted(self.def.spawnCar.targets)
+	if not targetType then
+		return
+	end
+	local targetBuilding = BuildingHandler.GetRandomMatchingBuilding(targetType.target, self.buildingID)
 	if not targetBuilding then
 		return
 	end
 	local targetRoadPos = targetBuilding.roadSpawn.GetPos()
 	local direction = carUtil.GetBestMatchingDirectionTowards(roadPos, targetRoadPos, self.roadSpawn.worldEntryFilter)
-	CarHandler.AddCar(self.def.spawnCar.carType, roadPos, targetRoadPos, (direction - 2)%4, direction)
+	CarHandler.AddCar(self.def.spawnCar.carType, roadPos, targetRoadPos, (direction - 2)%4, direction, self.def.spawnCar.spawnFullSpeed)
 end
 
 local function NewBuilding(self)
@@ -81,10 +89,10 @@ local function NewBuilding(self)
 		if self.def.updateFunc then
 			self.def.updateFunc(self, dt)
 		end
-		self.spawnTimer = (self.spawnTimer or self.def.spawnCar.baseRate) - dt
+		self.spawnTimer = (self.spawnTimer or GetSpawnTime(self)) - dt
 		if self.spawnTimer <= 0 then
 			SpawnRegularCar(self)
-			self.spawnTimer = self.def.spawnCar.baseRate * (1 + 0.2 * math.random())
+			self.spawnTimer = GetSpawnTime(self)
 		end
 	end
 	

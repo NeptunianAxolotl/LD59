@@ -7,17 +7,20 @@ return {
 		corner = true,
 	},
 	spawnCar = {
-		period = 1.25,
+		baseRate = 12,
+		randomProp = 0.6,
 		carType = "basic_car",
-		entry = 2,
+		targets = util.NormaliseWeightedList({
+			{
+				target = "highway",
+				probability = 2,
+			},
+			{
+				target = "house",
+				probability = 1,
+			},
+		})
 	},
 	updateFunc = function (self, dt)
-		self.spawnTimer = (self.spawnTimer or self.def.spawnCar.period) - dt
-		if self.spawnTimer <= 0 then
-			if not roadUtil.IsOccupied(self, occupyVector) then
-				CarHandler.AddCar(self.def.spawnCar.carType, self.pos, (self.def.spawnCar.entry + self.rotation)%4)
-			end
-			self.spawnTimer = self.def.spawnCar.period + math.random()
-		end
 	end,
 }
