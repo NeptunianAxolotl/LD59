@@ -62,12 +62,12 @@ local function CheckImpendingCollision(self)
 	local rayLength = self.def.rayLength
 	local travelRemaining = 1 - self.travel / self.currentPath.length
 	self.suddenStop = false
-	if self.currentPath.trafficFromRight and travelRemaining > 0.9 then
-		self.ray[1] = util.Add(self.ray[1], util.Mult(33, util.RotateVector(unit, 1.4)))
-		unit = util.RotateVector(unit, -0.9)
-		rayLength = self.def.rayTurnLength * 1.5
-		self.suddenStop = 4
-	elseif self.currentPath.turn == "left" then
+	--if self.currentPath.trafficFromRight and travelRemaining > 0.9 and false then
+		--self.ray[1] = util.Add(self.ray[1], util.Mult(24, util.RotateVector(unit, 1.3)))
+		--unit = util.RotateVector(unit, -1.3)
+		--rayLength = self.def.rayTurnLength
+		--self.suddenStop = 4
+	if self.currentPath.turn == "left" then
 		unit = util.RotateVector(unit, -1.2 * travelRemaining)
 		rayLength = self.def.rayTurnLength
 	elseif self.currentPath.turn == "right" then
@@ -77,7 +77,7 @@ local function CheckImpendingCollision(self)
 				rayLength = self.def.crossTrafficRay
 				unit = util.RotateVector(unit, math.min(travelRemaining, 0.9)*2.45 - 2.1)
 			else
-				self.ray[1] = util.Add(self.ray[1], util.Mult(8, util.RotateVector(unit, -0.8)))
+				self.ray[1] = util.Add(self.ray[1], util.Mult(6, util.RotateVector(unit, -0.6)))
 				rayLength = rayLength
 			end
 		else
