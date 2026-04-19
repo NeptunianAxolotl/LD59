@@ -78,7 +78,7 @@ local function CheckImpendingCollision(self)
 				unit = util.RotateVector(unit, math.min(travelRemaining, 0.9)*2.45 - 2.1)
 			else
 				self.ray[1] = util.Add(self.ray[1], util.Mult(8, util.RotateVector(unit, -0.8)))
-				rayLength = self.def.rayTurnLength
+				rayLength = rayLength
 			end
 		else
 			rayLength = self.def.rayTurnLength
@@ -117,7 +117,7 @@ local function CheckCurrentRoadStop(self)
 		return false, false
 	end
 	local travelRemaining = 1 - self.travel / self.currentPath.length
-	local signalBlocked = ((self.currentRoad.stopSignal%2 == self.currentPath.entry%2) or self.nextRoad.OrangeSignal())
+	local signalBlocked = ((self.currentRoad.stopSignal%2 == self.currentPath.entry%2) or self.currentRoad.OrangeSignal())
 	if travelRemaining > 0.94 and signalBlocked then
 		return true, false
 	end
@@ -133,7 +133,7 @@ local function CheckNextRoadStop(self)
 		travelRemaining = travelRemaining * 0.5
 	end
 	local myLightsBlocked = ((self.nextRoad.stopSignal%2 == self.nextRoadEntry%2) or self.nextRoad.OrangeSignal())
-	if travelRemaining < 0.12 and myLightsBlocked then
+	if travelRemaining < 0.15 and myLightsBlocked then
 		return true
 	end
 	return false
@@ -145,7 +145,7 @@ local function CheckStopSignal(self)
 	return currentBlocked or CheckNextRoadStop(self), sneakingThrough
 end
 
-local function NewCar(self, new_gridPos, entry, dest)
+local function NewCar(self, new_gridPos, carID, entry, dest)
 	self.def = CarDefs[self.carType]
 	
 	self.travel = 0
@@ -158,10 +158,24 @@ local function NewCar(self, new_gridPos, entry, dest)
 	
 	self.body = love.physics.newBody(PhysicsHandler.GetPhysicsWorld(), self.pos[1], self.pos[2], "dynamic")
 	local shape = love.physics.newRectangleShape(self.def.length, self.def.width)
-	local fixture = love.physics.newFixture(self.body, shape, 1)
+	self.fixture = love.physics.newFixture(self.body, shape, 1)
+	local physicsData = {carID = carID}
+	self.fixture:setUserData(physicsData)
 	
-	function self.SetCarrying(newCarry)
-		self.cargo = newCarry
+	function self.IsDestroyed()
+		return self.toDestroy
+	end
+	
+	function self.GetDef()
+		return self.def
+	end
+	
+	function self.GetSpeed()
+		return self.speed
+	end
+	
+	function self.DoHardBrake()
+		self.speed = 0
 	end
 	
 	local function UpdateMovement(dt)

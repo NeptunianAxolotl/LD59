@@ -111,4 +111,22 @@ function roadUtil.OuterLanedCornerDir(t)
 	end
 end
 
+local rayWasHit = false
+local function RayHit()
+	rayWasHit = true
+	return 0
+end
+
+function roadUtil.IsOccupied(self, vector)
+	local world = PhysicsHandler.GetPhysicsWorld()
+	local scale = LevelHandler.TileSize()
+	self.ray = {}
+	self.ray[1] = util.Add(self.worldPos, util.Mult(scale, util.RotateVector(vector[1], self.worldRot)))
+	self.ray[2] = util.Add(self.worldPos, util.Mult(scale, util.RotateVector(vector[2], self.worldRot)))
+	rayWasHit = false
+	world:rayCast(self.ray[1][1], self.ray[1][2], self.ray[2][1], self.ray[2][2], RayHit)
+	world:rayCast(self.ray[2][1], self.ray[2][2], self.ray[1][1], self.ray[1][2], RayHit)
+	return rayWasHit
+end
+
 return roadUtil

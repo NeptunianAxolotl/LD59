@@ -9,11 +9,12 @@ return {
 		right = 0.2,
 	},
 	length = 20,
-	width = 14,
+	width = 12,
 	rayStart = 2,
 	rayLength = 32,
 	rayTurnLength = 36,
 	crossTrafficRay = 98,
 	sideRayLength = 52,
 	stopTimer = 0.4,
+	friendlyCollision = true,
 }

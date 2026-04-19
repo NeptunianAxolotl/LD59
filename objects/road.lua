@@ -157,7 +157,7 @@ local function NewRoad(self, terrain)
 		if self.signalTime then
 			self.stopSignal = 1 - self.stopSignal
 			self.signalTime = self.def.signalTimeMax[self.stopSignal]*2
-			self.orangeSignalTime = self.def.orangeSignalTime
+			self.orangeSignalTime = self.def.orangeTimeMax
 		end
 	end
 	
@@ -170,7 +170,7 @@ local function NewRoad(self, terrain)
 			if self.signalTime <= 0 then
 				self.stopSignal = 1 - self.stopSignal
 				self.signalTime = self.def.signalTimeMax[self.stopSignal]
-				self.orangeSignalTime = self.def.orangeSignalTime
+				self.orangeSignalTime = self.def.orangeTimeMax
 			end
 			if self.orangeSignalTime then
 				self.orangeSignalTime = self.orangeSignalTime - dt
@@ -198,6 +198,14 @@ local function NewRoad(self, terrain)
 				Resources.DrawImage(self.def.baseImage, self.worldPos[1], self.worldPos[2], self.worldRot, false, LevelHandler.TileScale())
 				if self.def.extraDrawFunc then
 					self.def.extraDrawFunc(self, self.worldPos, self.worldRot)
+				end
+				
+				if Global.DRAW_DEBUG then
+					if self.ray then
+						love.graphics.setLineWidth(2)
+						love.graphics.setColor(0.8, 0.8, 0.8, 0.8)
+						love.graphics.line(self.ray[1][1], self.ray[1][2], self.ray[2][1], self.ray[2][2])
+					end
 				end
 			end})
 		end

@@ -20,7 +20,11 @@ end
 --------------------------------------------------
 
 local function beginContact(a, b, coll)
-	--world.beginContact(a, b, coll)
+	local aData = a:getUserData()
+	local bData = b:getUserData()
+	if aData and aData.carID and bData and bData.carID then
+		CarHandler.HandleCollision(aData.carID, bData.carID)
+	end
 end
 
 local function endContact(a, b, coll)

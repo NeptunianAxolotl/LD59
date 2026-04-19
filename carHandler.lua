@@ -8,8 +8,26 @@ function api.AddCar(carType, gridPos, entry, dest)
 	carData = {
 		carType = carType,
 	}
-	local car = NewCar(carData, gridPos, entry, dest)
-	IterableMap.Add(self.carList, car)
+	carID = IterableMap.GetUnusedKey(self.carList)
+	local car = NewCar(carData, gridPos, carID, entry, dest)
+	IterableMap.Add(self.carList, carID, car)
+end
+
+function api.HandleCollision(carID, otherID)
+	local car = IterableMap.Get(self.carList, carID)
+	local other = IterableMap.Get(self.carList, otherID)
+	if not (car and not car.IsDestroyed() and other and not other.IsDestroyed()) then
+		return
+	end
+	local carDef = car.GetDef()
+	local otherDef = other.GetDef()
+	if carDef.friendlyCollision and otherDef.friendlyCollision then
+		if car.GetSpeed() < other.GetSpeed() then
+			car.DoHardBrake()
+		else
+			other.DoHardBrake()
+		end
+	end
 end
 
 function api.NotifyGameLoss()
