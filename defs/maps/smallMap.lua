@@ -1,10 +1,17 @@
 return {
 	building = {
 		{
-			buildingType = "doctor",
+			buildingType = "house",
 			pos = {
 				2,
-				1,
+				-4,
+			},
+		},
+		{
+			buildingType = "house",
+			pos = {
+				3,
+				-4,
 			},
 		},
 		{
@@ -22,17 +29,10 @@ return {
 			},
 		},
 		{
-			buildingType = "house",
+			buildingType = "pub",
 			pos = {
-				3,
-				-4,
-			},
-		},
-		{
-			buildingType = "house",
-			pos = {
-				2,
-				-4,
+				1,
+				-1,
 			},
 		},
 	},
@@ -49,7 +49,7 @@ return {
 		{
 			pos = {
 				4,
-				-1,
+				-2,
 			},
 			roadType = "straight",
 			rot = 1,
@@ -61,6 +61,14 @@ return {
 			},
 			roadType = "straight",
 			rot = 2,
+		},
+		{
+			pos = {
+				4,
+				-1,
+			},
+			roadType = "straight",
+			rot = 1,
 		},
 		{
 			pos = {
@@ -101,14 +109,6 @@ return {
 			},
 			roadType = "straight",
 			rot = 2,
-		},
-		{
-			pos = {
-				4,
-				-2,
-			},
-			roadType = "straight",
-			rot = 1,
 		},
 		{
 			pos = {

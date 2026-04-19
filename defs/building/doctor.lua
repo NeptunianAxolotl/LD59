@@ -2,7 +2,7 @@
 return {
 	baseImage = "doctor",
 	destinationType = "doctor",
-	attachRoachTypes = {
+	exitRoadTypes = {
 		straight = true,
 		straight_large = true,
 	},

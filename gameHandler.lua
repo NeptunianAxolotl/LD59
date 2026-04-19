@@ -27,9 +27,16 @@ function api.MousePressed(x, y)
 	local drawPos = world.ScreenToInterface({windowX, 0})
 end
 
+--------------------------------------------------
+-- Filtering
+--------------------------------------------------
 
 local function CanInfect(building)
 	return building.def.canBeSick and not building.sickness
+end
+
+local function CanBeDrunk(building)
+	return building.def.canBeDrunk and not building.isDrunk
 end
 
 --------------------------------------------------
@@ -45,6 +52,14 @@ function api.Update(dt)
 		end
 		self.sicknessTimer = 5
 	end
+	self.drunkTimer = util.UpdateTimer(self.drunkTimer, dt)
+	if not self.drunkTimer then
+		local building = BuildingHandler.GetRandomMatchingBuilding(false, false, CanBeDrunk)
+		if building then
+			building.isDrunk = true
+		end
+		self.drunkTimer = Global.REDRUNK_TIMER
+	end
 end
 
 function api.DrawInterface()
@@ -54,6 +69,7 @@ end
 function api.Initialize(parentWorld)
 	self = {}
 	self.sicknessTimer = 2
+	self.drunkTimer = 2
 	world = parentWorld
 end
 

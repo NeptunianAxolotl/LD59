@@ -3,7 +3,8 @@ return {
 	baseImage = "house",
 	destinationType = "house",
 	canBeSick = true,
-	attachRoachTypes = {
+	canBeDrunk = true,
+	exitRoadTypes = {
 		straight = true,
 	},
 	spawnCar = {

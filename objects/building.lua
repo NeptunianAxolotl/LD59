@@ -6,22 +6,28 @@ local function CalculateWorldPos(self)
 end
 
 local function FindRoadSpawn(self, pos)
+	if not self.def.exitRoadTypes then
+		return
+	end
 	pos = pos or self.pos
 	for i = 1, 3, 2 do
 		local road = TerrainHandler.GetRoadAtPos(pos, i)
-		if road and self.def.attachRoachTypes[road.def.name] then
+		if road and self.def.exitRoadTypes[road.def.name] then
 			return road, i
 		end
 	end
 	for i = 0, 2, 2 do
 		local road = TerrainHandler.GetRoadAtPos(pos, i)
-		if road and self.def.attachRoachTypes[road.def.name] then
+		if road and self.def.exitRoadTypes[road.def.name] then
 			return road, i
 		end
 	end
 end
 
 local function GetSpawnTime(self)
+	if not self.def.spawnCar then
+		return
+	end
 	return self.def.spawnCar.baseRate * (1 - self.def.spawnCar.randomProp * math.random())
 end
 
@@ -40,11 +46,11 @@ local function SpawnRegularCar(self)
 	end
 	local targetRoadPos = targetBuilding.roadSpawn.GetPos()
 	local direction = carUtil.GetBestMatchingDirectionTowards(roadPos, targetRoadPos, self.roadSpawn.worldEntryFilter)
-	if roadUtil.IsOccupied(self.roadSpawn, roadUtil.GetClearZone((direction - self.roadSpawn.rotation)%4)) then
+	if (not self.def.spawnWhenBlocked) and roadUtil.IsOccupied(self.roadSpawn, roadUtil.GetClearZone((direction - self.roadSpawn.rotation)%4)) then
 		return false
 	end
 	local wrongSideSpawn = (direction%4 ~= (self.roadDirectionFromSelf - 1)%4)
-	if wrongSideSpawn and roadUtil.IsAnythingOnRoad(self.roadSpawn) then
+	if (not self.def.spawnWhenBlocked) and wrongSideSpawn and roadUtil.IsAnythingOnRoad(self.roadSpawn) then
 		if self.def.spawnOtherIfBlocked then
 			direction = (direction - 2)%4
 			wrongSideSpawn = false
@@ -121,12 +127,14 @@ local function NewBuilding(self)
 			self.sickness = self.sickness + dt
 		end
 		self.medicOnTheWayTimer = util.UpdateTimer(self.medicOnTheWayTimer, dt)
-		self.spawnTimer = (self.spawnTimer or GetSpawnTime(self)) - dt
-		if self.spawnTimer <= 0 then
-			if SpawnRegularCar(self) then
-				self.spawnTimer = GetSpawnTime(self)
-			else
-				self.spawnTimer = math.random()*0.5
+		if self.def.spawnCar then
+			self.spawnTimer = (self.spawnTimer or GetSpawnTime(self)) - dt
+			if self.spawnTimer <= 0 then
+				if SpawnRegularCar(self) then
+					self.spawnTimer = GetSpawnTime(self)
+				else
+					self.spawnTimer = math.random()*0.5
+				end
 			end
 		end
 	end
@@ -153,11 +161,11 @@ local function NewBuilding(self)
 						love.graphics.setColor(0, 0.8, 0, 0.8)
 						love.graphics.line(self.worldPos[1], self.worldPos[2], roadPos[1], roadPos[2])
 					end
-					--if self.medicOnTheWayTimer then
-					--	Font.SetSize(3)
-					--	love.graphics.setColor(0, 0, 0, 1)
-					--	love.graphics.printf(self.medicOnTheWayTimer, self.worldPos[1], self.worldPos[2], 50, "center")
-					--end
+					if self.isDrunk then
+						Font.SetSize(3)
+						love.graphics.setColor(0, 0, 0, 1)
+						love.graphics.printf("DR", self.worldPos[1], self.worldPos[2], 50, "center")
+					end
 				end
 			end})
 		end

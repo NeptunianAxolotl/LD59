@@ -195,6 +195,8 @@ function api.KeyPressed(key, scancode, isRepeat)
 		self.editor.tile = "corner"
 	elseif key == "a" then
 		self.editor.tile = "t_road"
+	elseif key == "n" then
+		self.editor.tile = "pub"
 	elseif key == "s" then
 		self.editor.tile = "cross_road"
 	elseif key == "z" then
@@ -261,6 +263,7 @@ Q - Straight Road
 D - Straight Road Large
 H - House
 B - Doctor
+N - Pub
 W - Curve
 A - T-Int
 S - Cross

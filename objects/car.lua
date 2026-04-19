@@ -80,13 +80,40 @@ local function EnterRoad(self, road, entry)
 	return true
 end
 
+local function UpdateWobble(self, dt)
+	if not self.def.wobble then
+		return
+	end
+	local wobble = self.def.wobble
+	self.wobbleAccel = (self.wobbleAccel or 0)
+	self.wobblePos = (self.wobblePos or 0)
+	self.wobbleAccel = self.wobbleAccel - (self.wobbleAccel*0.7 + math.random() - 0.5)*dt*wobble*4
+	self.wobblePos = self.wobblePos + (self.wobbleAccel*5 - self.wobblePos)*dt
+end
+
+local function ApplyWobble(self)
+	if not (self.def.wobble and self.wobblePos) then
+		return 0, 0
+	end
+	return self.wobblePos, -self.wobbleAccel*2.8
+end
+
+local function WobbleSpeedMult(self)
+	if not (self.def.wobble and self.wobblePos) then
+		return 1
+	end
+	return 1 / (1 + math.abs(self.wobblePos)*10)
+end
+
 local function GetPositionOnRoad(self, path, worldPos, worldRot, travel)
 	if not path then
 		self.toDestroy = true
 		return
 	end
-	local worldPos = util.Add(worldPos, util.Mult(LevelHandler.TileSize(), util.RotateVector(path.posFunc(travel, self.prevDriveOffset, self.driveOffset), worldRot)))
-	return worldPos, worldRot + path.dirFunc(travel)
+	local wobblePos, wobbleRot = ApplyWobble(self)
+	local pathPos = path.posFunc(travel, self.prevDriveOffset + wobblePos, self.driveOffset + wobblePos)
+	local worldPos = util.Add(worldPos, util.Mult(LevelHandler.TileSize(), util.RotateVector(pathPos, worldRot)))
+	return worldPos, worldRot + path.dirFunc(travel) + wobbleRot
 end
 
 local rayWasHit = false
@@ -229,6 +256,32 @@ local function FindReturnAfterVisit(self)
 	return true
 end
 
+local function LookOutForCollision(self)
+	if self.def.ignoreCollision then
+		return false
+	end
+	if self.collision and self.currentPath and self.currentPath.ignoreCollisionUntil and self.travel < self.currentPath.ignoreCollisionUntil then
+		return false
+	end
+	if self.collision and self.currentPath and self.currentPath.ignoreCollisionAfter and self.travel > self.currentPath.ignoreCollisionAfter then
+		return false
+	end
+	return true
+end
+
+local function DoDestroy(self)
+	if self.body then
+		self.body:destroy()
+		self.body = nil
+	end
+	if not self.alreadyDestroyed then
+		if self.def.onDestroy then
+			self.def.onDestroy(self)
+		end
+		self.alreadyDestroyed = true
+	end
+end
+
 local function NewCar(self, new_gridPos, targetPos, targetBuildingPos, wrongSideSpawn, carID, entry, dest, fullSpeed)
 	self.def = CarDefs[self.carType]
 	
@@ -252,6 +305,8 @@ local function NewCar(self, new_gridPos, targetPos, targetBuildingPos, wrongSide
 	self.body = love.physics.newBody(PhysicsHandler.GetPhysicsWorld(), self.pos[1], self.pos[2], "dynamic")
 	local shape = love.physics.newRectangleShape(self.def.length, self.def.width)
 	self.fixture = love.physics.newFixture(self.body, shape, 1)
+	self.body:setLinearDamping(Global.BODY_DAMPENING)
+	self.body:setAngularDamping(Global.BODY_DAMPENING*0.75)
 	local physicsData = {carID = carID}
 	self.fixture:setUserData(physicsData)
 	
@@ -271,23 +326,26 @@ local function NewCar(self, new_gridPos, targetPos, targetBuildingPos, wrongSide
 		self.speed = 0
 	end
 	
+	function self.Crash()
+		self.isCrashed = true
+	end
+	
 	local function UpdateMovement(dt)
+		if self.isCrashed then
+			return
+		end
+		
+		UpdateWobble(self, dt)
 		local oldTravel = self.travel
 		local spawn = 1 - (self.spawnTimer or 0) / Global.SPAWN_FADE_TIME
 		local allBlocked, someBlocked = false, false
 		local stopOffset = 0
 		local deccelMult = (self.maxSpeedMult or 1)
-		local maxSpeed = (self.maxSpeedMult or 1) * self.def.maxSpeed * spawn
+		local maxSpeed = (self.maxSpeedMult or 1) * self.def.maxSpeed * spawn * WobbleSpeedMult(self)
 		local mult = spawn
 		
 		self.stopSignal, self.sneakingThrough = CheckStopSignal(self)
-		self.collision = CheckImpendingCollision(self)
-		if self.collision and self.currentPath and self.currentPath.ignoreCollisionUntil and self.travel < self.currentPath.ignoreCollisionUntil then
-			self.collision = false
-		end
-		if self.collision and self.currentPath and self.currentPath.ignoreCollisionAfter and self.travel > self.currentPath.ignoreCollisionAfter then
-			self.collision = false
-		end
+		self.collision = LookOutForCollision(self) and CheckImpendingCollision(self)
 		self.wantStop = self.collision or self.stopSignal
 		if self.arriveTimer or (self.arriveAtTarget and self.travel > self.arriveTravelReq) then
 			self.wantStop = true
@@ -337,14 +395,27 @@ local function NewCar(self, new_gridPos, targetPos, targetBuildingPos, wrongSide
 		self.pos, self.rotation = GetPositionOnRoad(self, self.currentPath, self.roadWorldPos, self.roadWorldRot, self.travel)
 		self.body:setPosition(self.pos[1], self.pos[2])
 		self.body:setAngle(self.rotation)
+		local vel = util.PolarToCart(self.speed*Global.BODY_SPEED, self.rotation)
+		self.body:setLinearVelocity(vel[1], vel[2])
+	end
+	
+	local function UpdateCrash(dt)
+		if not self.isCrashed then
+			return
+		end
+		local x, y = self.body:getPosition()
+		self.pos = {x, y}
+		self.rotation = self.body:getAngle()
+		self.crashTimer = self.crashTimer or Global.CRASH_FADEOUT
+		self.crashTimer = util.UpdateTimer(self.crashTimer, dt)
+		if not self.crashTimer then
+			self.toDestroy = true
+		end
 	end
 	
 	function self.Update(dt)
 		if self.toDestroy then
-			if self.body then
-				self.body:destroy()
-				self.body = nil
-			end
+			DoDestroy(self)
 			return true
 		end
 		self.spawnTimer = util.UpdateTimer(self.spawnTimer, dt)
@@ -355,14 +426,12 @@ local function NewCar(self, new_gridPos, targetPos, targetBuildingPos, wrongSide
 			local visitMightReturn = self.targetBuildingPos and BuildingHandler.VisitBuilding(targetBuildingPos, self)
 			if (not visitMightReturn) or self.returning or (not self.def.returnAfterVisit) or not FindReturnAfterVisit(self) then
 				self.toDestroy = true
-				if self.body then
-					self.body:destroy()
-					self.body = nil
-				end
+				DoDestroy(self)
 				return true
 			end
 		end
 		UpdateMovement(dt)
+		UpdateCrash(dt)
 	end
 	
 	function self.Draw(drawQueue)
@@ -371,6 +440,9 @@ local function NewCar(self, new_gridPos, targetPos, targetBuildingPos, wrongSide
 				local alpha = 1 - (self.spawnTimer or 0) / Global.SPAWN_FADE_TIME
 				if self.arriveTimer and ((not self.def.returnAfterVisit) or self.returning) then
 					alpha = (self.arriveTimer or 0) / Global.ARRIVE_FADE_TIME
+				end
+				if self.crashTimer and self.crashTimer < 1 then
+					alpha = alpha * self.crashTimer
 				end
 				Resources.DrawImage(self.def.image, self.pos[1], self.pos[2], self.rotation, alpha, LevelHandler.TileScale())
 				if DrawDebug() then

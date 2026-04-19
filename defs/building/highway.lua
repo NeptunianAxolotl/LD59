@@ -3,7 +3,7 @@ return {
 	baseImage = "highway",
 	destinationType = "highway",
 	noExport = true,
-	attachRoachTypes = {
+	exitRoadTypes = {
 		straight_large = true,
 	},
 	spawnCar = {

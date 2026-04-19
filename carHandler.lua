@@ -23,13 +23,16 @@ function api.HandleCollision(carID, otherID)
 	end
 	local carDef = car.GetDef()
 	local otherDef = other.GetDef()
-	if carDef.friendlyCollision and otherDef.friendlyCollision then
+	if carDef.friendlyCollision and otherDef.friendlyCollision and (not car.isCrashed) and (not other.isCrashed) then
 		-- Some other situation -> slower car lets the faster car past.
 		if car.GetSpeed() < other.GetSpeed() then
 			car.DoHardBrake()
 		else
 			other.DoHardBrake()
 		end
+	else
+		car.Crash()
+		other.Crash()
 	end
 end
 
