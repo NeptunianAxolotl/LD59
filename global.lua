@@ -37,6 +37,11 @@ local globals = {
 	BIG_ROAD_SPEED = 1.3,
 	HIGHWAY_EXTRA = 2,
 	
+	TRAFFIC_RED = {1, 0.25, 0.25},
+	TRAFFIC_ORANGE = {1, 0.8, 0.2},
+	TRAFFIC_GREEN = {0.1, 1, 0.1},
+	MANUAL_CLICK_BOOST = 2,
+	
 	INIT_LEVEL = "mainMap",
 	GRID_SIZE = 100,
 	VIEW_PADDING = 50,

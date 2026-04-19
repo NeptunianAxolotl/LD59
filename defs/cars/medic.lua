@@ -13,6 +13,7 @@ local def = {
 	},
 	length = 20,
 	width = 12,
+	cureSickness = true,
 	friendlyCollision = true,
 	ignoreSignal = true,
 	stopTimer = 0.2,

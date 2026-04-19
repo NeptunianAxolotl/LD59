@@ -6,12 +6,12 @@ local NewCar = require("objects/car")
 local self = {}
 local api = {}
 
-function api.AddCar(carType, gridPos, targetPos, entry, dest, fullSpeed)
+function api.AddCar(carType, gridPos, targetPos, targetBuildingPos, entry, dest, fullSpeed)
 	carData = {
 		carType = carType,
 	}
 	carID = IterableMap.GetNewUniqueKey(self.carList)
-	local car = NewCar(carData, gridPos, targetPos, carID, entry, dest, fullSpeed)
+	local car = NewCar(carData, gridPos, targetPos, targetBuildingPos, carID, entry, dest, fullSpeed)
 	IterableMap.Add(self.carList, carID, car)
 end
 

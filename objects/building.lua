@@ -34,7 +34,7 @@ local function SpawnRegularCar(self)
 	if not targetType then
 		return false
 	end
-	local targetBuilding = BuildingHandler.GetRandomMatchingBuilding(targetType.target, self.buildingID)
+	local targetBuilding = BuildingHandler.GetRandomMatchingBuilding(targetType.target, self.buildingID, self.def.spawnMatchFunc)
 	if not targetBuilding then
 		return false
 	end
@@ -43,7 +43,7 @@ local function SpawnRegularCar(self)
 	if roadUtil.IsOccupied(self.roadSpawn, roadUtil.GetClearZone(direction)) then
 		return false
 	end
-	CarHandler.AddCar(self.def.spawnCar.carType, roadPos, targetRoadPos, (direction - 2)%4, direction, self.def.spawnCar.spawnFullSpeed)
+	CarHandler.AddCar(self.def.spawnCar.carType, roadPos, targetRoadPos, targetBuilding.GetPos(), (direction - 2)%4, direction, self.def.spawnCar.spawnFullSpeed)
 	return true
 end
 
@@ -70,8 +70,8 @@ local function NewBuilding(self)
 		self.worldPos = CalculateWorldPos()
 	end
 	
-	function self.MatchAndExcludeID(buildingType, excludeID)
-		return (self.buildingID ~= excludeID) and (self.buildingType == buildingType) and not self.toDestroy
+	function self.MatchAndExcludeID(buildingType, excludeID, matchFunc)
+		return (self.buildingID ~= excludeID) and ((not buildingType) or self.buildingType == buildingType) and not self.toDestroy and ((not matchFunc) or matchFunc(self))
 	end
 	
 	function self.Export(objList)
@@ -86,12 +86,22 @@ local function NewBuilding(self)
 		self.worldPos = {(self.pos[1] + 0.5) * LevelHandler.TileSize(), (self.pos[2] + 0.5) * LevelHandler.TileSize()}
 	end
 	
+	function self.Visited(car)
+		if car.def.cureSickness and self.sickness then
+			self.sickness = false
+		end
+	end
+	
 	function self.Update(dt)
 		if self.toDestroy then
 			return true
 		end
 		if self.def.updateFunc then
 			self.def.updateFunc(self, dt)
+		end
+		if self.sickness then
+			self.sickness = self.sickness + dt
+			
 		end
 		self.spawnTimer = (self.spawnTimer or GetSpawnTime(self)) - dt
 		if self.spawnTimer <= 0 then
@@ -112,6 +122,9 @@ local function NewBuilding(self)
 			end
 			drawQueue:push({y=-90 + self.pos[2]*0.01; f=function()
 				Resources.DrawImage(self.def.baseImage, self.worldPos[1], self.worldPos[2], self.worldRot, false, LevelHandler.TileScale())
+				if self.sickness then
+					Resources.DrawImage("sick", self.worldPos[1], self.worldPos[2], self.worldRot, false, LevelHandler.TileScale())
+				end
 				if self.def.extraDrawFunc then
 					self.def.extraDrawFunc(self, self.worldPos, self.worldRot)
 				end

@@ -180,7 +180,7 @@ local function CheckStopSignal(self)
 	return currentBlocked or CheckNextRoadStop(self), sneakingThrough
 end
 
-local function NewCar(self, new_gridPos, targetPos, carID, entry, dest, fullSpeed)
+local function NewCar(self, new_gridPos, targetPos, targetBuildingPos, carID, entry, dest, fullSpeed)
 	self.def = CarDefs[self.carType]
 	
 	self.spawnTimer = (not fullSpeed) and Global.SPAWN_FADE_TIME
@@ -189,6 +189,7 @@ local function NewCar(self, new_gridPos, targetPos, carID, entry, dest, fullSpee
 	self.toDestroy = false
 	self.driveOffset = Global.DRIVE_OFFSET
 	self.targetPos = targetPos
+	self.targetBuildingPos = targetBuildingPos
 	EnterRoad(self, TerrainHandler.GetRoadAtPos(new_gridPos), entry, dest)
 	if not fullSpeed then
 		self.prevDriveOffset = Global.SPAWN_OFFSET -- Override when spawning
@@ -287,6 +288,9 @@ local function NewCar(self, new_gridPos, targetPos, carID, entry, dest, fullSpee
 		self.spawnTimer = util.UpdateTimer(self.spawnTimer, dt)
 		self.arriveTimer, self.arrived = util.UpdateTimer(self.arriveTimer, dt)
 		if self.arrived then
+			if self.targetBuildingPos then
+				BuildingHandler.VisitBuilding(targetBuildingPos, self)
+			end
 			self.toDestroy = true
 			if self.body then
 				self.body:destroy()

@@ -24,6 +24,13 @@ function api.GetBuildingAtPos(gridPos)
 	return IterableMap.Get(self.buildingList, self.buildingPos[x][y])
 end
 
+function api.VisitBuilding(pos, car)
+	local building = api.GetBuildingAtPos(pos)
+	if building then
+		building.Visited(car)
+	end
+end
+
 function api.AddBuilding(pos, buildingType)
 	local x, y = pos[1], pos[2]
 	self.buildingPos[x] = self.buildingPos[x] or {}
@@ -44,8 +51,8 @@ function api.ReplaceHighwayEnds(ends)
 	api.AddBuilding({ends[2] + 1, 0}, "highway")
 end
 
-function api.GetRandomMatchingBuilding(buildingType, excludeID)
-	return IterableMap.GetRandomSatisfies(self.buildingList, "MatchAndExcludeID", buildingType, excludeID)
+function api.GetRandomMatchingBuilding(buildingType, excludeID, matchFunc)
+	return IterableMap.GetRandomSatisfies(self.buildingList, "MatchAndExcludeID", buildingType, excludeID, matchFunc)
 end
 
 function api.ExportObjects()

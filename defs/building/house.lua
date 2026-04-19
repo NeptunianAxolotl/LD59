@@ -2,9 +2,9 @@
 return {
 	baseImage = "house",
 	destinationType = "house",
+	canBeSick = true,
 	spawnRoads = {
 		straight = true,
-		corner = true,
 	},
 	spawnCar = {
 		baseRate = 12,

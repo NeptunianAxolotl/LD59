@@ -27,11 +27,24 @@ function api.MousePressed(x, y)
 	local drawPos = world.ScreenToInterface({windowX, 0})
 end
 
+
+local function CanInfect(building)
+	return building.def.canBeSick and not building.sickness
+end
+
 --------------------------------------------------
 -- Updating
 --------------------------------------------------
 
 function api.Update(dt)
+	self.sicknessTimer = util.UpdateTimer(self.sicknessTimer, dt)
+	if not self.sicknessTimer then
+		local building = BuildingHandler.GetRandomMatchingBuilding(false, false, CanInfect)
+		if building then
+			building.sickness = 0
+		end
+		self.sicknessTimer = 10
+	end
 end
 
 function api.DrawInterface()
@@ -40,6 +53,7 @@ end
 
 function api.Initialize(parentWorld)
 	self = {}
+	self.sicknessTimer = 2
 	world = parentWorld
 end
 

@@ -6,6 +6,9 @@ return {
 		straight = true,
 		straight_large = true,
 	},
+	spawnMatchFunc = function (other)
+		return other.sickness
+	end,
 	spawnCar = {
 		baseRate = 8,
 		randomProp = 0.3,
