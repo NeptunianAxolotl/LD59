@@ -75,7 +75,7 @@ local function EnterRoad(self, road, entry)
 		self.nextPath = false
 		self.nextRoadEntry = false
 	end
-	if self.currentPath and self.nextPath then
+	if self.currentPath and self.nextPath and not self.def.ignoreRoadSpeed then
 		self.maxSpeedMult = math.min(self.currentPath.speedMult or 1, self.nextPath.speedMult or 1)
 	else
 		self.maxSpeedMult = 1

@@ -48,7 +48,6 @@ end
 local longFrames = 0
 local frames = 0
 local missingDt = 0
-local accumulateDt = 0
 local MAX_DT = 0.004
 local FIXED_DT = 0.004
 function love.update(dt)
@@ -70,13 +69,7 @@ function love.update(dt)
 		dt = dt + toReturn
 		missingDt = missingDt - toReturn
 	end
-	accumulateDt = accumulateDt + dt
-	if accumulateDt > FIXED_DT then
-		Cosmos.Update(FIXED_DT, realDt)
-		accumulateDt = accumulateDt - FIXED_DT
-	else
-		Cosmos.Update(0, realDt)
-	end
+	Cosmos.Update(dt, realDt)
 end
 
 function Global.ResetMissingDt()
