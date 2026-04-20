@@ -366,6 +366,10 @@ local function NewCar(self, new_gridPos, targetPos, targetBuildingPos, wrongSide
 	end
 	
 	function self.Crash()
+		if not self.isCrashed then
+			GameHandler.AddStat("accidents")
+			GameHandler.ResetStat("drunkArrivals_sinceAccident")
+		end
 		self.isCrashed = true
 	end
 	
@@ -382,7 +386,7 @@ local function NewCar(self, new_gridPos, targetPos, targetBuildingPos, wrongSide
 	
 	local function UpdateMovement(dt)
 		if self.isCrashed or (self.crashProgress and self.crashProgress > self.def.crashEndurance * Global.CRASH_THRESHOLD_MULT) then
-			self.isCrashed = true
+			self.Crash()
 			return
 		end
 		
@@ -476,6 +480,10 @@ local function NewCar(self, new_gridPos, targetPos, targetBuildingPos, wrongSide
 			self.arrived = false
 			self.arriveAtTarget = false
 			local visitMightReturn = self.targetBuildingPos and BuildingHandler.VisitBuilding(targetBuildingPos, self)
+			if self.def.onArrive then
+				local building = self.targetBuildingPos and BuildingHandler.GetBuildingAtPos(self.targetBuildingPos)
+				self.def.onArrive(self, building)
+			end
 			if (not visitMightReturn) or self.returning or (not self.def.returnAfterVisit) or not FindReturnAfterVisit(self) then
 				self.toDestroy = true
 				DoDestroy(self)

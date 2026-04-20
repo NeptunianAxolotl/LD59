@@ -10,12 +10,21 @@ local self = {}
 local api = {}
 
 local statName = {
-	lightClicks = "Toggle Lights"
+	lightClicks = "Toggle Lights",
+	accidents = "Crashes",
+	drunkArrivals_sinceAccident = "Drunks returned home since last crash",
 }
 
 --------------------------------------------------
 -- Updating
 --------------------------------------------------
+
+function api.ResetStat(name)
+	self.stats[name] = 0
+	if self.levelData.flashStat and self.levelData.flashStat[name] then
+		self.flashStat[name] = Global.FLASH_STAT_TIME / 2
+	end
+end
 
 function api.AddStat(name, count)
 	count = count or 1
@@ -155,7 +164,7 @@ function api.DrawInterface()
 	if LevelHandler.InEditMode() then
 		return
 	end
-	local drawX = 20
+	local drawX = 40
 	local width = 660
 	local height = 500
 	local offset = 20
@@ -163,18 +172,24 @@ function api.DrawInterface()
 		drawX = Global.WINDOW_X - width - drawX
 	end
 	local expand = (self.nextLevelTimer or 0)
-	expand = 1 + expand * (Global.LEVEL_DONE_EXPAND_TIMER - expand) * 0.4
+	expand = 1 + expand * (Global.LEVEL_DONE_EXPAND_TIMER - expand) * 0.07
 	InterfaceUtil.DrawPanel(drawX - (expand - 1)*width/2, offset - (expand - 1)*height/2, width * expand, height * expand, 8)
 	
 	love.graphics.setColor(0, 0, 0, 1)
 	Font.SetSize(1)
 	
 	offset = 40
+	if self.nextLevelTimer and self.nextLevelTimer%0.3 < 0.15 then
+		love.graphics.setColor(0.8, 0.8, 0.8, 1)
+	else
+		love.graphics.setColor(0, 0, 0, 1)
+	end
 	love.graphics.printf(self.levelData.heading or "NO HEADING", drawX + 40, offset, width - 50, "left")
 	
 	Font.SetSize(3)
 	
-	offset = offset + 60
+	love.graphics.setColor(0, 0, 0, 1)
+	offset = offset + 75
 	love.graphics.printf(self.levelData.text or "NO DESC", drawX + 40, offset, width - 50, "left")
 	
 	offset = 495

@@ -20,7 +20,7 @@ local levelDefs = {
 			lightClicks = 3,
 		},
 		flashStat = {
-			lightClicks = 3,
+			lightClicks = true,
 		},
 	},
 	{
@@ -29,14 +29,24 @@ local levelDefs = {
 		spawnMult = {
 			highway = 3.2,
 			house = 0.2,
-			pub = 1.3,
+			pub = 1.8,
 		},
 		redrawChance = {
 			house = 0.8,
 		},
 		sickRate = 0,
 		heading = "Drink Driving",
-		text = "You control the signals.\n - Click a light to toggle it.\n - Click the middle of an intersection to lock it.\nToggle lights a few times to continue.",
+		text = "The pub is emptying. Make sure the drunks get home safely.",
+		showStats = {
+			"accidents",
+			"drunkArrivals_sinceAccident",
+		},
+		flashStat = {
+			drunkArrivals_sinceAccident = true,
+		},
+		advanceRequirement = {
+			drunkArrivals_sinceAccident = 3,
+		},
 	},
 	{
 		map = "level_2",

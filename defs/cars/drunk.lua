@@ -25,6 +25,12 @@ local def = {
 			building.drunkArriving = false
 		end
 	end,
+	onArrive = function (self, building)
+		if building and building.def.name == "house" then
+			GameHandler.AddStat("drunkArrivals_sinceAccident")
+			GameHandler.AddStat("drunkArrivals")
+		end
+	end,
 }
 
 return util.MergeTable(def, shared)
