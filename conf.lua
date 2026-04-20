@@ -1,5 +1,5 @@
 function love.conf(t)
-	t.window.title = "Ludam Dare"
+	t.window.title = "Traffic Control Publican"
 	t.window.width = 1280
 	t.window.height = 768
 	t.window.fullscreen = true

@@ -3,7 +3,7 @@ return {
 	interface = false,
 	alphaScale = true,
 	lifeScale = 1.1,
-	color = {0.5, 1, 0},
+	color = {0.8, 0.65, 0.1},
 	walkMag = 2,
 	walkRate = 5,
 	inFront = 100,

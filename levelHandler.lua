@@ -139,6 +139,7 @@ function api.MousePressed(mx, my, button)
 	local clickPos = api.WorldToGrid({mx, my})
 	if self.editor.tile == "delete" then
 		TerrainHandler.RemoveRoad(clickPos)
+		DoodadHandler.RemoveDoodads(clickPos)
 		BuildingHandler.RemoveBuilding(clickPos)
 		BuildingHandler.UpdateRoadChanges()
 	elseif RoadDefs[self.editor.tile] then

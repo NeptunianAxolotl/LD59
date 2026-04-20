@@ -2,7 +2,7 @@ return {
 	image = "fireball_explode",
 	interface = false,
 	alphaScale = true,
-	color = {0.8, 0.6, 0.1},
+	color = {1, 0.55, 0.08},
 	inFront = 150,
 	animMultRange = 0.65,
 	spawnRadius = 6,
