@@ -46,7 +46,7 @@ function setLevels(table)
     
     for i = 1, 9 do
       specificVolume = netVolume * musicTable[i].volMult -- Assume full volume
-      if bgmPoints / Global.BGM_POINTS_PER_LEVEL < i -- Level too low for this layer: zero volume
+      if bgmPoints / Global.BGM_POINTS_PER_LEVEL < i - 1 -- Level too low for this layer: zero volume
       then specificVolume = 0
       elseif bgmPoints / Global.BGM_POINTS_PER_LEVEL - i < 0 -- Level not high enough for full volume; scale according to points
       then specificVolume = specificVolume * (bgmPoints % Global.BGM_POINTS_PER_LEVEL) / Global.BGM_POINTS_PER_LEVEL
@@ -78,6 +78,8 @@ function api.Update(dt)
 		return
 	end
   
+  
+  --print("chaos points",chaosPoints)
   chaosPoints = chaosPoints - dt * Global.BGM_CHAOS_POINTS_DECREMENT_PER_SECOND
   
   if chaosPoints < 0
