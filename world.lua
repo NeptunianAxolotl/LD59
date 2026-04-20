@@ -67,6 +67,10 @@ function api.SetGameOver(hasWon, overType)
 	end
 end
 
+function api.RegisterCollision()
+    GameHandler.RegisterCollision()
+  end
+
 --------------------------------------------------
 -- Input
 --------------------------------------------------

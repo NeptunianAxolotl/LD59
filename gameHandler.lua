@@ -3,7 +3,7 @@ local Font = require("include/font")
 
 local EffectsHandler = require("effectsHandler")
 local Resources = require("resourceHandler")
-BGMHandler = require("bgmHandler")
+local BGMHandler = require("bgmHandler")
 local LevelDefs = require("defs/levelDefs")
 
 
@@ -30,6 +30,10 @@ end
 
 function api.LightWasClicked()
 	BGMHandler.addPoints(1)
+end
+
+function api.RegisterCollision()
+	BGMHandler.RegisterCollision()
 end
 
 function api.KeyPressed(key, scancode, isRepeat)

@@ -9,6 +9,8 @@ local cosmos
 local bgmPoints = Global.BGM_POINTS_PER_LEVEL -- slewed
 local immediateBgmPoints = Global.BGM_POINTS_PER_LEVEL -- raw
 
+local chaosPoints = 0
+
 local funkLength = 63.998
 local irishLength = 5.342
 local turnLength = 10.688
@@ -76,6 +78,12 @@ function api.Update(dt)
 		return
 	end
   
+  chaosPoints = chaosPoints - dt * Global.BGM_CHAOS_POINTS_DECREMENT_PER_SECOND
+  
+  if chaosPoints < 0
+  then chaosPoints = 0
+  end
+  
   immediateBgmPoints = immediateBgmPoints - dt * Global.BGM_POINT_DECREMENT_PER_SECOND
   if (immediateBgmPoints < Global.BGM_POINTS_PER_LEVEL)
   then
@@ -104,12 +112,28 @@ function api.Update(dt)
     if currentPhase == 3
     then funkCount = funkCount + 1
     else funkCount = 0
+  end
+  
+  -- Determine chaos
+  -- if above high threshold: high chaos
+  -- if below low threshold: low chaos
+  -- if playing irish and above low threshold: high chaos
+  -- if playing funk and below high threshold: low chaos
+  -- if in turn between low and high thresholds: low chaos (prefer deescalation)
+    local highChaos = false
+    
+    if chaosPoints >= Global.BGM_CHAOS_POINTS_HIGH_CHAOS_THRESHOLD
+    then highChaos = true
+    elseif chaosPoints <= Global.BGM_CHAOS_POINTS_LOW_CHAOS_THRESHOLD
+    then highChaos = false
+    elseif currentPhase == 1 and chaosPoints >= Global.BGM_CHAOS_POINTS_LOW_CHAOS_THRESHOLD
+    then highChaos = true
+    elseif currentPhase == 3 and chaosPoints <= Global.BGM_CHAOS_POINTS_HIGH_CHAOS_THRESHOLD
+    then highChaos = false
     end
     
     -- high chaos: play irish unless playing funk, in which case play turn
     -- low chaos: play funk, with turn after every two funks, unless playing irish, in which case play turn
-    -- TODO: measure chaos, forced to assume low for now
-    local highChaos = false
     
     local newPhase = 0
     
@@ -163,6 +187,10 @@ end
 function api.addPoints(mult)
     immediateBgmPoints = immediateBgmPoints + mult * Global.BGM_POINTS_PER_INTERACTION
   end
+  
+function api.RegisterCollision()
+	chaosPoints = chaosPoints + Global.BGM_CHAOS_POINTS_PER_CRASH
+end
   
   function api.Stop()
     -- Stop all the currently-playing layers and set the phase-check clock to zero so it is ready to restart
