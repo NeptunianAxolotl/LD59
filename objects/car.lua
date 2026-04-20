@@ -222,10 +222,11 @@ local function CheckCurrentRoadStop(self)
 		travelRemaining = travelRemaining*1.1
 	end
 	local signalBlocked = self.currentRoad.SignalActive(self.currentPath.entry)
+	local sneaking = signalBlocked or self.currentRoad.SignalActive((self.currentPath.entry - 2)%4)
 	if travelRemaining > 0.95 and signalBlocked then
-		return true, signalBlocked
+		return true, sneaking
 	end
-	return false, signalBlocked
+	return false, sneaking
 end
 
 local function CheckNextRoadStop(self)
@@ -366,7 +367,15 @@ local function NewCar(self, new_gridPos, targetPos, targetBuildingPos, wrongSide
 	end
 	
 	function self.Crash()
+		if not self.isCrashed then
+			GameHandler.AddStat("accidents")
+			GameHandler.ResetStat("drunkArrivals_sinceAccident")
+		end
 		self.isCrashed = true
+	end
+	
+	function self.CountIfMatch(toMatch)
+		return (self.carType == toMatch) and 1
 	end
 	
 	function self.AddCrashProgress(progress)
@@ -382,7 +391,7 @@ local function NewCar(self, new_gridPos, targetPos, targetBuildingPos, wrongSide
 	
 	local function UpdateMovement(dt)
 		if self.isCrashed or (self.crashProgress and self.crashProgress > self.def.crashEndurance * Global.CRASH_THRESHOLD_MULT) then
-			self.isCrashed = true
+			self.Crash()
 			return
 		end
 		
@@ -476,6 +485,10 @@ local function NewCar(self, new_gridPos, targetPos, targetBuildingPos, wrongSide
 			self.arrived = false
 			self.arriveAtTarget = false
 			local visitMightReturn = self.targetBuildingPos and BuildingHandler.VisitBuilding(targetBuildingPos, self)
+			if self.def.onArrive then
+				local building = self.targetBuildingPos and BuildingHandler.GetBuildingAtPos(self.targetBuildingPos)
+				self.def.onArrive(self, building)
+			end
 			if (not visitMightReturn) or self.returning or (not self.def.returnAfterVisit) or not FindReturnAfterVisit(self) then
 				self.toDestroy = true
 				DoDestroy(self)

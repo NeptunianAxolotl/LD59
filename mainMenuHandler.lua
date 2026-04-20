@@ -95,11 +95,12 @@ function api.DrawInterface()
 	self.hoveredMenuAction = false
 	local mousePos = self.cosmos.GetWorld().GetMousePositionInterface()
 	
-	local sx, sy = Global.WINDOW_X - 135 - 20, 1000
-	local overX = Global.WINDOW_X - 350 - 20
+	local padding = 40
+	local sx, sy = Global.WINDOW_X - 135 - padding, 1000
+	local overX = Global.WINDOW_X - 350 - padding
 	if self.cosmos.GetLocalisation() then
-		sx = 20
-		overX = 20
+		sx = padding
+		overX = padding
 	end
 	
 	self.hoveredMenuAction = InterfaceUtil.DrawButton(sx, sy, 135, 60, mousePos, "Menu", false, false, false, false, 2, 8) or self.hoveredMenuAction
