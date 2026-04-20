@@ -50,7 +50,6 @@ local frames = 0
 local missingDt = 0
 local MAX_DT = 0.035
 function love.update(dt)
-	print(dt)
 	local realDt = dt
 	frames = frames + 1
 	if dt > 0.05 then

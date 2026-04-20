@@ -118,6 +118,9 @@ local function NewRoad(self, terrain)
 	end
 	
 	function self.SignalActive(entry)
+		if not self.signal then
+			return false
+		end
 		if self.automaticSignal and self.orangeSignalTime then
 			return true
 		end

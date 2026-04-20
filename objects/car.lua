@@ -64,7 +64,7 @@ local function EnterRoad(self, road, entry)
 	
 	self.nextRoad = TerrainHandler.GetRoadAtPos(self.currentRoadPos, self.destination)
 	if self.nextRoad then
-		self.nextRoadEntry = (self.nextRoad.rotation + self.destination)%4
+		self.nextRoadEntry = (self.destination - self.nextRoad.rotation - 2)%4
 		self.wantTurn, self.nextPath = PickTurnOption(self, self.nextRoad, self.targetPos, (newDestination - 2)%4)
 		if self.wantTurn == "right" and self.nextRoad.IsIntersection() then
 			self.driveOffset = Global.DRIVE_OFFSET * (self.currentPath.centreLimit or 0.05)
@@ -229,10 +229,10 @@ local function CheckNextRoadStop(self)
 	end
 	local travelRemaining = 1 - self.travel / self.currentPath.length
 	if self.currentPath.turn == "left" then
-		travelRemaining = travelRemaining * 0.4
+		travelRemaining = travelRemaining * 0.6
 	end
 	local myLightsBlocked = self.nextRoad.SignalActive(self.nextRoadEntry)
-	if travelRemaining < 0.2 * (self.maxSpeedMult or 1) and myLightsBlocked then
+	if travelRemaining < 0.18 * (self.maxSpeedMult or 1) and myLightsBlocked then
 		return true
 	end
 	return false
@@ -477,15 +477,18 @@ local function NewCar(self, new_gridPos, targetPos, targetBuildingPos, wrongSide
 				end
 				Resources.DrawImage(self.def.image, self.pos[1], self.pos[2], self.rotation, alpha, LevelHandler.TileScale())
 				if DrawDebug() then
+					--if self.nextRoad and self.nextRoadEntry and self.nextRoad.SignalActive(self.nextRoadEntry) then
+					--	love.graphics.setLineWidth(3)
+					--	love.graphics.setColor(1, 0, 1, 0.8)
+					--	love.graphics.circle("fill", self.pos[1], self.pos[2], 10)
+					--end
 					if self.ray and not self.signalBlocked then
+						love.graphics.setLineWidth(1)
 						if self.sneakingThrough then
-							love.graphics.setLineWidth(3)
 							love.graphics.setColor(0.8, 0.8, 0, 0.8)
 						elseif self.collision then
-							love.graphics.setLineWidth(4)
 							love.graphics.setColor(0.8, 0, 0, 0.8)
 						else
-							love.graphics.setLineWidth(2)
 							love.graphics.setColor(0, 0.8, 0, 0.8)
 						end
 						love.graphics.line(self.ray[1][1], self.ray[1][2], self.ray[2][1], self.ray[2][2])
