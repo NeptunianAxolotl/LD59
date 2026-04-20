@@ -26,6 +26,12 @@ function api.HandleCollision(carID, otherID)
 	local damage = carDef.crashDamage * otherDef.crashDamage * (1 + car.GetSpeed() + other.GetSpeed())
 	car.AddCrashProgress(self.lastDt * (1 + Global.CRASH_PROGRESS_MULT * damage))
 	other.AddCrashProgress(self.lastDt * (1 + Global.CRASH_PROGRESS_MULT * damage))
+	if carDef.friendlyCollision then
+		car.DoCrashBackup(other)
+	end
+	if otherDef.friendlyCollision then
+		other.DoCrashBackup(car)
+	end
 	
 	if carDef.friendlyCollision and otherDef.friendlyCollision and (not car.isCrashed) and (not other.isCrashed) then
 		-- Some other situation -> slower car lets the faster car past.

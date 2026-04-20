@@ -46,18 +46,26 @@ local function SpawnRegularCar(self)
 	end
 	local targetRoadPos = targetBuilding.roadSpawn.GetPos()
 	local direction = carUtil.GetBestMatchingDirectionTowards(roadPos, targetRoadPos, self.roadSpawn.worldEntryFilter)
-	if (not self.def.spawnWhenBlocked) and roadUtil.IsOccupied(self.roadSpawn, roadUtil.GetClearZone((direction - self.roadSpawn.rotation)%4)) then
-		return false
-	end
 	local wrongSideSpawn = (direction%4 ~= (self.roadDirectionFromSelf - 1)%4)
-	if (not self.def.spawnWhenBlocked) and wrongSideSpawn and roadUtil.IsAnythingOnRoad(self.roadSpawn) then
-		if self.def.spawnOtherIfBlocked then
+	
+	local checkSpawn = (not self.def.spawnWhenBlocked)
+	local blockedSpawn = checkSpawn and roadUtil.IsOccupied(self.roadSpawn, roadUtil.GetClearZone((direction - self.roadSpawn.rotation)%4))
+	if blockedSpawn then
+		if self.def.spawnOtherIfBlocked and wrongSideSpawn then
 			direction = (direction - 2)%4
 			wrongSideSpawn = false
+			if roadUtil.IsOccupied(self.roadSpawn, roadUtil.GetClearZone((direction - self.roadSpawn.rotation)%4)) then
+				return false
+			end
 		else
 			return false
 		end
 	end
+	-- Check this side of the road too.
+	if wrongSideSpawn and checkSpawn and roadUtil.IsOccupied(self.roadSpawn, roadUtil.GetClearZone((direction - 2 - self.roadSpawn.rotation)%4)) then
+		return false
+	end
+	
 	CarHandler.AddCar(self.def.spawnCar.carType, roadPos, targetRoadPos, targetBuilding.GetPos(), wrongSideSpawn, (direction - 2)%4, direction, self.def.spawnCar.spawnFullSpeed)
 	if self.def.onDispatchCar then
 		self.def.onDispatchCar(self, targetBuilding)
@@ -166,6 +174,14 @@ local function NewBuilding(self)
 						love.graphics.setColor(0, 0, 0, 1)
 						love.graphics.printf("DR", self.worldPos[1], self.worldPos[2], 50, "center")
 					end
+					--if self.roadSpawn then
+					--	local direction = 2
+					--	if roadUtil.IsOccupied(self.roadSpawn, roadUtil.GetClearZone((direction - self.roadSpawn.rotation)%4)) then
+					--		love.graphics.setLineWidth(3)
+					--		love.graphics.setColor(1, 0, 1, 0.8)
+					--		love.graphics.circle("fill", self.worldPos[1], self.worldPos[2], 10)
+					--	end
+					--end
 				end
 			end})
 		end

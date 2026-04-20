@@ -56,7 +56,7 @@ local function EnterRoad(self, road, entry)
 			if CheckArriveWrongSide(self, building, entry) then
 				self.destination = (self.destination + 2)%4
 				self.currentPath = roadUtil.GetWrongSideArrivePath(self, entry, dest, self.roadWorldRot)
-				self.arriveTravelReq = self.currentPath.length - 0.35
+				self.arriveTravelReq = self.currentPath.length - 0.32
 				self.arriveWrongSide = true
 			end
 		end
@@ -268,7 +268,8 @@ local function FindReturnAfterVisit(self)
 			self.currentPath = self.currentRoad.GetPathAndNextRoad(false, (self.destination + 2)%4)
 		end
 		self.wantTurn = false
-		self.travel = Global.SPAWN_TRAVEL + 0.05
+		self.travel = Global.SPAWN_TRAVEL
+		self.prevDriveOffset = Global.RETURN_SPAWN_OFFSET * 0.75
 	end
 	return true
 end
@@ -341,7 +342,18 @@ local function NewCar(self, new_gridPos, targetPos, targetBuildingPos, wrongSide
 	
 	function self.DoHardBrake()
 		self.speed = 0
-		--self.travel = math.max(0, self.travel - 0.1)
+	end
+	
+	function self.DoCrashBackup(other)
+		if other and other.travel < self.travel and not self.isCrashed and not other.isCrashed then
+			if util.Eq(other.currentRoadPos, self.currentRoadPos) then
+				local mP = self.currentPath
+				local oP = other.currentPath
+				if mp and oP and mP.entry == oP.entry and mP.destination == oP.destination then
+					self.travel = math.max(0, self.travel - 0.02)
+				end
+			end
+		end
 	end
 	
 	function self.Crash()
