@@ -6,6 +6,7 @@ local levelDefs = {
 			highway = 2.8,
 			house = 0.3,
 			pub = 0,
+			houseBecomeSick = 0,
 		},
 		redrawChance = {
 			house = 0.65,
@@ -13,7 +14,6 @@ local levelDefs = {
 		carLimit = {
 			basic_car = 80,
 		},
-		sickRate = 0,
 		heading = "Traffic Terror",
 		text = "You control the signals.\n - Click a light to toggle it.\n - Click the middle of an intersection to lock it.\nToggle lights a few times to continue.",
 		showStats = {
@@ -33,6 +33,7 @@ local levelDefs = {
 			highway = 3.2,
 			house = 0.2,
 			pub = 2,
+			houseBecomeSick = 0,
 		},
 		carLimit = {
 			basic_car = 80,
@@ -41,7 +42,6 @@ local levelDefs = {
 		redrawChance = {
 			house = 0.6,
 		},
-		sickRate = 0,
 		heading = "Drink Driving",
 		text = "The pub is emptying and all the drink drivers need to get home safely. Try to have three arrive home without a crash.\n\nDrunk drivers cannot see traffic lights or other cars.",
 		showStats = {
@@ -56,7 +56,28 @@ local levelDefs = {
 		},
 	},
 	{
+		-- Hospital is introduced.
 		map = "level_2",
+		spawnMult = {
+			sickness = 0.8,
+			houseBecomeSick = 1,
+		},
+		carLimit = {
+			basic_car = 80,
+			drunk = 2,
+		},
+		redrawChance = {
+			house = 0.6,
+		},
+		heading = "Illness",
+		text = "Something was a bit wrong with the pub parma. Clear the way for ambulances to reach houses with sickness.",
+		showStats = {
+			"accidents",
+			"sick_deaths",
+		},
+		flashStat = {
+			drunkArrivals_sinceAccident = true,
+		},
 	},
 	{
 		map = "level_3",

@@ -1,6 +1,6 @@
 
 return {
-	baseImage = "house",
+	baseImage = "house_white",
 	destinationType = "house",
 	canBeSick = true,
 	canBeDrunk = true,

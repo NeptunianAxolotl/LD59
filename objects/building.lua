@@ -135,11 +135,11 @@ local function NewBuilding(self)
 			self.def.updateFunc(self, dt)
 		end
 		if self.sickness then
-			self.sickness = self.sickness + dt
+			self.sickness = self.sickness + dt*GameHandler.GetLevelRate("sickness")
 		end
 		self.medicOnTheWayTimer = util.UpdateTimer(self.medicOnTheWayTimer, dt)
 		if self.def.spawnCar then
-			self.spawnTimer = (self.spawnTimer or GetSpawnTime(self)) - dt * GameHandler.GetSpawnMult(self.buildingType)
+			self.spawnTimer = (self.spawnTimer or GetSpawnTime(self)) - dt * GameHandler.GetLevelRate(self.buildingType)
 			if self.spawnTimer <= 0 then
 				if SpawnRegularCar(self) then
 					self.spawnTimer = GetSpawnTime(self)
@@ -158,10 +158,13 @@ local function NewBuilding(self)
 				end
 			end
 			drawQueue:push({y=-90 + self.pos[2]*0.01; f=function()
-				Resources.DrawImage(self.def.baseImage, self.worldPos[1], self.worldPos[2], self.worldRot, false, LevelHandler.TileScale())
+				local image = self.def.baseImage
+				local color = {1, 1, 1}
 				if self.sickness then
-					Resources.DrawImage("sick", self.worldPos[1], self.worldPos[2], self.worldRot, false, LevelHandler.TileScale())
+					color[1] = 1 - 0.9* math.max(0, self.sickness*0.1)
+					color[3] = color[1]
 				end
+				Resources.DrawImage(image, self.worldPos[1], self.worldPos[2], self.worldRot, false, LevelHandler.TileScale(), color)
 				if self.def.extraDrawFunc then
 					self.def.extraDrawFunc(self, self.worldPos, self.worldRot)
 				end
@@ -173,9 +176,14 @@ local function NewBuilding(self)
 						love.graphics.line(self.worldPos[1], self.worldPos[2], roadPos[1], roadPos[2])
 					end
 					if self.isDrunk then
-						Font.SetSize(3)
+						Font.SetSize(4)
 						love.graphics.setColor(0, 0, 0, 1)
 						love.graphics.printf("DR", self.worldPos[1], self.worldPos[2], 50, "center")
+					end
+					if self.sickness then
+						Font.SetSize(4)
+						love.graphics.setColor(0, 0, 0, 1)
+						love.graphics.printf(string.format("%.2f", self.sickness), self.worldPos[1], self.worldPos[2] - 20, 50, "center")
 					end
 					--if self.roadSpawn then
 					--	local direction = 2

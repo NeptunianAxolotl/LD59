@@ -4,6 +4,7 @@ local innerLength = roadUtil.GetCurveLength(0.5 - Global.DRIVE_OFFSET)
 
 return {
 	baseImage = "t_small",
+	highwayImage = "t_large",
 	intersection = true,
 	hasSignal = true,
 	orangeTimeMax = 0.5,

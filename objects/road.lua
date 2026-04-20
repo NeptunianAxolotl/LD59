@@ -37,6 +37,7 @@ local function SetupSignal(self)
 	self.autoSignalState = 1
 	self.signalTime = self.def.signalTimeMax[self.autoSignalState]
 	self.signal = {}
+	self.signalForcedTime = {}
 	UpdateSignalFromAuto(self)
 end
 
@@ -44,9 +45,9 @@ local function GetHoveredMouseDrawing(self)
 	if not self.signal then
 		return
 	end
-	local lockAlpha = (not self.automaticSignal and 0.65)
+	local lockAlpha = (not self.automaticSignal and 0.8)
 	if TerrainHandler.IsGridHovered(self.pos) then
-		lockAlpha = (lockAlpha or 0.1)*1.3
+		lockAlpha = (lockAlpha or 0.02)*1.2
 	end
 	local hoveredSignal = false
 	for i = 0, self.def.signalCount - 1 do
@@ -121,6 +122,9 @@ local function NewRoad(self, terrain)
 		if not self.signal then
 			return false
 		end
+		if self.signalForcedTime[entry] then
+			return false
+		end
 		if self.automaticSignal and self.orangeSignalTime then
 			return true
 		end
@@ -131,10 +135,15 @@ local function NewRoad(self, terrain)
 		if not self.signal then
 			return
 		end
-		local myDir = (worldDir + self.rotation)%4
+		local myDir = (worldDir - self.rotation)%4
 		self.signal[myDir] = not self.signal[myDir]
 		self.signalTime = self.def.signalTimeMax[self.autoSignalState]
 		ClickNotify(self)
+	end
+	
+	function self.ForceSignal(waitingCarDestination, forceTime)
+		local signal = (waitingCarDestination - 2 - self.rotation)%4
+		self.signalForcedTime[signal] = forceTime * GameHandler.GetLevelRate("forceSignalTime")
 	end
 	
 	function self.SetUsedState(newState, entry)
@@ -210,6 +219,11 @@ local function NewRoad(self, terrain)
 				end
 			end
 		end
+		if self.signalForcedTime then
+			for i = 0, self.def.signalCount - 1 do
+				self.signalForcedTime[i] = util.UpdateTimer(self.signalForcedTime[i], dt)
+			end
+		end
 	end
 	
 	function self.Draw(drawQueue)
@@ -217,10 +231,14 @@ local function NewRoad(self, terrain)
 		if self.signal then
 			drawQueue:push({y=100 + self.pos[2]*0.01; f=function()
 				local timeProp = self.signalTime / self.def.signalTimeMax[self.autoSignalState] / Global.MANUAL_CLICK_BOOST
-				local alpha = math.min(1, timeProp + 0.5)*0.8
 				for i = 0, self.def.signalCount - 1 do
+					local alpha = math.min(1, timeProp + 0.5)*0.8
 					local lightImage = self.signal[i] and "traffic_red" or "traffic_green"
 					local color = self.signal[i] and Global.TRAFFIC_RED or Global.TRAFFIC_GREEN
+					if self.signalForcedTime[i] then
+						color = Global.TRAFFIC_ORANGE
+						alpha = ((self.signalForcedTime[i])%0.3 > 0.18) and 1 or 0.6
+					end
 					Resources.DrawImage(lightImage, self.worldPos[1], self.worldPos[2], self.worldRot + i*math.pi/2, false, LevelHandler.TileScale())
 					Resources.DrawImage(self.def.stateImage, self.worldPos[1], self.worldPos[2], self.worldRot + i*math.pi/2, alpha, LevelHandler.TileScale(), color)
 					if hoveredSignal == i then
@@ -236,7 +254,11 @@ local function NewRoad(self, terrain)
 				end
 			end
 			drawQueue:push({y=-100 + self.pos[2]*0.01; f=function()
-				Resources.DrawImage(self.def.baseImage, self.worldPos[1], self.worldPos[2], self.worldRot, false, LevelHandler.TileScale())
+				local image = self.def.baseImage
+				if self.def.highwayImage and self.pos[2] == 0 then
+					image = self.def.highwayImage
+				end
+				Resources.DrawImage(image, self.worldPos[1], self.worldPos[2], self.worldRot, false, LevelHandler.TileScale())
 				if lockAlpha then
 					Resources.DrawImage("lock", self.worldPos[1], self.worldPos[2], false, lockAlpha, LevelHandler.TileScale())
 				end

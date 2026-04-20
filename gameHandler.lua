@@ -79,7 +79,7 @@ end
 -- Game Stage
 --------------------------------------------------
 
-function api.GetSpawnMult(bType)
+function api.GetLevelRate(bType)
 	return self.levelData.spawnMult and self.levelData.spawnMult[bType] or 1
 end
 
@@ -140,7 +140,7 @@ local function CheckLevelAdvance()
 end
 
 function api.Update(dt)
-	self.sicknessTimer = util.UpdateTimer(self.sicknessTimer, dt*(self.levelData.sickRate or 1))
+	self.sicknessTimer = util.UpdateTimer(self.sicknessTimer, dt*0.1*api.GetLevelRate("houseBecomeSick"))
 	if not self.sicknessTimer then
 		local building = BuildingHandler.GetRandomMatchingBuilding(false, false, CanInfect)
 		if building then
@@ -212,9 +212,9 @@ function api.DrawInterface()
 				love.graphics.setColor(0, 0, 0, 1)
 			end
 			if req and req[name] then
-				love.graphics.printf(statName[name] .. ": " .. math.floor(api.GetStat(name)) .. " / " .. req[name], drawX + 40, offset, width - 50, "left")
+				love.graphics.printf((statName[name] or name) .. ": " .. math.floor(api.GetStat(name)) .. " / " .. req[name], drawX + 40, offset, width - 50, "left")
 			else
-				love.graphics.printf(statName[name] .. ": " .. math.floor(api.GetStat(name)), drawX + 40, offset, width - 50, "left")
+				love.graphics.printf((statName[name] or name) .. ": " .. math.floor(api.GetStat(name)), drawX + 40, offset, width - 50, "left")
 			end
 		end
 	end
@@ -228,7 +228,7 @@ function api.Initialize(parentWorld)
 	self.levelData = LevelDefs[self.level]
 	self.flashStat = {}
 	
-	self.sicknessTimer = 1
+	self.sicknessTimer = 0.02
 	self.drunkTimer = 2
 	self.world = parentWorld
 end

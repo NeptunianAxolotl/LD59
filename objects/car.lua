@@ -45,6 +45,10 @@ local function EnterRoad(self, road, entry)
 	self.currentPath = newPath
 	self.destination = newDestination
 	
+	-- Enough movement to move
+	self.blockedInFrontTime = false
+	self.blockedInFront = false
+	
 	self.prevDriveOffset = self.driveOffset
 	self.driveOffset = Global.DRIVE_OFFSET
 	if util.Eq(self.currentRoadPos, self.targetPos) then
@@ -239,9 +243,9 @@ local function CheckNextRoadStop(self)
 	end
 	local myLightsBlocked = self.nextRoad.SignalActive(self.nextRoadEntry)
 	if travelRemaining < 0.18 * (self.maxSpeedMult or 1) and myLightsBlocked then
-		return true
+		return true, myLightsBlocked
 	end
-	return false
+	return false, myLightsBlocked
 end
 
 local function CheckStopSignal(self)
@@ -249,13 +253,13 @@ local function CheckStopSignal(self)
 	if self.def.ignoreSignal then
 		return false, sneakingThrough
 	end
-	local nextBlocked = CheckNextRoadStop(self)
+	local nextBlocked, blockedInFront = CheckNextRoadStop(self)
 	if currentBlocked then
 		self.currentRoad.WaitingCar(self.currentPath.entry)
 	elseif currentBlocked then
 		self.nextRoad.WaitingCar(self.nextRoadEntry)
 	end
-	return currentBlocked or nextBlocked, sneakingThrough
+	return currentBlocked or nextBlocked, sneakingThrough, blockedInFront
 end
 
 local function FindReturnAfterVisit(self)
@@ -303,6 +307,115 @@ local function DoDestroy(self)
 			self.def.onDestroy(self)
 		end
 		self.alreadyDestroyed = true
+	end
+end
+
+local function UpdateMovement(self, dt)
+	if self.isCrashed or (self.crashProgress and self.crashProgress > self.def.crashEndurance * Global.CRASH_THRESHOLD_MULT) then
+		self.Crash()
+		return
+	end
+	
+	UpdateWobble(self, dt)
+	local oldTravel = self.travel
+	local spawn = 1 - (self.spawnTimer or 0) / Global.SPAWN_FADE_TIME
+	local allBlocked, someBlocked = false, false
+	local stopOffset = 0
+	local deccelMult = (self.maxSpeedMult or 1)
+	local maxSpeed = (self.maxSpeedMult or 1) * (self.def.maxSpeed + self.speedRand) * spawn * WobbleSpeedMult(self)
+	local mult = spawn
+	
+	self.signalBlocked, self.sneakingThrough, self.blockedInFront = CheckStopSignal(self)
+	
+	self.collision = LookOutForCollision(self) and CheckImpendingCollision(self)
+	self.wantStop = self.collision or self.signalBlocked
+	if self.arriveTimer or (self.arriveAtTarget and self.travel > self.arriveTravelReq) then
+		self.wantStop = true
+		if not self.arriveWrongSide then
+			self.travel = Global.ARRIVE_TRAVEL
+		end
+		self.arriveTimer = self.arriveTimer or Global.ARRIVE_FADE_TIME
+	end
+	local rapidDecel = self.collision and self.suddenStop
+	if rapidDecel then
+		deccelMult = deccelMult * self.suddenStop
+	end
+	local travelFullSpeed = not self.wantStop
+	if travelFullSpeed then
+		if self.speed > maxSpeed*1.01 then
+			self.speed = math.max(maxSpeed, self.speed - dt*self.def.slowDeccel*mult*deccelMult)
+		else
+			self.speed = math.min(maxSpeed, self.speed + dt*self.def.accel*mult)
+		end
+	else
+		if (self.speed > 0 and self.wantStop) then
+			self.speed = self.speed - dt*self.def.deccel*mult*deccelMult
+		end
+		
+		if self.speed < 0.05 then
+			self.speed = 0
+		end
+		if (self.speed < 0.5 and not self.wantStop) then
+			self.speed = math.min(maxSpeed, self.speed + dt*self.def.accel*mult)
+		end
+	end
+	if self.stoppedTimer or self.speed == 0 then
+		self.stoppedTimer = ((self.speed == 0 or not self.stoppedTimer) and self.def.stopTimer or self.stoppedTimer) - dt
+		if self.stoppedTimer <= 0 then
+			self.stoppedTimer = false
+		end
+	end
+	local travelChange = dt*self.speed*mult
+	self.travel = self.travel + travelChange
+	if self.travel >= self.currentPath.length and not self.arriveTimer then
+		local nextRoad = TerrainHandler.GetRoadAtPos(self.currentRoadPos, self.destination)
+		self.travel = self.travel - self.currentPath.length
+		if not EnterRoad(self, nextRoad, (self.destination + 2)%4) then
+			self.toDestroy = true
+		end
+	end
+	self.pos, self.rotation = GetPositionOnRoad(self, self.currentPath, self.roadWorldPos, self.roadWorldRot, self.travel)
+	self.body:setPosition(self.pos[1], self.pos[2])
+	self.body:setAngle(self.rotation)
+	local vel = util.PolarToCart(self.speed*Global.BODY_SPEED, self.rotation)
+	self.body:setLinearVelocity(vel[1], vel[2])
+end
+
+local function UpdateCrash(self, dt)
+	if not self.isCrashed then
+		return
+	end
+	local x, y = self.body:getPosition()
+	self.pos = {x, y}
+	self.rotation = self.body:getAngle()
+	self.crashTimer = self.crashTimer or Global.CRASH_FADEOUT
+	self.crashTimer = util.UpdateTimer(self.crashTimer, dt)
+	if math.random() < 0.021 * (0.5 + 0.5 * (self.crashTimer or 0)/Global.CRASH_FADEOUT) then
+		EffectsHandler.SpawnEffect("fireball_explode", self.pos, {scale = 0.05 + math.random()*0.1})
+	end
+	if not self.crashTimer then
+		self.toDestroy = true
+	end
+end
+
+local function UpdateBlocked(self, dt)
+	if self.blockedInFront then
+		self.blockedInFrontTime = (self.blockedInFrontTime or 0) + dt*GameHandler.GetLevelRate("forceRedLight")
+	end
+	if not self.blockedInFrontTime then
+		return
+	end
+	if self.blockedInFrontTime > Global.SWEAR_AT_LIGHT_TIME then
+		local chance = 0.01*(self.blockedInFrontTime - Global.SWEAR_AT_LIGHT_TIME) / Global.RUN_RED_LIGHT_TIME
+		if math.random() < chance then
+			EffectsHandler.SpawnEffect("angry_popup", self.pos, {text = "$#%@", velocity = {0, -0.3 - 0.6*math.random()}})
+		end
+	end
+	if self.blockedInFrontTime > Global.RUN_RED_LIGHT_TIME then
+		local nextRoad = TerrainHandler.GetRoadAtPos(self.currentRoadPos, self.destination)
+		if nextRoad then
+			nextRoad.ForceSignal(self.destination, Global.FORCE_SIGNAL_TIME)
+		end
 	end
 end
 
@@ -390,93 +503,6 @@ local function NewCar(self, new_gridPos, targetPos, targetBuildingPos, wrongSide
 		end
 	end
 	
-	local function UpdateMovement(dt)
-		if self.isCrashed or (self.crashProgress and self.crashProgress > self.def.crashEndurance * Global.CRASH_THRESHOLD_MULT) then
-			self.Crash()
-			return
-		end
-		
-		UpdateWobble(self, dt)
-		local oldTravel = self.travel
-		local spawn = 1 - (self.spawnTimer or 0) / Global.SPAWN_FADE_TIME
-		local allBlocked, someBlocked = false, false
-		local stopOffset = 0
-		local deccelMult = (self.maxSpeedMult or 1)
-		local maxSpeed = (self.maxSpeedMult or 1) * (self.def.maxSpeed + self.speedRand) * spawn * WobbleSpeedMult(self)
-		local mult = spawn
-		
-		self.signalBlocked, self.sneakingThrough = CheckStopSignal(self)
-		self.collision = LookOutForCollision(self) and CheckImpendingCollision(self)
-		self.wantStop = self.collision or self.signalBlocked
-		if self.arriveTimer or (self.arriveAtTarget and self.travel > self.arriveTravelReq) then
-			self.wantStop = true
-			if not self.arriveWrongSide then
-				self.travel = Global.ARRIVE_TRAVEL
-			end
-			self.arriveTimer = self.arriveTimer or Global.ARRIVE_FADE_TIME
-		end
-		local rapidDecel = self.collision and self.suddenStop
-		if rapidDecel then
-			deccelMult = deccelMult * self.suddenStop
-		end
-		local travelFullSpeed = not self.wantStop
-		if travelFullSpeed then
-			if self.speed > maxSpeed*1.01 then
-				self.speed = math.max(maxSpeed, self.speed - dt*self.def.slowDeccel*mult*deccelMult)
-			else
-				self.speed = math.min(maxSpeed, self.speed + dt*self.def.accel*mult)
-			end
-		else
-			if (self.speed > 0 and self.wantStop) then
-				self.speed = self.speed - dt*self.def.deccel*mult*deccelMult
-			end
-			
-			if self.speed < 0.05 then
-				self.speed = 0
-			end
-			if (self.speed < 0.5 and not self.wantStop) then
-				self.speed = math.min(maxSpeed, self.speed + dt*self.def.accel*mult)
-			end
-		end
-		if self.stoppedTimer or self.speed == 0 then
-			self.stoppedTimer = ((self.speed == 0 or not self.stoppedTimer) and self.def.stopTimer or self.stoppedTimer) - dt
-			if self.stoppedTimer <= 0 then
-				self.stoppedTimer = false
-			end
-		end
-		local travelChange = dt*self.speed*mult
-		self.travel = self.travel + travelChange
-		if self.travel >= self.currentPath.length and not self.arriveTimer then
-			local nextRoad = TerrainHandler.GetRoadAtPos(self.currentRoadPos, self.destination)
-			self.travel = self.travel - self.currentPath.length
-			if not EnterRoad(self, nextRoad, (self.destination + 2)%4) then
-				self.toDestroy = true
-			end
-		end
-		self.pos, self.rotation = GetPositionOnRoad(self, self.currentPath, self.roadWorldPos, self.roadWorldRot, self.travel)
-		self.body:setPosition(self.pos[1], self.pos[2])
-		self.body:setAngle(self.rotation)
-		local vel = util.PolarToCart(self.speed*Global.BODY_SPEED, self.rotation)
-		self.body:setLinearVelocity(vel[1], vel[2])
-	end
-	
-	local function UpdateCrash(dt)
-		if not self.isCrashed then
-			return
-		end
-		local x, y = self.body:getPosition()
-		self.pos = {x, y}
-		self.rotation = self.body:getAngle()
-		self.crashTimer = self.crashTimer or Global.CRASH_FADEOUT
-		self.crashTimer = util.UpdateTimer(self.crashTimer, dt)
-		if math.random() < 0.021 * (0.5 + 0.5 * (self.crashTimer or 0)/Global.CRASH_FADEOUT) then
-			EffectsHandler.SpawnEffect("fireball_explode", self.pos, {scale = 0.05 + math.random()*0.1})
-		end
-		if not self.crashTimer then
-			self.toDestroy = true
-		end
-	end
-	
 	function self.Update(dt)
 		if self.toDestroy then
 			DoDestroy(self)
@@ -499,8 +525,9 @@ local function NewCar(self, new_gridPos, targetPos, targetBuildingPos, wrongSide
 				return true
 			end
 		end
-		UpdateMovement(dt)
-		UpdateCrash(dt)
+		UpdateMovement(self, dt)
+		UpdateCrash(self, dt)
+		UpdateBlocked(self, dt)
 	end
 	
 	function self.Draw(drawQueue)
