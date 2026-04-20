@@ -14,8 +14,15 @@ local function NewEffect(self, def)
 	self.life = maxLife
 	self.animTime = 0
 	self.direction = (def.randomDirection and math.random()*2*math.pi) or 0
+	self.animMult = self.animMult or 1
+	if def.animMultRange then
+		self.animMult = self.animMult - math.min(0.8, def.animMultRange*math.random())
+	end
 	
 	self.pos = (def.spawnOffset and util.Add(self.pos, def.spawnOffset)) or self.pos
+	if self.spawnRadius or def.spawnRadius then
+		self.pos = util.Add(self.pos, util.RandomPointInCircle(self.spawnRadius or def.spawnRadius))
+	end
 	
 	local function GetAlpha()
 		if not def.alphaScale then
@@ -31,8 +38,8 @@ local function NewEffect(self, def)
 	end
 	
 	function self.Update(dt)
-		self.animTime = self.animTime + dt
-		self.life = self.life - dt
+		self.animTime = self.animTime + dt*self.animMult
+		self.life = self.life - dt*self.animMult
 		if self.life <= 0 then
 			return true
 		end

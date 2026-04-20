@@ -98,7 +98,7 @@ local function ApplyWobble(self)
 	if not (self.def.wobble and self.wobblePos) then
 		return 0, 0
 	end
-	return self.wobblePos * 0.6, -self.wobbleAccel*2.8
+	return math.max(-0.2, math.min(0.2, self.wobblePos * 0.6)), -self.wobbleAccel*2.8
 end
 
 local function WobbleSpeedMult(self)
@@ -370,6 +370,7 @@ local function NewCar(self, new_gridPos, targetPos, targetBuildingPos, wrongSide
 		if not self.isCrashed then
 			GameHandler.AddStat("accidents")
 			GameHandler.ResetStat("drunkArrivals_sinceAccident")
+			EffectsHandler.SpawnEffect("fireball_explode", self.pos, {scale = 0.2 + math.random()*0.1})
 		end
 		self.isCrashed = true
 	end
@@ -385,7 +386,7 @@ local function NewCar(self, new_gridPos, targetPos, targetBuildingPos, wrongSide
 		local newCrash = not self.crashProgress
 		self.crashProgress = (self.crashProgress or 0) + progress
 		if newCrash or math.random() < 0.03 then
-			EffectsHandler.SpawnEffect("popup", self.pos, {text = string.format("%d", self.crashProgress * 10), velocity = {0, -2}})
+			EffectsHandler.SpawnEffect("fireball_explode", self.pos, {spawnRadius = 12, scale = 0.1 + math.random()*0.03})
 		end
 	end
 	
@@ -468,6 +469,9 @@ local function NewCar(self, new_gridPos, targetPos, targetBuildingPos, wrongSide
 		self.rotation = self.body:getAngle()
 		self.crashTimer = self.crashTimer or Global.CRASH_FADEOUT
 		self.crashTimer = util.UpdateTimer(self.crashTimer, dt)
+		if math.random() < 0.021 * (0.5 + 0.5 * (self.crashTimer or 0)/Global.CRASH_FADEOUT) then
+			EffectsHandler.SpawnEffect("fireball_explode", self.pos, {scale = 0.05 + math.random()*0.1})
+		end
 		if not self.crashTimer then
 			self.toDestroy = true
 		end
