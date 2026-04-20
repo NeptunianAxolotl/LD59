@@ -1,7 +1,7 @@
 
 local World = require("world")
 SoundHandler = require("soundHandler")
-MusicHandler = require("musicHandler")
+BGMHandler = require("bgmHandler")
 
 local MapDefs = util.LoadDefDirectory("defs/maps")
 
@@ -18,11 +18,12 @@ local api = {}
 function api.ToggleMusic()
 	self.musicEnabled = not self.musicEnabled
 	if not self.musicEnabled then
-		MusicHandler.StopCurrentTrack()
+		BGMHandler.Stop()
 	end
 end
 
 function api.MusicEnabled()
+  BGMHandler.Start()
 	return self.musicEnabled
 end
 
@@ -162,7 +163,7 @@ end
 
 function api.Update(dt, realDt)
 	self.realTime = self.realTime + realDt
-	MusicHandler.Update(realDt)
+	BGMHandler.Update(realDt)
 	SoundHandler.Update(realDt)
 	World.Update(dt)
 end
@@ -175,7 +176,7 @@ function api.Initialize()
 		drawDebug = Global.DRAW_DEBUG,
 	}
 	self.curLevelData = MapDefs[self.inbuiltLevelName]
-	MusicHandler.Initialize(api)
+	BGMHandler.Initialize(api)
 	SoundHandler.Initialize(api)
 	World.Initialize(api, self.curLevelData)
 end

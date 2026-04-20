@@ -3,7 +3,7 @@ local Font = require("include/font")
 
 local EffectsHandler = require("effectsHandler")
 local Resources = require("resourceHandler")
-MusicHandler = require("musicHandler")
+BGMHandler = require("bgmHandler")
 
 local self = {}
 local api = {}
@@ -28,7 +28,7 @@ function api.MousePressed(x, y)
 end
 
 function api.LightWasClicked()
-	
+	BGMHandler.addPoints(1)
 end
 
 --------------------------------------------------
