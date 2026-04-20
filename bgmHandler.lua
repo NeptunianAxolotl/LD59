@@ -88,7 +88,7 @@ function api.Update(dt)
   
   setLevels()
   
-  timeUntilPhaseCheck = timeUntilPhaseCheck - dt * timeUntilPhaseCheck
+  timeUntilPhaseCheck = timeUntilPhaseCheck - dt
   
   if(timeUntilPhaseCheck<=0)
     then
@@ -108,9 +108,9 @@ function api.Update(dt)
     end
     
     -- Update the timers and set levels
-    if currentTable == 3
+    if currentPhase == 3
     then timeUntilPhaseCheck = funkLength
-    elseif currentTable == 1
+    elseif currentPhase == 1
     then timeUntilPhaseCheck = irishLength
     else timeUntilPhaseCheck = turnLength
     end
@@ -134,7 +134,7 @@ function api.addPoints(mult)
     -- Stop all the currently-playing layers and set the phase-check clock to zero so it is ready to restart
     currentTable = getCurrentPhaseTable()
     for i = 1, 9 do
-      currentTable[i].source.stop()
+      currentTable[i].source:stop()
     end
     timeUntilPhaseCheck = 0
     DISABLED = true
