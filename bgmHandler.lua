@@ -82,7 +82,7 @@ function api.Update(dt)
   --print("chaos points",chaosPoints)
   chaosPoints = chaosPoints - dt * Global.BGM_CHAOS_POINTS_DECREMENT_PER_SECOND
   
-  if chaosPoints < 0
+  if chaosPoints < 0 or chaosPoints > 50 * Global.BGM_CHAOS_POINTS_PER_CRASH -- reset if out of bounds
   then chaosPoints = 0
   end
   
