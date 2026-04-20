@@ -3,6 +3,7 @@ return {
 	baseImage = "highway",
 	destinationType = "highway",
 	noExport = true,
+	arriveWithoutTurn = true,
 	exitRoadTypes = {
 		straight_large = true,
 	},

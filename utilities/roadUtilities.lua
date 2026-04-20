@@ -122,15 +122,18 @@ local function RayHit()
 	return 0
 end
 
-function roadUtil.IsOccupied(self, vector)
+function roadUtil.IsOccupied(self, vectors)
 	local world = PhysicsHandler.GetPhysicsWorld()
 	local scale = LevelHandler.TileSize()
 	self.ray = {}
-	self.ray[1] = util.Add(self.worldPos, util.Mult(scale, util.RotateVector(vector[1], self.worldRot)))
-	self.ray[2] = util.Add(self.worldPos, util.Mult(scale, util.RotateVector(vector[2], self.worldRot)))
 	rayWasHit = false
-	world:rayCast(self.ray[1][1], self.ray[1][2], self.ray[2][1], self.ray[2][2], RayHit)
-	world:rayCast(self.ray[2][1], self.ray[2][2], self.ray[1][1], self.ray[1][2], RayHit)
+	for i = 1, #vectors do
+		self.ray[i] = {}
+		self.ray[i][1] = util.Add(self.worldPos, util.Mult(scale, util.RotateVector(vectors[i][1], self.worldRot)))
+		self.ray[i][2] = util.Add(self.worldPos, util.Mult(scale, util.RotateVector(vectors[i][2], self.worldRot)))
+		world:rayCast(self.ray[i][1][1], self.ray[i][1][2], self.ray[i][2][1], self.ray[i][2][2], RayHit)
+		world:rayCast(self.ray[i][2][1], self.ray[i][2][2], self.ray[i][1][1], self.ray[i][1][2], RayHit)
+	end
 	return rayWasHit
 end
 
@@ -204,10 +207,17 @@ function roadUtil.GetWrongSideArrivePath(car, entry, dest, worldRot)
 end
 
 local clearZones = {}
-clearZones[0] = {{-0.15, -0.6}, {0.45, -Global.DRIVE_OFFSET * 0.35}}
-clearZones[1] = {util.RotateVector(clearZones[0][1], math.pi/2), util.RotateVector(clearZones[0][2], math.pi/2)}
-clearZones[2] = {util.RotateVector(clearZones[1][1], math.pi/2), util.RotateVector(clearZones[1][2], math.pi/2)}
-clearZones[3] = {util.RotateVector(clearZones[2][1], math.pi/2), util.RotateVector(clearZones[2][2], math.pi/2)}
+clearZones[0] = {
+	{{-0.15, -0.6}, {0.45, -Global.DRIVE_OFFSET * 0.35}},
+	{{-0.55, -Global.DRIVE_OFFSET}, {0.45, -Global.DRIVE_OFFSET}},
+}
+
+for i = 1, 3 do
+	clearZones[i] = {}
+	for j = 1, #clearZones[0] do
+		clearZones[i][j] = {util.RotateVector(clearZones[0][j][1], i*math.pi/2), util.RotateVector(clearZones[0][j][2], i*math.pi/2)}
+	end
+end
 
 function roadUtil.GetClearZone(direction)
 	return clearZones[direction]

@@ -3,7 +3,21 @@ local MapDefs = util.LoadDefDirectory("defs/maps")
 roadUtil = require("utilities/roadUtilities")local RoadDefs = util.LoadDefDirectory("defs/road")local NewRoad = require("objects/road")
 local self = {}
 local api = {}
-function api.GetDimensions()	return self.dimensionsendfunction api.SetDimensions(dimensions)
+
+function api.IsGridHovered(gridPos, addDirection)
+	local x, y = gridPos[1], gridPos[2]
+	if addDirection == 0 then
+		x = x + 1
+	elseif addDirection == 1 then
+		y = y + 1
+	elseif addDirection == 2 then
+		x = x - 1
+	elseif addDirection == 3 then
+		y = y - 1
+	end
+	return self.hoveredPos and self.hoveredPos[1] == x and self.hoveredPos[2] == y
+end
+function api.GetDimensions()	return self.dimensionsendfunction api.SetDimensions(dimensions)
 	local oldDimensions = self.dimensions	self.dimensions = util.CopyTable(dimensions)
 	local ends = {self.dimensions.left - Global.HIGHWAY_EXTRA, self.dimensions.right + Global.HIGHWAY_EXTRA - 1}
 	for i = ends[1], ends[2] do
@@ -18,7 +32,17 @@ local api = {}
 function api.Blocked(gridPos)
 	return api.GetRoadAtPos(gridPos) or BuildingHandler.GetBuildingAtPos(gridPos)
 end
-function api.ExportObjects()	local objList = {}	IterableMap.ApplySelf(self.roadList, "Export", objList)	return objListendfunction api.GetViewRestriction()	local dim = api.GetDimensions()	local size = LevelHandler.TileSize()	local pointsToView = {{dim.left*size, dim.top*size}, {dim.right*size, dim.bottom*size}}	return pointsToViewendfunction api.MousePressed(x, y, button)	if LevelHandler.InEditMode() then		return false	end	if button ~= 1 then		return false	end	local gridPos = LevelHandler.WorldToGrid({x, y})	if not gridPos then		return false	end	local road = api.GetRoadAtPos(gridPos)	if road then		road.MousePressed()		return true	endendfunction api.Update(dt)	IterableMap.ApplySelfRandomOrder(self.roadList, "Update", dt)endfunction api.Draw(drawQueue)	IterableMap.ApplySelf(self.roadList, "Draw", drawQueue)	drawQueue:push({y=0; f=function()		local dim = api.GetDimensions()		local size = LevelHandler.TileSize()		love.graphics.setLineWidth(1)		love.graphics.setColor(1, 1, 1, 1)		love.graphics.rectangle("line", 0, 0, 1, 1)				leftPos = dim.left*size		topPos = dim.top*size		rightPos = dim.right*size		bottomPos = dim.bottom*size				for i = dim.left, dim.right do			love.graphics.line(i*size, topPos, i*size, bottomPos)		end		for i = dim.top, dim.bottom do			love.graphics.line(leftPos, i*size, rightPos, i*size)		end	end})end
+function api.ExportObjects()	local objList = {}	IterableMap.ApplySelf(self.roadList, "Export", objList)	return objListendfunction api.GetViewRestriction()	local dim = api.GetDimensions()	local size = LevelHandler.TileSize()	local pointsToView = {{dim.left*size, dim.top*size}, {dim.right*size, dim.bottom*size}}	return pointsToViewendfunction api.MousePressed(x, y, button)	if LevelHandler.InEditMode() then		return false	end	if button ~= 1 then		return false	end	local gridPos = LevelHandler.WorldToGrid({x, y})	if not gridPos then		return false	end	local road = api.GetRoadAtPos(gridPos)	if road then		road.MousePressed()		return true	endend
+
+local function UpdateHover()
+	self.hoveredPos = false
+	local worldPos = self.world.GetMousePosition()
+	if not worldPos then
+		return
+	end
+	self.hoveredPos = LevelHandler.WorldToGrid(worldPos)
+endfunction api.Update(dt)
+	UpdateHover()	IterableMap.ApplySelfRandomOrder(self.roadList, "Update", dt)endfunction api.Draw(drawQueue)	IterableMap.ApplySelf(self.roadList, "Draw", drawQueue)	drawQueue:push({y=0; f=function()		local dim = api.GetDimensions()		local size = LevelHandler.TileSize()		love.graphics.setLineWidth(1)		love.graphics.setColor(1, 1, 1, 1)		love.graphics.rectangle("line", 0, 0, 1, 1)				leftPos = dim.left*size		topPos = dim.top*size		rightPos = dim.right*size		bottomPos = dim.bottom*size				for i = dim.left, dim.right do			love.graphics.line(i*size, topPos, i*size, bottomPos)		end		for i = dim.top, dim.bottom do			love.graphics.line(leftPos, i*size, rightPos, i*size)		end	end})end
 function api.Initialize(world, mapDataOverride)
 	self = {
 		world = world,		roadList = IterableMap.New(),		roadPos = {},

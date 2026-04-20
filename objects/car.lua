@@ -18,8 +18,7 @@ local function PickTurnOption(self, road, targetPos, entry)
 	return turnSelected, (pathSelected and pathSelected.path)
 end
 
-local function CheckArriveWrongSide(self, road, entry)
-	local building = BuildingHandler.GetBuildingAtPos(self.targetBuildingPos)
+local function CheckArriveWrongSide(self, building, entry)
 	if not (building and building.roadDirectionFromSelf) then
 		return false
 	end
@@ -50,14 +49,16 @@ local function EnterRoad(self, road, entry)
 	self.driveOffset = Global.DRIVE_OFFSET
 	if util.Eq(self.currentRoadPos, self.targetPos) then
 		self.arriveAtTarget = true
-		self.driveOffset = Global.SPAWN_OFFSET
-		if CheckArriveWrongSide(self, road, entry) then
-			self.destination = (self.destination + 2)%4
-			self.currentPath = roadUtil.GetWrongSideArrivePath(self, entry, dest, self.roadWorldRot)
-			self.arriveTravelReq = self.currentPath.length - 0.35
-			self.arriveWrongSide = true
-		else
-			self.arriveTravelReq = Global.ARRIVE_TRAVEL
+		local building = BuildingHandler.GetBuildingAtPos(self.targetBuildingPos)
+		self.arriveTravelReq = Global.ARRIVE_TRAVEL
+		if building and not building.def.arriveWithoutTurn then
+			self.driveOffset = Global.SPAWN_OFFSET
+			if CheckArriveWrongSide(self, building, entry) then
+				self.destination = (self.destination + 2)%4
+				self.currentPath = roadUtil.GetWrongSideArrivePath(self, entry, dest, self.roadWorldRot)
+				self.arriveTravelReq = self.currentPath.length - 0.35
+				self.arriveWrongSide = true
+			end
 		end
 	end
 	
@@ -132,6 +133,7 @@ local function CheckImpendingCollision(self)
 	self.secondRay = false
 	self.ray = {}
 	self.ray[1] = util.Add(self.pos, util.Mult(rayStart, unit))
+	local baseRay = self.ray[1]
 	local rayLength = self.def.rayLength
 	local travelRemaining = 1 - self.travel / self.currentPath.length
 	self.suddenStop = false
@@ -140,10 +142,14 @@ local function CheckImpendingCollision(self)
 		--unit = util.RotateVector(unit, -1.3)
 		--rayLength = self.def.rayTurnLength
 		--self.suddenStop = 4
+	
+	local sideRayRotate = 0
 	if self.currentPath.turn == "left" then
 		unit = util.RotateVector(unit, -1.2 * travelRemaining)
 		rayLength = self.def.rayTurnLength
+		sideRayRotate = -0.5 * travelRemaining
 	elseif self.currentPath.turn == "right" then
+		sideRayRotate = 0.5 * travelRemaining
 		if self.currentPath.acrossTraffic then
 			if travelRemaining > 0.65 and not self.sneakingThrough then
 				self.ray[1] = util.Add(self.ray[1], util.Mult(26*math.min(travelRemaining, 0.9)/0.9, util.RotateVector(unit, 0.8)))
@@ -170,38 +176,47 @@ local function CheckImpendingCollision(self)
 		elseif self.stoppedTimer then
 			rayLength = rayLength * 0.35
 		end
-		if (self.prevDriveOffset or 0) > (self.driveOffset or 0) then -- Going to centre.
+		if (self.prevDriveOffset or 0) > (self.driveOffset or 0) and self.driveOffset < Global.DRIVE_OFFSET then -- Going to centre.
 			unit = util.RotateVector(unit, 0.23)
 		else
 			unit = util.RotateVector(unit, 0.12)
 		end
 	end
+	local thirdRayLength = 28
 	if self.currentPath.turn == "straight" and self.wantTurn ~= "right" then
-		self.secondRay = {}
-		self.secondRay[1] = util.Add(self.pos, util.Mult(12, util.RotateVector(baseUnit, -0.8)))
-		self.secondRay[2] = util.Add(self.secondRay[1], util.Mult(self.def.sideRayLength, baseUnit))
+		thirdRayLength = 52
 	end
 	if (self.maxSpeedMult or 1) > 1 then
 		rayLength = rayLength * (self.maxSpeedMult or 1)
 	end
+	
+	self.secondRay = {}
+	self.secondRay[1] = util.Add(self.pos, util.Mult(12, util.RotateVector(baseUnit, -0.8)))
+	self.secondRay[2] = util.Add(self.secondRay[1], util.Mult(thirdRayLength, util.RotateVector(baseUnit, sideRayRotate * 0.5)))
+	
+	self.thirdRay = {}
+	self.thirdRay[1] = util.Add(baseRay, util.Mult(6, util.RotateVector(baseUnit, 1.55)))
+	self.thirdRay[2] = util.Add(self.thirdRay[1], util.Mult(22, util.RotateVector(baseUnit, sideRayRotate)))
+	
 	self.ray[2] = util.Add(self.ray[1], util.Mult(rayLength, unit))
 	rayWasHit = false
 	world:rayCast(self.ray[1][1], self.ray[1][2], self.ray[2][1], self.ray[2][2], RayHit)
 	if self.secondRay then
 		world:rayCast(self.secondRay[1][1], self.secondRay[1][2], self.secondRay[2][1], self.secondRay[2][2], RayHit)
 	end
+	world:rayCast(self.thirdRay[1][1], self.thirdRay[1][2], self.thirdRay[2][1], self.thirdRay[2][2], RayHit)
 	return rayWasHit
 end
 
 local function CheckCurrentRoadStop(self)
-	if not self.currentRoad or self.currentRoad.toDestroy or not self.currentRoad.stopSignal then
+	if not self.currentRoad or self.currentRoad.toDestroy or not self.currentRoad.signal then
 		return false, false
 	end
 	local travelRemaining = 1 - self.travel / self.currentPath.length
 	if self.currentPath.turn == "left" then
 		travelRemaining = travelRemaining*1.05
 	end
-	local signalBlocked = ((self.currentRoad.stopSignal%2 == self.currentPath.entry%2) or self.currentRoad.OrangeSignal())
+	local signalBlocked = self.currentRoad.SignalActive(self.currentPath.entry)
 	if travelRemaining > 0.96 and signalBlocked then
 		return true, signalBlocked
 	end
@@ -209,14 +224,14 @@ local function CheckCurrentRoadStop(self)
 end
 
 local function CheckNextRoadStop(self)
-	if not self.nextRoad or self.nextRoad.toDestroy or not self.nextRoad.stopSignal or not self.nextRoadEntry then
+	if not self.nextRoad or self.nextRoad.toDestroy or not self.nextRoad.signal or not self.nextRoadEntry then
 		return false
 	end
 	local travelRemaining = 1 - self.travel / self.currentPath.length
 	if self.currentPath.turn == "left" then
 		travelRemaining = travelRemaining * 0.5
 	end
-	local myLightsBlocked = ((self.nextRoad.stopSignal%2 == self.nextRoadEntry%2) or self.nextRoad.OrangeSignal())
+	local myLightsBlocked = self.nextRoad.SignalActive(self.nextRoadEntry)
 	if travelRemaining < 0.15 * (self.maxSpeedMult or 1) and myLightsBlocked then
 		return true
 	end
@@ -332,8 +347,17 @@ local function NewCar(self, new_gridPos, targetPos, targetBuildingPos, wrongSide
 		self.isCrashed = true
 	end
 	
+	function self.AddCrashProgress(progress)
+		local newCrash = not self.crashProgress
+		self.crashProgress = (self.crashProgress or 0) + progress
+		if newCrash or math.random() < 0.03 then
+			EffectsHandler.SpawnEffect("popup", self.pos, {text = string.format("%d", self.crashProgress * 10), velocity = {0, -2}})
+		end
+	end
+	
 	local function UpdateMovement(dt)
-		if self.isCrashed then
+		if self.isCrashed or (self.crashProgress and self.crashProgress > self.def.crashEndurance * Global.CRASH_THRESHOLD_MULT) then
+			self.isCrashed = true
 			return
 		end
 		
@@ -346,9 +370,9 @@ local function NewCar(self, new_gridPos, targetPos, targetBuildingPos, wrongSide
 		local maxSpeed = (self.maxSpeedMult or 1) * self.def.maxSpeed * spawn * WobbleSpeedMult(self)
 		local mult = spawn
 		
-		self.stopSignal, self.sneakingThrough = CheckStopSignal(self)
+		self.signalBlocked, self.sneakingThrough = CheckStopSignal(self)
 		self.collision = LookOutForCollision(self) and CheckImpendingCollision(self)
-		self.wantStop = self.collision or self.stopSignal
+		self.wantStop = self.collision or self.signalBlocked
 		if self.arriveTimer or (self.arriveAtTarget and self.travel > self.arriveTravelReq) then
 			self.wantStop = true
 			if not self.arriveWrongSide then
@@ -421,6 +445,7 @@ local function NewCar(self, new_gridPos, targetPos, targetBuildingPos, wrongSide
 			return true
 		end
 		self.spawnTimer = util.UpdateTimer(self.spawnTimer, dt)
+		self.crashProgress = util.UpdateTimer(self.crashProgress, dt)
 		self.arriveTimer, self.arrived = util.UpdateTimer(self.arriveTimer, dt)
 		if self.arrived then
 			self.arrived = false
@@ -448,7 +473,7 @@ local function NewCar(self, new_gridPos, targetPos, targetBuildingPos, wrongSide
 				end
 				Resources.DrawImage(self.def.image, self.pos[1], self.pos[2], self.rotation, alpha, LevelHandler.TileScale())
 				if DrawDebug() then
-					if self.ray and not self.stopSignal then
+					if self.ray and not self.signalBlocked then
 						if self.sneakingThrough then
 							love.graphics.setLineWidth(3)
 							love.graphics.setColor(0.8, 0.8, 0, 0.8)
@@ -461,8 +486,11 @@ local function NewCar(self, new_gridPos, targetPos, targetBuildingPos, wrongSide
 						end
 						love.graphics.line(self.ray[1][1], self.ray[1][2], self.ray[2][1], self.ray[2][2])
 					end
-					if self.secondRay and not self.stopSignal then
+					if self.secondRay and not self.signalBlocked then
 						love.graphics.line(self.secondRay[1][1], self.secondRay[1][2], self.secondRay[2][1], self.secondRay[2][2])
+					end
+					if self.thirdRay and not self.signalBlocked then
+						love.graphics.line(self.thirdRay[1][1], self.thirdRay[1][2], self.thirdRay[2][1], self.thirdRay[2][2])
 					end
 				end
 				if DrawDebug() then

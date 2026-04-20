@@ -7,10 +7,8 @@ return {
 	intersection = true,
 	hasSignal = true,
 	orangeTimeMax = 0.3,
-	stateImage = {
-		[0] = "road_stop",
-		[1] = "road_stop",
-	},
+	signalCount = 4,
+	stateImage = "road_stop_single",
 	signalTimeMax = {
 		[0] = 7,
 		[1] = 7,

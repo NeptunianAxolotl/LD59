@@ -23,6 +23,10 @@ function api.HandleCollision(carID, otherID)
 	end
 	local carDef = car.GetDef()
 	local otherDef = other.GetDef()
+	local damage = carDef.crashDamage * otherDef.crashDamage * (1 + car.GetSpeed() + other.GetSpeed())
+	car.AddCrashProgress(self.lastDt * (1 + Global.CRASH_PROGRESS_MULT * damage))
+	other.AddCrashProgress(self.lastDt * (1 + Global.CRASH_PROGRESS_MULT * damage))
+	
 	if carDef.friendlyCollision and otherDef.friendlyCollision and (not car.isCrashed) and (not other.isCrashed) then
 		-- Some other situation -> slower car lets the faster car past.
 		if car.GetSpeed() < other.GetSpeed() then
@@ -30,9 +34,6 @@ function api.HandleCollision(carID, otherID)
 		else
 			other.DoHardBrake()
 		end
-	else
-		car.Crash()
-		other.Crash()
 	end
 end
 
@@ -41,6 +42,7 @@ function api.NotifyGameLoss()
 end
 
 function api.Update(dt)
+	self.lastDt = dt
 	IterableMap.ApplySelfRandomOrder(self.carList, "Update", dt)
 end
 
@@ -52,6 +54,7 @@ function api.Initialize(world)
 	self = {
 		carList = IterableMap.New(),
 		world = world,
+		lastDt = 0
 	}
 end
 

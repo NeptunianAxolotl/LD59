@@ -5,18 +5,61 @@ local function CalculateWorldPos(self)
 	return {(self.pos[1] + 0.5) * LevelHandler.TileSize(), (self.pos[2] + 0.5) * LevelHandler.TileSize()}
 end
 
+local function UpdateSignalFromAuto(self)
+	for i = 0, self.def.signalCount - 1 do
+		self.signal[i] = (self.autoSignalState - i)%2 == 0
+	end
+end
+
+local function GetNearbySignalRoad(self)
+	for i = 0, 3 do
+		local road = TerrainHandler.GetRoadAtPos(self.pos, i)
+		if road and road.signal then
+			return road, i
+		end
+	end
+end
+
+local function ToggleAdjacentSignal(self)
+	local other, direction = GetNearbySignalRoad(self)
+	if not other then
+		return
+	end
+	other.ToggleSignal((direction - 2)%4)
+end
+
+local function SetupSignal(self)
+	if not self.def.hasSignal then
+		return 
+	end
+	self.automaticSignal = true
+	self.autoSignalState = 0
+	self.signalTime = self.def.signalTimeMax[self.autoSignalState]
+	self.signal = {}
+	UpdateSignalFromAuto(self)
+end
+
+local function GetHoveredMouseDrawing(self)
+	if not self.signal then
+		return
+	end
+	local lockAlpha = (not self.automaticSignal and 0.65)
+	if TerrainHandler.IsGridHovered(self.pos) then
+		lockAlpha = (lockAlpha or 0.1)*1.3
+	end
+	local hoveredSignal = false
+	for i = 0, self.def.signalCount - 1 do
+		if TerrainHandler.IsGridHovered(self.pos, (i + self.rotation)%4) then
+			hoveredSignal = i
+			break
+		end
+	end
+	return lockAlpha, hoveredSignal
+end
+
 local function NewRoad(self, terrain)
 	self.def = RoadDefs[self.roadType]
-	
-	if self.def.entryUseIndexMap then
-		self.inUse = {}
-	else
-		self.inUse = false
-	end
-	self.toDestroy = false
-	self.state = 1
-	self.stopSignal = self.def.hasSignal and 0 or false
-	self.signalTime = self.stopSignal and self.def.signalTimeMax[self.stopSignal]
+	SetupSignal(self)
 	
 	self.worldPos = CalculateWorldPos(self)
 	self.worldRot = self.rotation*math.pi/2
@@ -66,10 +109,20 @@ local function NewRoad(self, terrain)
 		return self.orangeSignalTime
 	end
 	
-	function self.ShouldTrainSlow(train)
-		if self.def.trainSlowFunc then
-			return self.def.trainSlowFunc(self, train)
+	function self.SignalActive(entry)
+		if self.automaticSignal and self.orangeSignalTime then
+			return true
 		end
+		return self.signal[entry]
+	end
+	
+	function self.ToggleSignal(worldDir)
+		if not self.signal then
+			return
+		end
+		local myDir = (worldDir + self.rotation)%4
+		self.signal[myDir] = not self.signal[myDir]
+		self.signalTime = self.def.signalTimeMax[self.autoSignalState]
 	end
 	
 	function self.SetUsedState(newState, entry)
@@ -113,12 +166,11 @@ local function NewRoad(self, terrain)
 		objList[#objList + 1] = exportData
 	end
 	
-	
 	function self.MousePressed()
 		if self.signalTime then
-			self.stopSignal = 1 - self.stopSignal
-			self.signalTime = self.def.signalTimeMax[self.stopSignal]*Global.MANUAL_CLICK_BOOST
-			self.orangeSignalTime = self.def.orangeTimeMax
+			self.automaticSignal = not self.automaticSignal
+		else
+			ToggleAdjacentSignal(self)
 		end
 	end
 	
@@ -129,13 +181,12 @@ local function NewRoad(self, terrain)
 		if self.def.updateFunc then
 			self.def.updateFunc(self, dt)
 		end
-		if self.signalTime then
-			if Global.LIGHTS_CHANGE_THEMSELVES then
-				self.signalTime = self.signalTime - dt
-			end
+		if self.automaticSignal then
+			self.signalTime = self.signalTime - dt
 			if self.signalTime <= 0 then
-				self.stopSignal = 1 - self.stopSignal
-				self.signalTime = self.def.signalTimeMax[self.stopSignal]
+				self.autoSignalState = 1 - self.autoSignalState
+				UpdateSignalFromAuto(self)
+				self.signalTime = self.def.signalTimeMax[self.autoSignalState]
 				self.orangeSignalTime = self.def.orangeTimeMax
 			end
 			if self.orangeSignalTime then
@@ -148,15 +199,20 @@ local function NewRoad(self, terrain)
 	end
 	
 	function self.Draw(drawQueue)
-		if self.def.stateImage and self.stopSignal then
+		local lockAlpha, hoveredSignal = GetHoveredMouseDrawing(self)
+		if self.signal then
 			drawQueue:push({y=100 + self.pos[2]*0.01; f=function()
-				local goState = 1 - self.stopSignal
-				local stopColor = Global.TRAFFIC_RED
-				local goColor = Global.TRAFFIC_GREEN
-				local timeProp = self.signalTime / self.def.signalTimeMax[self.stopSignal] / Global.MANUAL_CLICK_BOOST
+				local timeProp = self.signalTime / self.def.signalTimeMax[self.autoSignalState] / Global.MANUAL_CLICK_BOOST
 				local alpha = math.min(1, timeProp + 0.5)
-				Resources.DrawImage(self.def.stateImage[self.stopSignal], self.worldPos[1], self.worldPos[2], self.worldRot + self.stopSignal*math.pi/2, alpha, LevelHandler.TileScale(), stopColor)
-				Resources.DrawImage(self.def.stateImage[goState], self.worldPos[1], self.worldPos[2], self.worldRot + goState*math.pi/2, alpha, LevelHandler.TileScale(), goColor)
+				for i = 0, self.def.signalCount - 1 do
+					local lightImage = self.signal[i] and "traffic_red" or "traffic_green"
+					local color = self.signal[i] and Global.TRAFFIC_RED or Global.TRAFFIC_GREEN
+					Resources.DrawImage(lightImage, self.worldPos[1], self.worldPos[2], self.worldRot + i*math.pi/2, false, LevelHandler.TileScale())
+					Resources.DrawImage(self.def.stateImage, self.worldPos[1], self.worldPos[2], self.worldRot + i*math.pi/2, alpha, LevelHandler.TileScale(), color)
+					if hoveredSignal == i then
+						Resources.DrawImage(self.def.stateImage, self.worldPos[1], self.worldPos[2], self.worldRot + i*math.pi/2, 0.6, LevelHandler.TileScale())
+					end
+				end
 			end})
 		end
 		if self.def.baseImage then
@@ -167,6 +223,9 @@ local function NewRoad(self, terrain)
 			end
 			drawQueue:push({y=-100 + self.pos[2]*0.01; f=function()
 				Resources.DrawImage(self.def.baseImage, self.worldPos[1], self.worldPos[2], self.worldRot, false, LevelHandler.TileScale())
+				if lockAlpha then
+					Resources.DrawImage("lock", self.worldPos[1], self.worldPos[2], false, lockAlpha, LevelHandler.TileScale())
+				end
 				if self.def.extraDrawFunc then
 					self.def.extraDrawFunc(self, self.worldPos, self.worldRot)
 				end
@@ -175,7 +234,9 @@ local function NewRoad(self, terrain)
 					if self.ray then
 						love.graphics.setLineWidth(2)
 						love.graphics.setColor(0.8, 0.8, 0.8, 0.8)
-						love.graphics.line(self.ray[1][1], self.ray[1][2], self.ray[2][1], self.ray[2][2])
+						for i = 1, #self.ray do
+							love.graphics.line(self.ray[i][1][1], self.ray[i][1][2], self.ray[i][2][1], self.ray[i][2][2])
+						end
 					end
 				end
 			end})

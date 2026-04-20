@@ -3,5 +3,4 @@ return {
 	rayLength = 32,
 	rayTurnLength = 36,
 	crossTrafficRay = 98,
-	sideRayLength = 52,
 }
