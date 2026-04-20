@@ -411,7 +411,7 @@ local function UpdateCrash(self, dt)
 	self.rotation = self.body:getAngle()
 	self.crashTimer = self.crashTimer or Global.CRASH_FADEOUT
 	self.crashTimer = util.UpdateTimer(self.crashTimer, dt)
-	if math.random() < 0.021 * (0.5 + 0.5 * (self.crashTimer or 0)/Global.CRASH_FADEOUT) then
+	if math.random() < (0.021 * (0.5 + 0.5 * (self.crashTimer or 0)/Global.CRASH_FADEOUT))*dt*300 then
 		EffectsHandler.SpawnEffect(self.crashEffect or "fireball_explode", self.pos, {scale = 0.05 + math.random()*0.1})
 	end
 	if not self.crashTimer then
@@ -599,7 +599,7 @@ local function NewCar(self, new_gridPos, targetPos, targetBuildingPos, wrongSide
 			end
 		end
 		if self.def.isDrunk then
-			if math.random() < 0.03 then
+			if math.random() < 10*dt then
 				EffectsHandler.SpawnEffect("drunk_popup", self.pos, {velocity = util.Add({0, -0.2 - 0.5*math.random()}, util.RandomPointInCircle(0.15))})
 			end
 		end
