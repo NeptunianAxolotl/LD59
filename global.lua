@@ -35,7 +35,7 @@ local globals = {
 	FLOATING_TEXT_COL   = {0.95,0.95,0.9},
 	
 	BIG_ROAD_SPEED = 1.35,
-	HIGHWAY_EXTRA = 2,
+	HIGHWAY_EXTRA = 3,
 	
 	LIGHT_CLICK_NOTIFY_COOLDOWN = 0.7,
 	
@@ -55,7 +55,7 @@ local globals = {
 	CRASH_PROGRESS_MULT = 4,
 	CRASH_THRESHOLD_MULT = 1,
 	SPECIAL_SPAWN_MULT = 0.2,
-	INIT_LEVEL = "two suburbs",
+	INIT_LEVEL = "mainMap",
 	GRID_SIZE = 100,
 	VIEW_PADDING = 50,
 	DRIVE_OFFSET = 0.22,

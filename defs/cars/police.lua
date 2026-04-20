@@ -1,25 +1,21 @@
 local shared = util.CopyTable(require('defs/cars/shared'))
 
 local def = {
-	image = "ambulance",
-	maxSpeed = 1.25,
-	ignoreRoadSpeed = true,
+	image = "police_car",
+	maxSpeed = 0.92,
 	accel = 1.7,
-	deccel = 5,
+	deccel = 3.2,
 	slowDeccel = 2,
-	crashEndurance = 3,
-	crashDamage = 1,
+	crashEndurance = 1.7,
+	crashDamage = 0.8,
 	choiceRatio = {
 		straight = 0.35,
 		left = 0.25,
 		right = 0.2,
 	},
-	cureSickness = true,
 	friendlyCollision = true,
-	ignoreSignal = true,
-	stopTimer = 0.2,
-	wrongTurnChance = 0,
-	returnAfterVisit = "doctor",
+	stopTimer = 0.4,
+	wrongTurnChance = 0.2,
 }
 
 return util.MergeTable(def, shared)

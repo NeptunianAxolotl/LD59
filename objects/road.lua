@@ -217,7 +217,7 @@ local function NewRoad(self, terrain)
 		if self.signal then
 			drawQueue:push({y=100 + self.pos[2]*0.01; f=function()
 				local timeProp = self.signalTime / self.def.signalTimeMax[self.autoSignalState] / Global.MANUAL_CLICK_BOOST
-				local alpha = math.min(1, timeProp + 0.5)
+				local alpha = math.min(1, timeProp + 0.5)*0.8
 				for i = 0, self.def.signalCount - 1 do
 					local lightImage = self.signal[i] and "traffic_red" or "traffic_green"
 					local color = self.signal[i] and Global.TRAFFIC_RED or Global.TRAFFIC_GREEN

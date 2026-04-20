@@ -10,13 +10,13 @@ local function FindRoadSpawn(self, pos)
 		return
 	end
 	pos = pos or self.pos
-	for i = 1, 3, 2 do
+	for i = 2, 0, -2 do
 		local road = TerrainHandler.GetRoadAtPos(pos, i)
 		if road and self.def.exitRoadTypes[road.def.name] then
 			return road, i
 		end
 	end
-	for i = 0, 2, 2 do
+	for i = 3, 1, -2 do
 		local road = TerrainHandler.GetRoadAtPos(pos, i)
 		if road and self.def.exitRoadTypes[road.def.name] then
 			return road, i

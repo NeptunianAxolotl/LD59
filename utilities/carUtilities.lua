@@ -11,17 +11,23 @@ end
 
 function carUtil.GetBestMatchingDirectionTowards(pos, target, filter, notAllowed)
 	local best = carUtil.GetDirectionTowards(pos, target)
-	if filter[best] and best ~= notAllowed then
+	local onlyOneDimension = (pos[2] == target[2]) or (pos[1] == target[1])
+	if filter[best] and best ~= notAllowed and (best == 1 or best == 3 or onlyOneDimension) then
+		-- Only take the best option if we are done.
+		-- Otherwise, take a short leg to get onto the road of the best option.
 		return best
 	end
 	local secondBest
 	if best%2 == 0 then
-		secondBest = (pos[2] > target[2] - 0.5 + math.random()) and 3 or 1
+		secondBest = (pos[2] > target[2]) and 3 or 1
 	else
-		secondBest = (pos[1] > target[1] - 0.5 + math.random()) and 2 or 0
+		secondBest = (pos[1] > target[1]) and 2 or 0
 	end
 	if filter[secondBest] and secondBest ~= notAllowed then
 		return secondBest
+	end
+	if filter[best] and best ~= notAllowed then
+		return best
 	end
 	local thirdBest = (secondBest - 2)%4
 	if filter[thirdBest] and thirdBest ~= notAllowed then

@@ -22,6 +22,7 @@ local function LoadImage(resData)
 	}
 	data.xOffset = (resData.xOffset or 0.5)*imageWidth
 	data.yOffset = (resData.yOffset or 0.5)*imageHeight
+	data.frontDir = resData.frontDir or 0
 	
 	return data
 end
@@ -46,6 +47,7 @@ local function LoadIsoImage(resData)
 	}
 	data.xOffset = (resData.xOffset or 0.5)*imageWidth
 	data.yOffset = (resData.yOffset or 0.5)*imageHeight
+	data.frontDir = resData.frontDir or 0
 	
 	return data
 end
@@ -82,6 +84,7 @@ local function LoadAnimation(resData)
 	
 	data.xOffset = (resData.xOffset or 0.5)*width
 	data.yOffset = (resData.yOffset or 0.5)*imageHeight
+	data.frontDir = resData.frontDir or 0
 	
 	data.quadWidth = width
 	data.quadHeight = imageHeight
@@ -214,7 +217,7 @@ function api.DrawImageInternal(data, x, y, rotation, alpha, scale, color)
 		((color and color[4]) or 1)*(alpha or 1)
 	)
 	
-	love.graphics.draw(data.image, x, y, rotation, data.xScale*scaleX, data.yScale*scaleY, data.xOffset, data.yOffset, 0, 0)
+	love.graphics.draw(data.image, x, y, rotation - data.frontDir, data.xScale*scaleX, data.yScale*scaleY, data.xOffset, data.yOffset, 0, 0)
 end
 
 function api.DrawImage(name, x, y, rotation, alpha, scale, color)

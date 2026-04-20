@@ -194,6 +194,12 @@ function api.KeyPressed(key, scancode, isRepeat)
 		self.editor.tile = "t_road"
 	elseif key == "n" then
 		self.editor.tile = "pub"
+	elseif key == "y" then
+		self.editor.tile = "big_house"
+	elseif key == "u" then
+		self.editor.tile = "firehouse"
+	elseif key == "i" then
+		self.editor.tile = "station"
 	elseif key == "s" then
 		self.editor.tile = "cross_road"
 	elseif key == "z" then
@@ -262,11 +268,16 @@ R - Rotate
 E - Rotate backwards
 Q - Straight Road
 D - Straight Road Large
+W - Curve
+A - T-Int
+
 H - House
 B - Doctor
 N - Pub
-W - Curve
-A - T-Int
+Y - Theatre
+U - Firehouse
+I - Station
+
 S - Cross
 Z - Delete
 ]], 20, offset, 500, "left")
