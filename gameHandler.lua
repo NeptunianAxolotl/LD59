@@ -1,13 +1,8 @@
 
-local Font = require("include/font")
-
-local EffectsHandler = require("effectsHandler")
-local Resources = require("resourceHandler")
-MusicHandler = require("musicHandler")
+local LevelDefs = require("defs/levelDefs")
 
 local self = {}
 local api = {}
-local world
 
 --------------------------------------------------
 -- Updating
@@ -19,17 +14,37 @@ local world
 
 function api.ToggleMenu()
 	self.menuOpen = not self.menuOpen
-	world.SetMenuState(self.menuOpen)
+	self.world.SetMenuState(self.menuOpen)
 end
 
 function api.MousePressed(x, y)
 	local windowX, windowY = love.window.getMode()
-	local drawPos = world.ScreenToInterface({windowX, 0})
+	local drawPos = self.world.ScreenToInterface({windowX, 0})
 end
 
 function api.LightWasClicked()
 	
 end
+
+function api.KeyPressed(key, scancode, isRepeat)
+	if key == "c" and (love.keyboard.isDown("lctrl") or love.keyboard.isDown("rctrl")) then
+		api.AdvanceLevel()
+	end
+end
+
+--------------------------------------------------
+-- Game Stage
+--------------------------------------------------
+
+function api.AdvanceLevel()
+	if not LevelDefs[self.level + 1] then
+		return
+	end
+	self.level = self.level + 1
+	self.levelData = LevelDefs[self.level]
+	LevelHandler.UpdateMap(self.levelData.map)
+end
+
 
 --------------------------------------------------
 -- Filtering
@@ -64,6 +79,12 @@ function api.Update(dt)
 		end
 		self.drunkTimer = Global.REDRUNK_TIMER
 	end
+	
+	self.levelTimer = (self.levelTimer or 5)
+	--self.levelTimer = util.UpdateTimer(self.levelTimer, dt)
+	if not self.levelTimer then
+		api.AdvanceLevel()
+	end
 end
 
 function api.DrawInterface()
@@ -72,9 +93,12 @@ end
 
 function api.Initialize(parentWorld)
 	self = {}
+	self.level = 1
+	self.levelData = LevelDefs[self.level]
+	
 	self.sicknessTimer = 2
 	self.drunkTimer = 2
-	world = parentWorld
+	self.world = parentWorld
 end
 
 return api

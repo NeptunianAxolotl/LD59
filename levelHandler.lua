@@ -55,6 +55,12 @@ local function SetupLevel()
 		BuildingHandler.AddBuilding(building.pos, building.buildingType)
 	end
 	TerrainHandler.SetDimensions(self.map.dimensions)
+	BuildingHandler.UpdateRoadChanges()
+end
+
+function api.UpdateMap(name)
+	self.map = require("defs/maps/" .. name)
+	SetupLevel()
 end
 
 function api.LoadLevel(name)
@@ -200,6 +206,8 @@ function api.KeyPressed(key, scancode, isRepeat)
 		self.editor.tile = "firehouse"
 	elseif key == "i" then
 		self.editor.tile = "station"
+	elseif key == "o" then
+		self.editor.tile = "kebab"
 	elseif key == "s" then
 		self.editor.tile = "cross_road"
 	elseif key == "z" then
@@ -277,6 +285,7 @@ N - Pub
 Y - Theatre
 U - Firehouse
 I - Station
+O - Kebab
 
 S - Cross
 Z - Delete

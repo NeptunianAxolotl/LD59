@@ -178,8 +178,6 @@ local function CheckImpendingCollision(self)
 		end
 		if (self.prevDriveOffset or 0) > (self.driveOffset or 0) and self.driveOffset < Global.DRIVE_OFFSET then -- Going to centre.
 			unit = util.RotateVector(unit, 0.23)
-		else
-			unit = util.RotateVector(unit, 0.12)
 		end
 	end
 	local secondRayLength = 26
@@ -197,7 +195,7 @@ local function CheckImpendingCollision(self)
 	
 	
 	self.secondRay = {}
-	self.secondRay[1] = util.Add(self.pos, util.Mult(12, util.RotateVector(baseUnit, -0.8)))
+	self.secondRay[1] = util.Add(self.pos, util.Mult(9, util.RotateVector(baseUnit, -0.8)))
 	self.secondRay[2] = util.Add(self.secondRay[1], util.Mult(secondRayLength, util.RotateVector(baseUnit, sideRayRotate * 0.5 + secondRayRotate)))
 	
 	self.thirdRay = {}
@@ -326,13 +324,15 @@ local function NewCar(self, new_gridPos, targetPos, targetBuildingPos, wrongSide
 	end
 	self.pos, self.rotation = GetPositionOnRoad(self, self.currentPath, self.roadWorldPos, self.roadWorldRot, self.travel)
 	
-	self.body = love.physics.newBody(PhysicsHandler.GetPhysicsWorld(), self.pos[1], self.pos[2], "dynamic")
-	local shape = love.physics.newRectangleShape(self.def.length, self.def.width)
-	self.fixture = love.physics.newFixture(self.body, shape, 1)
-	self.body:setLinearDamping(Global.BODY_DAMPENING)
-	self.body:setAngularDamping(Global.BODY_DAMPENING*0.9)
-	local physicsData = {carID = carID}
-	self.fixture:setUserData(physicsData)
+	if self.pos then
+		self.body = love.physics.newBody(PhysicsHandler.GetPhysicsWorld(), self.pos[1], self.pos[2], "dynamic")
+		local shape = love.physics.newRectangleShape(self.def.length, self.def.width)
+		self.fixture = love.physics.newFixture(self.body, shape, 1)
+		self.body:setLinearDamping(Global.BODY_DAMPENING)
+		self.body:setAngularDamping(Global.BODY_DAMPENING*0.9)
+		local physicsData = {carID = carID}
+		self.fixture:setUserData(physicsData)
+	end
 	
 	function self.IsDestroyed()
 		return self.toDestroy
