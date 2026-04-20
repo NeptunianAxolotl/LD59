@@ -13,13 +13,14 @@ local funkLength = 63.998
 local irishLength = 5.342
 local turnLength = 10.688
 
+local funkCount = 0
 
 local funkTable = {}
 local irishTable = {}
 local turnTable = {}
 
 local timeUntilPhaseCheck = 0
-local currentPhase = 2 -- 1 = Irish; 2 = Turn; 3 = Funk
+local currentPhase = 3 -- 1 = Irish; 2 = Turn; 3 = Funk
 
 function getCurrentPhaseTable()
     if currentPhase == 1
@@ -58,6 +59,10 @@ function setLevels(table)
      local turnSource = love.audio.newSource("resources/music/" .. def.turnFile, "static")
      local funkSource = love.audio.newSource("resources/music/" .. def.funkFile, "static")
      
+     irishSource:setLooping(true)
+     turnSource:setLooping(true)
+     funkSource:setLooping(true)
+     
      irishTable[layerNum] = {volMult = def.volMult, source = irishSource}
      turnTable[layerNum]  = {volMult = def.volMult, source = turnSource}
      funkTable[layerNum]  = {volMult = def.volMult, source = funkSource}
@@ -94,17 +99,49 @@ function api.Update(dt)
     then
     local currentTable = getCurrentPhaseTable()
     
-    -- Stop playback on the current tracks
-    for i = 1, 9 do
-      currentTable[i].source:stop()
+    -- Changeover: determine what track to play
+    -- 1 = Irish; 2 = Turn; 3 = Funk
+    if currentPhase == 3
+    then funkCount = funkCount + 1
+    else funkCount = 0
     end
     
-    -- Changeover: determine what track to play
+    -- high chaos: play irish unless playing funk, in which case play turn
+    -- low chaos: play funk, with turn after every two funks
+    -- TODO: measure chaos, forced to assume low for now
+    local highChaos = false
     
-    -- TODO: bind this to chaos, fixed to iterating linearly for testing
-    if currentPhase == 3
-    then currentPhase = 1
-      else currentPhase = currentPhase + 1
+    local newPhase = 0
+    
+    if highChaos
+    then 
+      if currentPhase ~= 3
+        then newPhase = 1
+        else newPhase = 2
+      end
+    else
+      if currentPhase == 2
+      then newPhase = 3
+      end
+    end
+    
+    if funkCount > 1
+    then newPhase = 2
+    end
+    
+    
+    -- Stop playback on the current tracks if different
+    if newPhase ~= currentPhase
+    then
+      for i = 1, 9 do
+        currentTable[i].source:stop()
+      end
+      currentPhase = newPhase
+      setLevels()
+      currentTable = getCurrentPhaseTable()
+      for i = 1, 9 do
+        currentTable[i].source:play()
+      end
     end
     
     -- Update the timers and set levels
@@ -115,12 +152,8 @@ function api.Update(dt)
     else timeUntilPhaseCheck = turnLength
     end
     
-    currentTable = getCurrentPhaseTable()
-    setLevels()
     
-    for i = 1, 9 do
-      currentTable[i].source:play()
-    end
+    
     
   end
 	
