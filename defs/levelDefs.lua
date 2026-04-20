@@ -15,7 +15,7 @@ local levelDefs = {
 			basic_car = 80,
 		},
 		heading = "Traffic Terror",
-		text = "You control the signals.\n - Click a light to toggle it.\n - Click the middle of an intersection to lock it.\nToggle lights a few times to continue.",
+		text = "You control the signals.\n - Click a light to toggle it.\n - Click the middle of an intersection to lock it.\n - Drivers ignore lights that are red for too long.\nToggle a few lights to continue.",
 		showStats = {
 			"lightClicks",
 		},
@@ -52,7 +52,7 @@ local levelDefs = {
 			drunkArrivals_sinceAccident = true,
 		},
 		advanceRequirement = {
-			drunkArrivals_sinceAccident = 3,
+			drunkArrivals_sinceAccident = 5,
 		},
 	},
 	{
@@ -73,10 +73,14 @@ local levelDefs = {
 		text = "Something was a bit wrong with the pub parma. Clear the way for ambulances to reach houses with sickness.",
 		showStats = {
 			"accidents",
-			"sick_deaths",
+			"sickDeaths",
+			"returnedToDoctor",
 		},
 		flashStat = {
 			drunkArrivals_sinceAccident = true,
+		},
+		advanceRequirement = {
+			returnedToDoctor = 5,
 		},
 	},
 	{

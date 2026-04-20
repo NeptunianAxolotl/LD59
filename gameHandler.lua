@@ -13,6 +13,8 @@ local statName = {
 	lightClicks = "Toggle Lights",
 	accidents = "Crashes",
 	drunkArrivals_sinceAccident = "Drunks returned home since last crash",
+	sickDeaths = "Succumbed to Illness",
+	returnedToDoctor = "In Hospital",
 }
 
 --------------------------------------------------
