@@ -611,7 +611,7 @@ local function NewCar(self, new_gridPos, targetPos, targetBuildingPos, wrongSide
 	end
 	
 	function self.Draw(drawQueue)
-		drawQueue:push({y=0; f=function()
+		drawQueue:push({y=self.pos[1]*0.001 + self.pos[2]*0.0001; f=function()
 			if not self.toDestroy then
 				local alpha = 1 - (self.spawnTimer or 0) / Global.SPAWN_FADE_TIME
 				if self.arriveTimer and ((not self.def.returnAfterVisit) or self.returning) then

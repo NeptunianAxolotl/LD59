@@ -15,7 +15,7 @@ return {
 		targets = util.NormaliseWeightedList({
 			{
 				target = "highway",
-				probability = 2,
+				probability = 1.6,
 			},
 			{
 				target = "house",
