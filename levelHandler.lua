@@ -4,6 +4,7 @@ local api = {}
 
 local RoadDefs = util.LoadDefDirectory("defs/road")
 local BuildingDefs = util.LoadDefDirectory("defs/building")
+local DoodadDefs = util.LoadDefDirectory("defs/doodads")
 
 function api.Width()
 	return self.width
@@ -38,6 +39,11 @@ function api.WorldToGrid(pos)
 	return {x, y}
 end
 
+function api.WorldToGridSpaceNoSnap(pos)
+	local x, y = (pos[1] - 0.5*self.tileSize)/self.tileSize, (pos[2] - 0.5*self.tileSize)/self.tileSize
+	return {x, y}
+end
+
 function api.GridToWorld(pos)
 	local x, y = (pos[1] + 0.5)*self.tileSize, (pos[2] + 0.5)*self.tileSize
 	return {x, y}
@@ -60,7 +66,7 @@ local function SetupLevel()
 	end
 	for i = 1, #self.map.doodads do
 		local doodad = self.map.doodads[i]
-		DoodadHandler.AddDoodad(doodad.pos, doodad.buildingType)
+		DoodadHandler.AddDoodad(doodad.pos, doodad.doodadType)
 	end
 	TerrainHandler.SetDimensions(self.map.dimensions)
 	BuildingHandler.UpdateRoadChanges()
@@ -140,6 +146,8 @@ function api.MousePressed(mx, my, button)
 		BuildingHandler.UpdateRoadChanges()
 	elseif BuildingDefs[self.editor.tile] then
 		BuildingHandler.AddBuilding(clickPos, self.editor.tile)
+	elseif DoodadDefs[self.editor.tile] then
+		DoodadHandler.AddDoodad(api.WorldToGridSpaceNoSnap({mx, my}), self.editor.tile)
 	end
 end
 
@@ -222,6 +230,12 @@ function api.KeyPressed(key, scancode, isRepeat)
 		self.editor.tile = "cross_road"
 	elseif key == "z" then
 		self.editor.tile = "delete"
+	elseif key == "kp1" then
+		self.editor.tile = "tree1"
+	elseif key == "kp2" then
+		self.editor.tile = "tree2"
+	elseif key == "kp3" then
+		self.editor.tile = "tree3"
 	end
 	print(key)
 end
