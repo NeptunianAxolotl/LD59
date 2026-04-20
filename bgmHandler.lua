@@ -20,7 +20,7 @@ local irishTable = {}
 local turnTable = {}
 
 local timeUntilPhaseCheck = 0
-local currentPhase = 3 -- 1 = Irish; 2 = Turn; 3 = Funk
+local currentPhase = 0 -- 1 = Irish; 2 = Turn; 3 = Funk
 
 function getCurrentPhaseTable()
     if currentPhase == 1
@@ -107,7 +107,7 @@ function api.Update(dt)
     end
     
     -- high chaos: play irish unless playing funk, in which case play turn
-    -- low chaos: play funk, with turn after every two funks
+    -- low chaos: play funk, with turn after every two funks, unless playing irish, in which case play turn
     -- TODO: measure chaos, forced to assume low for now
     local highChaos = false
     
@@ -120,8 +120,9 @@ function api.Update(dt)
         else newPhase = 2
       end
     else
-      if currentPhase == 2
-      then newPhase = 3
+      if currentPhase == 1
+      then newPhase = 2
+      else newPhase = 3
       end
     end
     
@@ -170,6 +171,7 @@ function api.addPoints(mult)
       currentTable[i].source:stop()
     end
     timeUntilPhaseCheck = 0
+    currentPhase = 0
     DISABLED = true
   end
   
