@@ -67,6 +67,8 @@ local function EnterRoad(self, road, entry)
 		self.wantTurn, self.nextPath = PickTurnOption(self, self.nextRoad, self.targetPos, (newDestination - 2)%4)
 		if self.wantTurn == "right" and self.nextRoad.IsIntersection() then
 			self.driveOffset = Global.DRIVE_OFFSET * (self.currentPath.centreLimit or 0.05)
+		elseif self.wantTurn == "straight" and self.nextRoad.IsIntersection() then
+			self.driveOffset = Global.DRIVE_OFFSET * 1.1
 		end
 	else
 		self.nextPath = false
@@ -95,7 +97,7 @@ local function ApplyWobble(self)
 	if not (self.def.wobble and self.wobblePos) then
 		return 0, 0
 	end
-	return self.wobblePos, -self.wobbleAccel*2.8
+	return self.wobblePos * 0.6, -self.wobbleAccel*2.8
 end
 
 local function WobbleSpeedMult(self)
@@ -169,9 +171,9 @@ local function CheckImpendingCollision(self)
 			rayLength = rayLength * 0.35
 		end
 		if (self.prevDriveOffset or 0) > (self.driveOffset or 0) then -- Going to centre.
-			unit = util.RotateVector(unit, 0.22)
+			unit = util.RotateVector(unit, 0.23)
 		else
-			unit = util.RotateVector(unit, 0.1)
+			unit = util.RotateVector(unit, 0.12)
 		end
 	end
 	if self.currentPath.turn == "straight" and self.wantTurn ~= "right" then
@@ -197,10 +199,10 @@ local function CheckCurrentRoadStop(self)
 	end
 	local travelRemaining = 1 - self.travel / self.currentPath.length
 	if self.currentPath.turn == "left" then
-		travelRemaining = travelRemaining*1.2
+		travelRemaining = travelRemaining*1.05
 	end
 	local signalBlocked = ((self.currentRoad.stopSignal%2 == self.currentPath.entry%2) or self.currentRoad.OrangeSignal())
-	if travelRemaining > 0.95 and signalBlocked then
+	if travelRemaining > 0.96 and signalBlocked then
 		return true, signalBlocked
 	end
 	return false, signalBlocked
