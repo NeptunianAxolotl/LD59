@@ -102,14 +102,14 @@ local function ApplyWobble(self)
 	if not (self.def.wobble and self.wobblePos) then
 		return 0, 0
 	end
-	return math.max(-0.2, math.min(0.2, self.wobblePos * 0.6)), -self.wobbleAccel*2.8
+	return math.max(-0.1, math.min(0.1, self.wobblePos)) * 0.6, -self.wobbleAccel*2.8
 end
 
 local function WobbleSpeedMult(self)
 	if not (self.def.wobble and self.wobblePos) then
 		return 1
 	end
-	return 1 / (1 + math.abs(self.wobblePos)*10)
+	return 1 / (1 + math.min(0.1, math.abs(self.wobblePos))*10)
 end
 
 local function GetPositionOnRoad(self, path, worldPos, worldRot, travel)
@@ -185,11 +185,13 @@ local function CheckImpendingCollision(self)
 		end
 	end
 	local secondRayLength = 25
+	local thirdRayLength = 20
 	local secondRayRotate = 0
 	if self.currentPath.turn == "straight" and self.wantTurn ~= "right" then
 		secondRayLength = 32
 	elseif self.currentPath.turn == "left" then
 		secondRayLength = 16
+		thirdRayLength = 14
 	end
 	if self.currentPath and self.nextPath and not self.currentPath.trafficFromLeft and not self.nextPath.trafficFromLeft and self.currentPath.turn == "straight" then
 		secondRayRotate = -0.5
@@ -205,7 +207,7 @@ local function CheckImpendingCollision(self)
 	
 	self.thirdRay = {}
 	self.thirdRay[1] = util.Add(baseRay, util.Mult(8, util.RotateVector(baseUnit, 1.55)))
-	self.thirdRay[2] = util.Add(self.thirdRay[1], util.Mult(22, util.RotateVector(baseUnit, sideRayRotate)))
+	self.thirdRay[2] = util.Add(self.thirdRay[1], util.Mult(thirdRayLength, util.RotateVector(baseUnit, sideRayRotate)))
 	
 	self.ray[2] = util.Add(self.ray[1], util.Mult(rayLength, unit))
 	rayWasHit = false
@@ -482,6 +484,8 @@ local function NewCar(self, new_gridPos, targetPos, targetBuildingPos, wrongSide
 	function self.Crash()
 		if not self.isCrashed then
 			GameHandler.AddStat("accidents")
+			GameHandler.ResetStat("doctorVisitHouse_sinceAccident")
+			GameHandler.ResetStat("returnedToDoctor_sinceAccident")
 			GameHandler.ResetStat("drunkArrivals_sinceAccident")
 			EffectsHandler.SpawnEffect("fireball_explode", self.pos, {scale = 0.2 + math.random()*0.1})
 		end
@@ -514,16 +518,19 @@ local function NewCar(self, new_gridPos, targetPos, targetBuildingPos, wrongSide
 		if self.arrived then
 			self.arrived = false
 			self.arriveAtTarget = false
-			local visitMightReturn = self.targetBuildingPos and BuildingHandler.VisitBuilding(targetBuildingPos, self)
 			if self.def.onArrive then
 				local building = self.targetBuildingPos and BuildingHandler.GetBuildingAtPos(self.targetBuildingPos)
 				self.def.onArrive(self, building)
 			end
+			local visitMightReturn = self.targetBuildingPos and BuildingHandler.VisitBuilding(targetBuildingPos, self)
 			if (not visitMightReturn) or self.returning or (not self.def.returnAfterVisit) or not FindReturnAfterVisit(self) then
 				self.toDestroy = true
 				DoDestroy(self)
 				return true
 			end
+		end
+		if self.sickness then
+			self.sickness = self.sickness + dt*GameHandler.GetLevelRate("sickness")
 		end
 		UpdateMovement(self, dt)
 		UpdateCrash(self, dt)
@@ -540,7 +547,12 @@ local function NewCar(self, new_gridPos, targetPos, targetBuildingPos, wrongSide
 				if self.crashTimer and self.crashTimer < 1 then
 					alpha = alpha * self.crashTimer
 				end
-				Resources.DrawImage(self.def.image, self.pos[1], self.pos[2], self.rotation, alpha, LevelHandler.TileScale())
+				local color = {1, 1, 1}
+				if self.sickness then
+					color[1] = 1 - 0.9* math.max(0, self.sickness*0.1)
+					color[3] = color[1]
+				end
+				Resources.DrawImage(self.def.image, self.pos[1], self.pos[2], self.rotation, alpha, LevelHandler.TileScale(), color)
 				if DrawDebug() then
 					--if self.nextRoad and self.nextRoadEntry and self.nextRoad.SignalActive(self.nextRoadEntry) then
 					--	love.graphics.setLineWidth(3)

@@ -52,14 +52,14 @@ local levelDefs = {
 			drunkArrivals_sinceAccident = true,
 		},
 		advanceRequirement = {
-			drunkArrivals_sinceAccident = 5,
+			drunkArrivals_sinceAccident = 3,
 		},
 	},
 	{
 		-- Hospital is introduced.
 		map = "level_2",
 		spawnMult = {
-			sickness = 0.8,
+			sickness = 0.7,
 			houseBecomeSick = 1,
 		},
 		carLimit = {
@@ -75,12 +75,14 @@ local levelDefs = {
 			"accidents",
 			"sickDeaths",
 			"returnedToDoctor",
+			"doctorVisitHouse",
 		},
 		flashStat = {
 			drunkArrivals_sinceAccident = true,
 		},
 		advanceRequirement = {
-			returnedToDoctor = 5,
+			doctorVisitHouse = 10,
+			returnedToDoctor = 10,
 		},
 	},
 	{

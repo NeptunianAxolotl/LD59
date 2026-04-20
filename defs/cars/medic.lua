@@ -20,6 +20,17 @@ local def = {
 	stopTimer = 0.2,
 	wrongTurnChance = 0,
 	returnAfterVisit = "doctor",
+	onArrive = function (self, building)
+		if building and building.def.name == "house" then
+			self.sickness = (building.sickness or 0) / 3
+			GameHandler.AddStat("doctorVisitHouse_sinceAccident")
+			GameHandler.AddStat("doctorVisitHouse")
+		end
+		if building and building.def.name == "doctor" then
+			GameHandler.AddStat("returnedToDoctor_sinceAccident")
+			GameHandler.AddStat("returnedToDoctor")
+		end
+	end,
 }
 
 return util.MergeTable(def, shared)

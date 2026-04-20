@@ -136,6 +136,9 @@ local function NewBuilding(self)
 		end
 		if self.sickness then
 			self.sickness = self.sickness + dt*GameHandler.GetLevelRate("sickness")
+			if self.sickness > 1 then
+				
+			end
 		end
 		self.medicOnTheWayTimer = util.UpdateTimer(self.medicOnTheWayTimer, dt)
 		if self.def.spawnCar then
