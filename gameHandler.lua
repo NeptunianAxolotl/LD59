@@ -12,10 +12,18 @@ local api = {}
 local statName = {
 	lightClicks = "Toggle Lights",
 	accidents = "Crashes",
-	drunkArrivals_sinceDrunkAccident = "Drunks home without incident",
-	sickDeaths = "Succumbed to Illness",
-	returnedToDoctor = "Patients in Hospital",
+	drunkArrivals_sinceDrunkAccident = "Patrons returned without crashing",
+	sickDeaths = "Fatal illnesses",
+	returnedToDoctor = "Patients treated",
 	doctorVisitHouse = "Patients picked up",
+	drunkArrivals_sinceCaught = "Patrons returned without being caught",
+	arrests = "Arrests made",
+	firePutOut = "Fires extinguished",
+	fireDeaths = "Lost to fire",
+	kebabEaten = "Kebabs consumed",
+	cinemaVisits = "Seats filled",
+	totalDeaths = "Death toll",
+	totalTime = "Total time",
 }
 
 --------------------------------------------------
@@ -49,6 +57,11 @@ function api.CarSpawnAllowed(name)
 	return limit > CarHandler.GetCarCount(name)
 end
 
+function api.ResetFireCounter()
+	-- Only one fire at a time
+	self.fireTimer = 1
+end
+
 --------------------------------------------------
 -- API
 --------------------------------------------------
@@ -73,8 +86,8 @@ function api.RegisterCollision()
 end
 
 function api.KeyPressed(key, scancode, isRepeat)
-	if key == "c" and (love.keyboard.isDown("lctrl") or love.keyboard.isDown("rctrl")) then
-		api.AdvanceLevel()
+	if key == "t" and (love.keyboard.isDown("lctrl") or love.keyboard.isDown("rctrl")) then
+		api.AdvanceLevel(true)
 	end
 end
 
@@ -94,16 +107,17 @@ function api.GetTargetType(distribution)
 	if not self.levelData.redrawChance then
 		return result
 	end
-	while self.levelData.redrawChance[result] or 0 > math.random() do
+	while (self.levelData.redrawChance[result.target or 0] or 0) > math.random() do
 		result = util.SampleListWeighted(distribution)
 	end
 	return result
 end
 
-function api.AdvanceLevel()
+function api.AdvanceLevel(usedSkip)
 	if not LevelDefs[self.level + 1] then
 		return
 	end
+	self.usedSkip = self.usedSkip or usedSkip
 	self.level = self.level + 1
 	self.levelData = LevelDefs[self.level]
 	if self.levelData.map then
@@ -115,8 +129,11 @@ function api.AdvanceLevel()
 			api.ResetStat(self.levelData.resetStats[i])
 		end
 	end
+	if self.levelData.makeRecord then
+		api.AddStat("totalTime", api.GetStat("timeTaken"))
+		api.AddStat("totalDeaths", api.GetStat("fireDeaths") + api.GetStat("sickDeaths") + api.GetStat("accidents"))
+	end
 end
-
 
 --------------------------------------------------
 -- Filtering
@@ -124,6 +141,10 @@ end
 
 local function CanInfect(building)
 	return building.def.canBeSick and not building.sickness
+end
+
+local function CanBeFire(building)
+	return building.def.canCatchFire and not building.onFire
 end
 
 local function CanBeDrunk(building)
@@ -156,6 +177,14 @@ function api.Update(dt)
 		end
 		self.sicknessTimer = 1
 	end
+	self.fireTimer = util.UpdateTimer(self.fireTimer, dt*0.1*api.GetLevelRate("houseBecomeFire"))
+	if not self.fireTimer then
+		local building = BuildingHandler.GetRandomMatchingBuilding(false, false, CanBeFire)
+		if building then
+			building.onFire = 0
+		end
+		self.fireTimer = 1
+	end
 	self.drunkTimer = util.UpdateTimer(self.drunkTimer, dt)
 	if not self.drunkTimer then
 		local building = BuildingHandler.GetRandomMatchingBuilding(false, false, CanBeDrunk)
@@ -184,7 +213,7 @@ function api.DrawInterface()
 	end
 	local drawX = 40
 	local width = 660
-	local height = 470
+	local height = 480
 	local offset = 20
 	if self.world.GetCosmos().GetLocalisation() then
 		drawX = Global.WINDOW_X - width - drawX
@@ -215,16 +244,23 @@ function api.DrawInterface()
 		local req = self.levelData.advanceRequirement
 		for i = 1, #self.levelData.showStats do
 			local name = self.levelData.showStats[i]
-			offset = offset - 40
+			offset = offset - 36
 			if self.flashStat[name] and (self.flashStat[name])%0.3 < 0.15 then
 				love.graphics.setColor(0.8, 0.8, 0.8, 1)
 			else
 				love.graphics.setColor(0, 0, 0, 1)
 			end
+			local formatted = math.floor(api.GetStat(name))
+			if name == "totalTime" then
+				formatted = util.SecondsToString(api.GetStat(name))
+				if self.usedSkip then
+					formatted = formatted .. " (with skip)"
+				end
+			end
 			if req and req[name] then
-				love.graphics.printf((statName[name] or name) .. ": " .. math.floor(api.GetStat(name)) .. " / " .. req[name], drawX + 40, offset, width - 50, "left")
+				love.graphics.printf((statName[name] or name) .. ": " .. formatted .. " / " .. req[name], drawX + 40, offset, width - 50, "left")
 			else
-				love.graphics.printf((statName[name] or name) .. ": " .. math.floor(api.GetStat(name)), drawX + 40, offset, width - 50, "left")
+				love.graphics.printf((statName[name] or name) .. ": " .. formatted, drawX + 40, offset, width - 50, "left")
 			end
 		end
 	end
@@ -239,6 +275,7 @@ function api.Initialize(parentWorld)
 	self.flashStat = {}
 	
 	self.sicknessTimer = 0.02
+	self.fireTimer = 0.2
 	self.drunkTimer = 2
 	self.world = parentWorld
 end

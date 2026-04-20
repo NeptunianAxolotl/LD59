@@ -40,9 +40,11 @@ return {
 		"house_blue",
 	},
 	canBeSick = true,
+	canCatchFire = true,
 	canBeDrunk = true,
 	exitRoadTypes = {
 		straight = true,
+		ped_crossing = true,
 	},
 	spawnCar = {
 		baseRate = 9,
@@ -51,11 +53,15 @@ return {
 		targets = util.NormaliseWeightedList({
 			{
 				target = "highway",
-				probability = 2,
+				probability = 1.8,
 			},
 			{
 				target = "house",
 				probability = 1,
+			},
+			{
+				target = "big_house",
+				probability = 0.08,
 			},
 		})
 	},

@@ -412,7 +412,7 @@ local function UpdateCrash(self, dt)
 	self.crashTimer = self.crashTimer or Global.CRASH_FADEOUT
 	self.crashTimer = util.UpdateTimer(self.crashTimer, dt)
 	if math.random() < 0.021 * (0.5 + 0.5 * (self.crashTimer or 0)/Global.CRASH_FADEOUT) then
-		EffectsHandler.SpawnEffect("fireball_explode", self.pos, {scale = 0.05 + math.random()*0.1})
+		EffectsHandler.SpawnEffect(self.crashEffect or "fireball_explode", self.pos, {scale = 0.05 + math.random()*0.1})
 	end
 	if not self.crashTimer then
 		self.toDestroy = true
@@ -538,8 +538,8 @@ local function NewCar(self, new_gridPos, targetPos, targetBuildingPos, wrongSide
 		return false
 	end
 	
-	function self.Crash()
-		if not self.isCrashed then
+	function self.Crash(fakeCrash)
+		if not self.isCrashed and not fakeCrash then
 			GameHandler.AddStat("accidents")
 			GameHandler.ResetStat("doctorVisitHouse_sinceAccident")
 			GameHandler.ResetStat("returnedToDoctor_sinceAccident")
@@ -550,6 +550,14 @@ local function NewCar(self, new_gridPos, targetPos, targetBuildingPos, wrongSide
 			EffectsHandler.SpawnEffect("fireball_explode", self.pos, {scale = 0.2 + math.random()*0.1})
 		end
 		self.isCrashed = true
+	end
+	
+	function self.GetArrested(policeCar)
+		self.Crash(true)
+		self.isArrested = true
+		GameHandler.ResetStat("drunkArrivals_sinceCaught")
+		GameHandler.AddStat("arrests")
+		self.crashEffect = "police_explode"
 	end
 	
 	function self.CountIfMatch(toMatch)
@@ -596,7 +604,7 @@ local function NewCar(self, new_gridPos, targetPos, targetBuildingPos, wrongSide
 			end
 		end
 		if self.sickness then
-			self.sickness = self.sickness + dt*GameHandler.GetLevelRate("sickness")
+			self.sickness = self.sickness + dt*Global.SICK_PROGRESS_RATE*GameHandler.GetLevelRate("sickness")
 			if self.sickness > 1 then
 				self.sickDeathTimer = self.sickDeathTimer or Global.SICK_DEATH_TIME
 				self.sickDeathTimer = util.UpdateTimer(self.sickDeathTimer, dt)
@@ -608,13 +616,23 @@ local function NewCar(self, new_gridPos, targetPos, targetBuildingPos, wrongSide
 		else
 			self.sickDeathTimer = nil
 		end
+		if self.def.policeRadius then
+			local drunkCar = CarHandler.GetNearbyDrunk(self.pos, self.def.policeRadius)
+			if drunkCar then
+				drunkCar.GetArrested()
+				EffectsHandler.SpawnEffect("police_explode", self.pos, {scale = self.def.policeRadius/160})
+			end
+		end
 		UpdateMovement(self, dt)
 		UpdateCrash(self, dt)
 		UpdateBlocked(self, dt)
+		if self.def.animate then
+			self.anim = (self.anim or 0) + dt
+		end
 	end
 	
 	function self.Draw(drawQueue)
-		drawQueue:push({y=self.pos[1]*0.001 + self.pos[2]*0.0001; f=function()
+		drawQueue:push({y=self.pos[1]*0.001 + self.pos[2]*0.0001 - (self.def.behind or 0); f=function()
 			if not self.toDestroy then
 				local alpha = 1 - (self.spawnTimer or 0) / Global.SPAWN_FADE_TIME
 				if self.arriveTimer and ((not self.def.returnAfterVisit) or self.returning) then
@@ -629,7 +647,11 @@ local function NewCar(self, new_gridPos, targetPos, targetBuildingPos, wrongSide
 					color[3] = color[1]
 				end
 				Resources.DrawImage(self.image, self.pos[1], self.pos[2], self.rotation, alpha, LevelHandler.TileScale(), color)
-				if self.targetBuildingPos and self.def.isDrunk or self.def.cureSickness then
+				if self.def.animate and not self.isCrashed then
+					local aIndex = (self.anim or 0)%0.3 > 0.15 and 1 or 2
+					Resources.DrawImage(self.def.animate[aIndex], self.pos[1], self.pos[2], self.rotation, alpha, LevelHandler.TileScale())
+				end
+				if self.targetBuildingPos and self.def.drawTargetPos then
 					local draw = LevelHandler.GridToWorld(self.targetBuildingPos)
 					love.graphics.setLineWidth(1)
 					love.graphics.setColor(0.8, 0.8, 0.8, 0.35)

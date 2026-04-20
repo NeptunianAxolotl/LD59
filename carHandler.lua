@@ -44,6 +44,22 @@ function api.NotifyGameLoss()
 	-- Blow up all the cars
 end
 
+local function ClosestToWithDist(car, maxDistSq, pos)
+	if car.isDestroyed or not car.def.isDrunk or car.isArrested then
+		return false
+	end
+	local distSq = util.DistSq(car.pos, pos)
+	if maxDistSq and distSq > maxDistSq then
+		return false
+	end
+	return distSq
+end
+
+function api.GetNearbyDrunk(pos, maxDist)
+	local maxDistSq = maxDist*maxDist
+	local other, minValue = IterableMap.GetMinimum(self.carList, ClosestToWithDist, maxDistSq, pos)
+	return other
+end
 
 function api.GetCarCount(carType)
 	return IterableMap.SumWithFunction(self.carList, "CountIfMatch", carType)

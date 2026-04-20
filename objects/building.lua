@@ -63,7 +63,7 @@ end
 
 local function SpawnRegularCar(self)
 	local roadPos, targetBuilding = CouldSpawnCar(self)
-	if not (roadPos and targetBuilding) then
+	if not (roadPos and targetBuilding and targetBuilding.roadSpawn) then
 		self.nextTargetBuildingPos = false
 		self.nextTargetType = false
 		return false
@@ -160,6 +160,16 @@ local function NewBuilding(self)
 			self.medicOnTheWayTimer = false
 			return true -- Medic needs to return
 		end
+		if car.def.cureFire and self.onFire then
+			self.onFire = math.min(self.onFire, 5) - 4
+			if self.onFire < 0 then
+				self.onFire = false
+				GameHandler.AddStat("firePutOut")
+			end
+		end
+		if self.def.isCinema then
+			GameHandler.AddStat("cinemaVisits")
+		end
 	end
 	
 	function self.Update(dt)
@@ -170,7 +180,7 @@ local function NewBuilding(self)
 			self.def.updateFunc(self, dt)
 		end
 		if self.sickness then
-			self.sickness = self.sickness + dt*GameHandler.GetLevelRate("sickness")
+			self.sickness = self.sickness + dt*Global.SICK_PROGRESS_RATE*GameHandler.GetLevelRate("sickness")
 			if self.sickness > 1 then
 				self.sickDeathTimer = self.sickDeathTimer or Global.SICK_DEATH_TIME
 				self.sickDeathTimer = util.UpdateTimer(self.sickDeathTimer, dt)
@@ -182,6 +192,21 @@ local function NewBuilding(self)
 		else
 			self.sickDeathTimer = nil
 		end
+		if self.onFire then
+			GameHandler.ResetFireCounter() -- Only one fire at a time.
+			self.onFire = self.onFire + dt*Global.FIRE_PROGRESS_RATE*GameHandler.GetLevelRate("fireRate")
+			if self.onFire > 1 then
+				self.fireDeathTimer = self.fireDeathTimer or Global.FIRE_DEATH_TIME
+				self.fireDeathTimer = util.UpdateTimer(self.fireDeathTimer, dt)
+				if not self.fireDeathTimer then
+					EffectsHandler.SpawnEffect("fire_popup", self.worldPos, {velocity = {0, -0.3 - 0.6*math.random()}})
+					GameHandler.AddStat("fireDeaths")
+				end
+			end
+		else
+			self.fireDeathTimer = nil
+		end
+		
 		self.medicOnTheWayTimer = util.UpdateTimer(self.medicOnTheWayTimer, dt)
 		if self.def.spawnCar and CouldSpawnCar(self) then
 			self.spawnTimer = (self.spawnTimer or GetSpawnTime(self)) - dt * GameHandler.GetLevelRate(self.buildingType)
@@ -212,11 +237,14 @@ local function NewBuilding(self)
 			end
 			drawQueue:push({y=-50 + self.pos[2]; f=function()
 				Resources.DrawImage(self.image, self.worldPos[1], self.worldPos[2], self.worldRot, false, LevelHandler.TileScale())
+				if self.onFire then
+					Resources.DrawImage("fire_on_house", self.worldPos[1], self.worldPos[2], self.worldRot, math.max(0, self.onFire*0.1)*0.5 + 0.5, LevelHandler.TileScale()*0.6*(0.95 + math.random()*0.1))
+				end
 				if self.sickness then
 					local color = {1, 1, 1}
 					color[1] = 1 - 0.9* math.max(0, self.sickness*0.1)
 					color[3] = color[1]
-					Resources.DrawImage("sickness_popup", self.worldPos[1], self.worldPos[2], self.worldRot, math.max(0, self.sickness*0.1)*0.8, LevelHandler.TileScale()*0.4, color)
+					Resources.DrawImage("sickness_popup", self.worldPos[1], self.worldPos[2], self.worldRot, math.max(0, self.sickness*0.1)*0.6 + 0.3, LevelHandler.TileScale()*0.4, color)
 				end
 				if self.def.extraDrawFunc then
 					self.def.extraDrawFunc(self, self.worldPos, self.worldRot)

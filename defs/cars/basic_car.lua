@@ -23,6 +23,7 @@ local def = {
 	friendlyCollision = true,
 	stopTimer = 0.4,
 	wrongTurnChance = 0.2,
+	behind = 2,
 }
 
 return util.MergeTable(def, shared)

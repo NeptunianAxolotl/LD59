@@ -21,6 +21,10 @@ return {
 				target = "house",
 				probability = 1,
 			},
+			{
+				target = "big_house",
+				probability = 0.08,
+			},
 		})
 	},
 }

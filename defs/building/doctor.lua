@@ -7,7 +7,6 @@ return {
 		straight_large = true,
 	},
 	spawnOtherIfBlocked = true,
-	drawTargetPos = true,
 	spawnMatchFunc = function (other)
 		return other.sickness and not other.medicOnTheWayTimer
 	end,

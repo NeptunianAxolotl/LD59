@@ -47,9 +47,9 @@ local function GetHoveredMouseDrawing(self)
 	if not self.signal then
 		return
 	end
-	local lockAlpha = (not self.automaticSignal and 0.8)
+	local lockAlpha = (not self.automaticSignal and 0.76)
 	if TerrainHandler.IsGridHovered(self.pos) then
-		lockAlpha = (lockAlpha or 0.08)*1.2
+		lockAlpha = (lockAlpha or 0.08)*1.3
 	end
 	local hoveredSignal = false
 	for i = 0, self.def.signalCount - 1 do

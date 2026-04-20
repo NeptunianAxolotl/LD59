@@ -3,15 +3,15 @@ return {
 	baseImage = "firehouse",
 	destinationType = "firehouse",
 	exitRoadTypes = {
-		straight_long = true,
+		straight_large = true,
 	},
-	spawnOtherIfBlocked = true,
+	spawnWhenBlocked = true,
 	spawnMatchFunc = function (other)
 		return other.onFire
 	end,
 	spawnCar = {
-		baseRate = 8 * Global.SPECIAL_SPAWN_MULT,
-		randomProp = 0.3,
+		baseRate = 3 * Global.SPECIAL_SPAWN_MULT,
+		randomProp = 0.1,
 		carType = "firetruck",
 		targets = util.NormaliseWeightedList({
 			{
@@ -28,6 +28,14 @@ return {
 			},
 			{
 				target = "doctor",
+				probability = 1,
+			},
+			{
+				target = "big_house",
+				probability = 1,
+			},
+			{
+				target = "kebab",
 				probability = 1,
 			},
 		})

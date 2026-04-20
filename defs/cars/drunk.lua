@@ -20,6 +20,7 @@ local def = {
 		left = 0.25,
 		right = 0.2,
 	},
+	drawTargetPos = true,
 	isDrunk = true,
 	ignoreSignal = true,
 	ignoreCollision = true,
@@ -38,8 +39,11 @@ local def = {
 			GameHandler.AddStat("drunkArrivals_sinceAccident")
 			GameHandler.AddStat("drunkArrivals_sinceDrunkAccident")
 			GameHandler.AddStat("drunkArrivals")
+		elseif building and building.def.name == "kebab" then
+			GameHandler.AddStat("kebabEaten")
 		end
 	end,
+	behind = 1,
 }
 
 return util.MergeTable(def, shared)

@@ -7,9 +7,10 @@ return {
 		straight_large = true,
 	},
 	spawnWhenBlocked = true,
+	canCatchFire = true,
 	drawTargetPos = true,
 	spawnMatchFunc = function (other)
-		return other.isDrunk and not other.drunkArriving
+		return (other.isDrunk and not other.drunkArriving) or other.def.alwaysDrunk
 	end,
 	onDispatchCar = function(self, targetBuilding)
 		targetBuilding.drunkArriving = true
@@ -25,7 +26,11 @@ return {
 			},
 			{
 				target = "kebab",
-				probability = 1,
+				probability = 0.7,
+			},
+			{
+				target = "big_house",
+				probability = 0.05,
 			},
 		})
 	},

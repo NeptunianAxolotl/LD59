@@ -8,6 +8,7 @@ local menuOptions = {
 	"Music Volume",
 	"Fullscreen",
 	"Drive on the Right",
+	"Skip Task",
 	--"Brutal",
 }
 local menuTooltip = {
@@ -76,6 +77,8 @@ function api.MousePressed(x, y, button)
 	elseif self.hoveredMenuAction == "Drive on the Left" then
 		menuOptions[5] = "Drive on the Right"
 		self.cosmos.ToggleLocalisation()
+	elseif self.hoveredMenuAction == "Skip Task" then
+		GameHandler.AdvanceLevel(true)
 	elseif self.menuOpen then
 		self.menuOpen = false
 		return true
