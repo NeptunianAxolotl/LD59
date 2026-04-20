@@ -10,7 +10,7 @@ return {
 		return other.onFire
 	end,
 	spawnCar = {
-		baseRate = 3 * Global.SPECIAL_SPAWN_MULT,
+		baseRate = 2.6 * Global.SPECIAL_SPAWN_MULT,
 		randomProp = 0.1,
 		carType = "firetruck",
 		targets = util.NormaliseWeightedList({
