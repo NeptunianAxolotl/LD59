@@ -55,6 +55,12 @@ local function SetupLevel()
 		BuildingHandler.AddBuilding(building.pos, building.buildingType)
 	end
 	TerrainHandler.SetDimensions(self.map.dimensions)
+	BuildingHandler.UpdateRoadChanges()
+end
+
+function api.UpdateMap(name)
+	self.map = require("defs/maps/" .. name)
+	SetupLevel()
 end
 
 function api.LoadLevel(name)
@@ -117,9 +123,6 @@ function api.MousePressed(mx, my, button)
 		return
 	end
 	local clickPos = api.WorldToGrid({mx, my})
-	if not TerrainHandler.IsInBounds(clickPos) then
-		return
-	end
 	if self.editor.tile == "delete" then
 		TerrainHandler.RemoveRoad(clickPos)
 		BuildingHandler.RemoveBuilding(clickPos)
@@ -197,6 +200,14 @@ function api.KeyPressed(key, scancode, isRepeat)
 		self.editor.tile = "t_road"
 	elseif key == "n" then
 		self.editor.tile = "pub"
+	elseif key == "y" then
+		self.editor.tile = "big_house"
+	elseif key == "u" then
+		self.editor.tile = "firehouse"
+	elseif key == "i" then
+		self.editor.tile = "station"
+	elseif key == "o" then
+		self.editor.tile = "kebab"
 	elseif key == "s" then
 		self.editor.tile = "cross_road"
 	elseif key == "z" then
@@ -265,11 +276,17 @@ R - Rotate
 E - Rotate backwards
 Q - Straight Road
 D - Straight Road Large
+W - Curve
+A - T-Int
+
 H - House
 B - Doctor
 N - Pub
-W - Curve
-A - T-Int
+Y - Theatre
+U - Firehouse
+I - Station
+O - Kebab
+
 S - Cross
 Z - Delete
 ]], 20, offset, 500, "left")

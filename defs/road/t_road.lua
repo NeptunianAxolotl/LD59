@@ -38,6 +38,7 @@ return {
 			destination = 0,
 			length = 1,
 			turn = "straight",
+			trafficFromLeft = true,
 			speedMult = Global.BIG_ROAD_SPEED,
 		},
 		{ -- Inner corner, right to bottom
@@ -51,6 +52,7 @@ return {
 			destination = 1,
 			length = roadUtil.GetInnerLength(),
 			turn = "left",
+			trafficFromLeft = true,
 		},
 		{ -- Inner corner, bottom to left
 			posFunc = function (t, enterOffset, destOffset)
@@ -76,6 +78,7 @@ return {
 			destination = 0,
 			length = roadUtil.GetFullLanedOuterLength(),
 			turn = "right",
+			trafficFromLeft = true,
 		},
 		{ -- Outer corner, left to bottom
 			posFunc = function (t, enterOffset, destOffset)

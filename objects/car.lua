@@ -56,7 +56,7 @@ local function EnterRoad(self, road, entry)
 			if CheckArriveWrongSide(self, building, entry) then
 				self.destination = (self.destination + 2)%4
 				self.currentPath = roadUtil.GetWrongSideArrivePath(self, entry, dest, self.roadWorldRot)
-				self.arriveTravelReq = self.currentPath.length - 0.35
+				self.arriveTravelReq = self.currentPath.length - 0.32
 				self.arriveWrongSide = true
 			end
 		end
@@ -64,7 +64,7 @@ local function EnterRoad(self, road, entry)
 	
 	self.nextRoad = TerrainHandler.GetRoadAtPos(self.currentRoadPos, self.destination)
 	if self.nextRoad then
-		self.nextRoadEntry = (self.nextRoad.rotation + self.destination)%4
+		self.nextRoadEntry = (self.destination - self.nextRoad.rotation - 2)%4
 		self.wantTurn, self.nextPath = PickTurnOption(self, self.nextRoad, self.targetPos, (newDestination - 2)%4)
 		if self.wantTurn == "right" and self.nextRoad.IsIntersection() then
 			self.driveOffset = Global.DRIVE_OFFSET * (self.currentPath.centreLimit or 0.05)
@@ -178,21 +178,25 @@ local function CheckImpendingCollision(self)
 		end
 		if (self.prevDriveOffset or 0) > (self.driveOffset or 0) and self.driveOffset < Global.DRIVE_OFFSET then -- Going to centre.
 			unit = util.RotateVector(unit, 0.23)
-		else
-			unit = util.RotateVector(unit, 0.12)
 		end
 	end
-	local thirdRayLength = 28
+	local secondRayLength = 26
+	local secondRayRotate = 0
 	if self.currentPath.turn == "straight" and self.wantTurn ~= "right" then
-		thirdRayLength = 52
+		secondRayLength = 40
+	end
+	if self.currentPath and self.nextPath and not self.currentPath.trafficFromLeft and not self.nextPath.trafficFromLeft then
+		secondRayRotate = -0.5
+		secondRayLength = 55
 	end
 	if (self.maxSpeedMult or 1) > 1 then
 		rayLength = rayLength * (self.maxSpeedMult or 1)
 	end
 	
+	
 	self.secondRay = {}
-	self.secondRay[1] = util.Add(self.pos, util.Mult(12, util.RotateVector(baseUnit, -0.8)))
-	self.secondRay[2] = util.Add(self.secondRay[1], util.Mult(thirdRayLength, util.RotateVector(baseUnit, sideRayRotate * 0.5)))
+	self.secondRay[1] = util.Add(self.pos, util.Mult(9, util.RotateVector(baseUnit, -0.8)))
+	self.secondRay[2] = util.Add(self.secondRay[1], util.Mult(secondRayLength, util.RotateVector(baseUnit, sideRayRotate * 0.5 + secondRayRotate)))
 	
 	self.thirdRay = {}
 	self.thirdRay[1] = util.Add(baseRay, util.Mult(6, util.RotateVector(baseUnit, 1.55)))
@@ -229,10 +233,10 @@ local function CheckNextRoadStop(self)
 	end
 	local travelRemaining = 1 - self.travel / self.currentPath.length
 	if self.currentPath.turn == "left" then
-		travelRemaining = travelRemaining * 0.4
+		travelRemaining = travelRemaining * 0.6
 	end
 	local myLightsBlocked = self.nextRoad.SignalActive(self.nextRoadEntry)
-	if travelRemaining < 0.2 * (self.maxSpeedMult or 1) and myLightsBlocked then
+	if travelRemaining < 0.18 * (self.maxSpeedMult or 1) and myLightsBlocked then
 		return true
 	end
 	return false
@@ -268,7 +272,8 @@ local function FindReturnAfterVisit(self)
 			self.currentPath = self.currentRoad.GetPathAndNextRoad(false, (self.destination + 2)%4)
 		end
 		self.wantTurn = false
-		self.travel = Global.SPAWN_TRAVEL + 0.05
+		self.travel = Global.SPAWN_TRAVEL
+		self.prevDriveOffset = Global.RETURN_SPAWN_OFFSET * 0.75
 	end
 	return true
 end
@@ -319,13 +324,15 @@ local function NewCar(self, new_gridPos, targetPos, targetBuildingPos, wrongSide
 	end
 	self.pos, self.rotation = GetPositionOnRoad(self, self.currentPath, self.roadWorldPos, self.roadWorldRot, self.travel)
 	
-	self.body = love.physics.newBody(PhysicsHandler.GetPhysicsWorld(), self.pos[1], self.pos[2], "dynamic")
-	local shape = love.physics.newRectangleShape(self.def.length, self.def.width)
-	self.fixture = love.physics.newFixture(self.body, shape, 1)
-	self.body:setLinearDamping(Global.BODY_DAMPENING)
-	self.body:setAngularDamping(Global.BODY_DAMPENING*0.75)
-	local physicsData = {carID = carID}
-	self.fixture:setUserData(physicsData)
+	if self.pos then
+		self.body = love.physics.newBody(PhysicsHandler.GetPhysicsWorld(), self.pos[1], self.pos[2], "dynamic")
+		local shape = love.physics.newRectangleShape(self.def.length, self.def.width)
+		self.fixture = love.physics.newFixture(self.body, shape, 1)
+		self.body:setLinearDamping(Global.BODY_DAMPENING)
+		self.body:setAngularDamping(Global.BODY_DAMPENING*0.9)
+		local physicsData = {carID = carID}
+		self.fixture:setUserData(physicsData)
+	end
 	
 	function self.IsDestroyed()
 		return self.toDestroy
@@ -341,7 +348,18 @@ local function NewCar(self, new_gridPos, targetPos, targetBuildingPos, wrongSide
 	
 	function self.DoHardBrake()
 		self.speed = 0
-		--self.travel = math.max(0, self.travel - 0.1)
+	end
+	
+	function self.DoCrashBackup(other)
+		if other and other.travel < self.travel and not self.isCrashed and not other.isCrashed then
+			if util.Eq(other.currentRoadPos, self.currentRoadPos) then
+				local mP = self.currentPath
+				local oP = other.currentPath
+				if mp and oP and mP.entry == oP.entry and mP.destination == oP.destination then
+					self.travel = math.max(0, self.travel - 0.02)
+				end
+			end
+		end
 	end
 	
 	function self.Crash()
@@ -477,15 +495,18 @@ local function NewCar(self, new_gridPos, targetPos, targetBuildingPos, wrongSide
 				end
 				Resources.DrawImage(self.def.image, self.pos[1], self.pos[2], self.rotation, alpha, LevelHandler.TileScale())
 				if DrawDebug() then
+					--if self.nextRoad and self.nextRoadEntry and self.nextRoad.SignalActive(self.nextRoadEntry) then
+					--	love.graphics.setLineWidth(3)
+					--	love.graphics.setColor(1, 0, 1, 0.8)
+					--	love.graphics.circle("fill", self.pos[1], self.pos[2], 10)
+					--end
 					if self.ray and not self.signalBlocked then
+						love.graphics.setLineWidth(1)
 						if self.sneakingThrough then
-							love.graphics.setLineWidth(3)
 							love.graphics.setColor(0.8, 0.8, 0, 0.8)
 						elseif self.collision then
-							love.graphics.setLineWidth(4)
 							love.graphics.setColor(0.8, 0, 0, 0.8)
 						else
-							love.graphics.setLineWidth(2)
 							love.graphics.setColor(0, 0.8, 0, 0.8)
 						end
 						love.graphics.line(self.ray[1][1], self.ray[1][2], self.ray[2][1], self.ray[2][2])

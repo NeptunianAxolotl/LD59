@@ -26,8 +26,24 @@ end
 			api.AddRoad(pos, "straight_large", 0)
 		end
 	end
-	BuildingHandler.ReplaceHighwayEnds(ends)endfunction api.IsInBounds(gPos)	return self.dimensions.left <= gPos[1] and self.dimensions.right > gPos[1] and self.dimensions.top <= gPos[2] and self.dimensions.bottom > gPos[2]endfunction api.RemoveRoad(pos)	local x, y = pos[1], pos[2]	if self.roadPos[x] and self.roadPos[x][y] then		local oldRoad = IterableMap.Get(self.roadList, self.roadPos[x][y])		if oldRoad then			oldRoad.toDestroy = true		end		IterableMap.Remove(self.roadList, self.roadPos[x][y])
-		self.roadPos[x][y] = nil	endendfunction api.AddRoad(pos, roadType, rotation, setData)	local x, y = pos[1], pos[2]	self.roadPos[x] = self.roadPos[x] or {}	api.RemoveRoad(pos)	local def = RoadDefs[roadType]	local roadData = (setData and util.CopyTable(setData)) or {}	roadData.pos = pos	roadData.roadType = roadType	roadData.rotation = rotation	self.roadPos[x][y] = IterableMap.Add(self.roadList, NewRoad(roadData, api))endfunction api.GetRoadAtPos(gridPos, addDirection)	local x, y = gridPos[1], gridPos[2]	if addDirection == 0 then		x = x + 1	elseif addDirection == 1 then		y = y + 1	elseif addDirection == 2 then		x = x - 1	elseif addDirection == 3 then		y = y - 1	end	if not (self.roadPos[x] and self.roadPos[x][y]) then		return false	end	return IterableMap.Get(self.roadList, self.roadPos[x][y])end
+	BuildingHandler.ReplaceHighwayEnds(ends)endfunction api.IsInBounds(gPos)	return self.dimensions.left <= gPos[1] and self.dimensions.right > gPos[1] and self.dimensions.top <= gPos[2] and self.dimensions.bottom > gPos[2]end
+
+local function RoadMatches(pos, roadType, rotation)
+	local x, y = pos[1], pos[2]
+	if self.roadPos[x] and self.roadPos[x][y] then
+		local oldRoad = IterableMap.Get(self.roadList, self.roadPos[x][y])
+		if oldRoad.roadType == roadType and oldRoad.rotation == rotation then
+			return true
+		end
+	end
+	return false
+endfunction api.RemoveRoad(pos)	local x, y = pos[1], pos[2]	if self.roadPos[x] and self.roadPos[x][y] then		local oldRoad = IterableMap.Get(self.roadList, self.roadPos[x][y])		if oldRoad then			oldRoad.toDestroy = true		end		IterableMap.Remove(self.roadList, self.roadPos[x][y])
+		self.roadPos[x][y] = nil	endend
+function api.AddRoad(pos, roadType, rotation, setData)
+	if RoadMatches(pos, roadType, rotation) then
+		return
+	end	local x, y = pos[1], pos[2]	self.roadPos[x] = self.roadPos[x] or {}	api.RemoveRoad(pos)
+	BuildingHandler.RemoveBuilding(pos)	local def = RoadDefs[roadType]	local roadData = (setData and util.CopyTable(setData)) or {}	roadData.pos = pos	roadData.roadType = roadType	roadData.rotation = rotation	self.roadPos[x][y] = IterableMap.Add(self.roadList, NewRoad(roadData, api))endfunction api.GetRoadAtPos(gridPos, addDirection)	local x, y = gridPos[1], gridPos[2]	if addDirection == 0 then		x = x + 1	elseif addDirection == 1 then		y = y + 1	elseif addDirection == 2 then		x = x - 1	elseif addDirection == 3 then		y = y - 1	end	if not (self.roadPos[x] and self.roadPos[x][y]) then		return false	end	return IterableMap.Get(self.roadList, self.roadPos[x][y])end
 
 function api.Blocked(gridPos)
 	return api.GetRoadAtPos(gridPos) or BuildingHandler.GetBuildingAtPos(gridPos)

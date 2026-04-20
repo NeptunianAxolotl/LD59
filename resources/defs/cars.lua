@@ -7,8 +7,9 @@ for i = 1, #names do
 		name = names[i],
 		file = "resources/images/cars/" .. names[i] .. ".png",
 		form = "image",
-		xScale = Global.GRID_SIZE/400,
-		yScale = Global.GRID_SIZE/400,
+		xScale = Global.GRID_SIZE/550,
+		yScale = Global.GRID_SIZE/550,
+		frontDir = -math.pi/2,
 		xOffset = 0.5,
 		yOffset = 0.5,
 	}

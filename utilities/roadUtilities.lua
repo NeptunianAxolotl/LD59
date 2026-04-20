@@ -150,7 +150,7 @@ local circleLength = 1.3
 local function DoFullTurn(t, enterOffset, destOffset)
 	if t < circleLength then
 		local prop = math.pi*t/circleLength
-		local radius = (enterOffset + destOffset)*0.36
+		local radius = (enterOffset + destOffset)*0.35
 		local cent = {0, destOffset - radius}
 		return {cent[1] + radius * math.sin(prop), cent[2] - radius * math.cos(prop)}
 	else
@@ -207,8 +207,9 @@ end
 
 local clearZones = {}
 clearZones[0] = {
-	{{-0.15, -0.6}, {0.45, -Global.DRIVE_OFFSET * 0.35}},
+	{{-0.15, -0.6}, {0.55, -Global.DRIVE_OFFSET * 0.35}},
 	{{-1.2, -Global.DRIVE_OFFSET}, {0.4, -Global.DRIVE_OFFSET}},
+	{{-0.5, -Global.DRIVE_OFFSET}, {0.0, -0.6}},
 }
 
 for i = 1, 3 do

@@ -4,6 +4,8 @@ local data = {}
 
 local xOffset = {
 	pub = 0.25,
+	big_house = 0.25,
+	firehouse = 0.75,
 }
 
 for i = 1, #names do

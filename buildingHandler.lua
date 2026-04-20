@@ -35,10 +35,26 @@ function api.UpdateRoadChanges()
 	IterableMap.ApplySelf(self.buildingList, "FindRoad")
 end
 
+local function BuildingMatches(pos, buildingType)
+	local x, y = pos[1], pos[2]
+	if self.buildingPos[x] and self.buildingPos[x][y] then
+		local oldBuilding = IterableMap.Get(self.buildingList, self.buildingPos[x][y])
+		if oldBuilding and oldBuilding.buildingType == buildingType then
+			return true
+		end
+	end
+	return false
+end
+
+
 function api.AddBuilding(pos, buildingType)
+	if BuildingMatches(pos, buildingType) then
+		return
+	end
 	local x, y = pos[1], pos[2]
 	self.buildingPos[x] = self.buildingPos[x] or {}
 	api.RemoveBuilding(pos)
+	TerrainHandler.RemoveRoad(pos)
 	local buildingID = IterableMap.GetNewUniqueKey(self.buildingList)
 	local buildingData = {
 		buildingType = buildingType,
