@@ -227,7 +227,7 @@ local levelDefs = {
 			pub = 0.9,
 			house = 1.1,
 			station = 1,
-			houseBecomeSick = 0.8,
+			houseBecomeSick = 0.6,
 			houseBecomeFire = 0.35,
 		},
 		carLimit = {
