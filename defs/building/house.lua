@@ -8,7 +8,7 @@ return {
 		straight = true,
 	},
 	spawnCar = {
-		baseRate = 12,
+		baseRate = 9,
 		randomProp = 0.6,
 		carType = "basic_car",
 		targets = util.NormaliseWeightedList({

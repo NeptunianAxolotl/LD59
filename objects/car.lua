@@ -38,6 +38,13 @@ local function EnterRoad(self, road, entry)
 	if not newPath then
 		return false
 	end
+	-- Enough movement to move
+	if self.currentRoad and self.blockedInFrontTime and self.blockedInFrontTime > Global.SWEAR_AT_LIGHT_TIME then
+		self.currentRoad.blockedInFrontTime = math.max(self.blockedInFrontTime*Global.BLOCK_TIMER_TO_ROAD, self.currentRoad.blockedInFrontTime or 0)
+	end
+	self.blockedInFrontTime = false
+	self.blockedInFront = false
+	
 	self.currentRoad = road
 	self.currentRoadPos = road.GetPos()
 	self.roadWorldPos = road.GetWorldPos()
@@ -45,9 +52,9 @@ local function EnterRoad(self, road, entry)
 	self.currentPath = newPath
 	self.destination = newDestination
 	
-	-- Enough movement to move
-	self.blockedInFrontTime = false
+	self.blockedInFrontTime = road.blockedInFrontTime
 	self.blockedInFront = false
+	
 	
 	self.prevDriveOffset = self.driveOffset
 	self.driveOffset = Global.DRIVE_OFFSET
@@ -148,6 +155,9 @@ local function CheckImpendingCollision(self)
 		--self.suddenStop = 4
 	
 	local sideRayRotate = 0
+	local secondRayLength = 25
+	local thirdRayLength = 20
+	
 	if self.currentPath.turn == "left" then
 		unit = util.RotateVector(unit, -1.2 * travelRemaining)
 		rayLength = self.def.rayTurnLength
@@ -159,6 +169,7 @@ local function CheckImpendingCollision(self)
 				self.ray[1] = util.Add(self.ray[1], util.Mult(26*math.min(travelRemaining, 0.9)/0.9, util.RotateVector(unit, 0.8)))
 				rayLength = self.def.crossTrafficRay
 				unit = util.RotateVector(unit, math.min(travelRemaining, 0.9)*2.45 - 2.1)
+				thirdRayLength = false
 			else
 				self.ray[1] = util.Add(self.ray[1], util.Mult(6, util.RotateVector(unit, -0.6)))
 				rayLength = rayLength
@@ -184,17 +195,17 @@ local function CheckImpendingCollision(self)
 			unit = util.RotateVector(unit, 0.23)
 		end
 	end
-	local secondRayLength = 25
-	local thirdRayLength = 20
-	local secondRayRotate = 0
+	
+	local secondRayRotate = sideRayRotate * 0.5
 	if self.currentPath.turn == "straight" and self.wantTurn ~= "right" then
 		secondRayLength = 32
 	elseif self.currentPath.turn == "left" then
-		secondRayLength = 16
+		secondRayLength = 30
 		thirdRayLength = 14
+		secondRayRotate = -0.85
 	end
 	if self.currentPath and self.nextPath and not self.currentPath.trafficFromLeft and not self.nextPath.trafficFromLeft and self.currentPath.turn == "straight" then
-		secondRayRotate = -0.5
+		secondRayRotate = sideRayRotate * 0.5 - 0.5
 		secondRayLength = 45
 	end
 	if (self.maxSpeedMult or 1) > 1 then
@@ -203,11 +214,15 @@ local function CheckImpendingCollision(self)
 	
 	self.secondRay = {}
 	self.secondRay[1] = util.Add(self.pos, util.Mult(9, util.RotateVector(baseUnit, -0.8)))
-	self.secondRay[2] = util.Add(self.secondRay[1], util.Mult(secondRayLength, util.RotateVector(baseUnit, sideRayRotate * 0.5 + secondRayRotate)))
+	self.secondRay[2] = util.Add(self.secondRay[1], util.Mult(secondRayLength, util.RotateVector(baseUnit, secondRayRotate)))
 	
-	self.thirdRay = {}
-	self.thirdRay[1] = util.Add(baseRay, util.Mult(8, util.RotateVector(baseUnit, 1.55)))
-	self.thirdRay[2] = util.Add(self.thirdRay[1], util.Mult(thirdRayLength, util.RotateVector(baseUnit, sideRayRotate)))
+	if thirdRayLength then
+		self.thirdRay = {}
+		self.thirdRay[1] = util.Add(baseRay, util.Mult(8, util.RotateVector(baseUnit, 1.55)))
+		self.thirdRay[2] = util.Add(self.thirdRay[1], util.Mult(thirdRayLength, util.RotateVector(baseUnit, sideRayRotate)))
+	else
+		self.thirdRay = false
+	end
 	
 	self.ray[2] = util.Add(self.ray[1], util.Mult(rayLength, unit))
 	rayWasHit = false
@@ -215,7 +230,9 @@ local function CheckImpendingCollision(self)
 	if self.secondRay then
 		world:rayCast(self.secondRay[1][1], self.secondRay[1][2], self.secondRay[2][1], self.secondRay[2][2], RayHit)
 	end
-	world:rayCast(self.thirdRay[1][1], self.thirdRay[1][2], self.thirdRay[2][1], self.thirdRay[2][2], RayHit)
+	if thirdRayLength then
+		world:rayCast(self.thirdRay[1][1], self.thirdRay[1][2], self.thirdRay[2][1], self.thirdRay[2][2], RayHit)
+	end
 	return rayWasHit
 end
 
@@ -403,6 +420,11 @@ end
 local function UpdateBlocked(self, dt)
 	if self.blockedInFront then
 		self.blockedInFrontTime = (self.blockedInFrontTime or 0) + dt*GameHandler.GetLevelRate("forceRedLight")
+	elseif self.blockedInFrontTime then
+		self.blockedInFrontTime = self.blockedInFrontTime - dt*GameHandler.GetLevelRate("forceRedLight")*0.6
+		if self.blockedInFrontTime < 0 then
+			self.blockedInFrontTime = false
+		end
 	end
 	if not self.blockedInFrontTime then
 		return

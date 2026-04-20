@@ -12,7 +12,6 @@ local levelDefs = {
 			house = 0.65,
 		},
 		carLimit = {
-			basic_car = 80,
 		},
 		heading = "Traffic Terror",
 		text = "You control the signals.\n - Click a light to toggle it.\n - Click the middle of an intersection to lock it.\n - Drivers ignore lights that are red for too long.\nToggle a few lights to continue.",
@@ -31,14 +30,13 @@ local levelDefs = {
 		map = "level_1",
 		spawnMult = {
 			highway = 3.2,
-			house = 0.2,
+			house = 0.3,
 			pub = 2,
 			houseBecomeSick = 0,
-			forceRedLight = 0.6,
+			forceRedLight = 0.8,
 		},
 		carLimit = {
-			basic_car = 80,
-			drunk = 2,
+			drunk = 1,
 		},
 		redrawChance = {
 			house = 0.6,
@@ -60,12 +58,14 @@ local levelDefs = {
 		-- Hospital is introduced.
 		map = "level_2",
 		spawnMult = {
+			highway = 0.8,
+			house = 0.9,
+			pub = 0.8,
 			sickness = 0.7,
 			houseBecomeSick = 1,
 		},
 		carLimit = {
-			basic_car = 80,
-			drunk = 2,
+			drunk = 3,
 		},
 		redrawChance = {
 			house = 0.6,
@@ -88,9 +88,6 @@ local levelDefs = {
 	},
 	{
 		map = "level_3",
-	},
-	{
-		map = "level_4",
 	},
 	{
 		map = "level_5",

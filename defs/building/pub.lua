@@ -14,8 +14,8 @@ return {
 		targetBuilding.drunkArriving = true
 	end,
 	spawnCar = {
-		baseRate = 8 * Global.SPECIAL_SPAWN_MULT,
-		randomProp = 0.3,
+		baseRate = 10 * Global.SPECIAL_SPAWN_MULT,
+		randomProp = 0.2,
 		carType = "drunk",
 		targets = util.NormaliseWeightedList({
 			{

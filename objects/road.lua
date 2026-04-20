@@ -204,6 +204,7 @@ local function NewRoad(self, terrain)
 			self.def.updateFunc(self, dt)
 		end
 		self.clickNotifyCooldown = util.UpdateTimer(self.clickNotifyCooldown, dt)
+		self.blockedInFrontTime = util.UpdateTimer(self.blockedInFrontTime, dt*GameHandler.GetLevelRate("forceRedLight")*1.2)
 		if self.automaticSignal then
 			self.signalTime = self.signalTime - dt
 			if self.signalTime <= 0 then
