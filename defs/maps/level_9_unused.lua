@@ -583,7 +583,7 @@ return {
 				5,
 				-5,
 			},
-			roadType = "straight",
+			roadType = "ped_crossing",
 			rot = 0,
 		},
 		{

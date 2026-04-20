@@ -51,10 +51,16 @@ local function SetupLevel()
 		if TerrainHandler.IsInBounds(road.pos) then
 			TerrainHandler.AddRoad(road.pos, road.roadType, road.rot)
 		end
+		DoodadHandler.RemoveDoodads(road.pos)
 	end
 	for i = 1, #self.map.building do
 		local building = self.map.building[i]
 		BuildingHandler.AddBuilding(building.pos, building.buildingType)
+		DoodadHandler.RemoveDoodads(building.pos)
+	end
+	for i = 1, #self.map.doodads do
+		local doodad = self.map.doodads[i]
+		DoodadHandler.AddDoodad(doodad.pos, doodad.buildingType)
 	end
 	TerrainHandler.SetDimensions(self.map.dimensions)
 	BuildingHandler.UpdateRoadChanges()
@@ -200,6 +206,8 @@ function api.KeyPressed(key, scancode, isRepeat)
 		self.editor.tile = "corner"
 	elseif key == "a" then
 		self.editor.tile = "t_road"
+	elseif key == "v" then
+		self.editor.tile = "ped_crossing"
 	elseif key == "n" then
 		self.editor.tile = "pub"
 	elseif key == "y" then
@@ -215,6 +223,7 @@ function api.KeyPressed(key, scancode, isRepeat)
 	elseif key == "z" then
 		self.editor.tile = "delete"
 	end
+	print(key)
 end
 
 function api.GetSelectedTile()
@@ -280,6 +289,7 @@ Q - Straight Road
 D - Straight Road Large
 W - Curve
 A - T-Int
+V - Ped
 
 H - House
 B - Doctor

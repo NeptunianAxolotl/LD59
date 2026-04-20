@@ -7,7 +7,9 @@ end
 
 local function UpdateSignalFromAuto(self)
 	for i = 0, self.def.signalCount - 1 do
-		self.signal[i] = (self.autoSignalState - i)%2 == 0
+		if i ~= self.def.skipSignal then
+			self.signal[i] = (self.autoSignalState - i)%2 == 0
+		end
 	end
 end
 
@@ -51,9 +53,11 @@ local function GetHoveredMouseDrawing(self)
 	end
 	local hoveredSignal = false
 	for i = 0, self.def.signalCount - 1 do
-		if TerrainHandler.IsGridHovered(self.pos, (i + self.rotation)%4) then
-			hoveredSignal = i
-			break
+		if i ~= self.def.skipSignal then
+			if TerrainHandler.IsGridHovered(self.pos, (i + self.rotation)%4) then
+				hoveredSignal = i
+				break
+			end
 		end
 	end
 	return lockAlpha, hoveredSignal
@@ -142,6 +146,9 @@ local function NewRoad(self, terrain)
 	end
 	
 	function self.ForceSignal(waitingCarDestination, forceTime)
+		if not self.signalForcedTime then
+			return
+		end
 		local signal = (waitingCarDestination - 2 - self.rotation)%4
 		self.signalForcedTime[signal] = forceTime * GameHandler.GetLevelRate("forceSignalTime")
 	end
@@ -222,7 +229,9 @@ local function NewRoad(self, terrain)
 		end
 		if self.signalForcedTime then
 			for i = 0, self.def.signalCount - 1 do
-				self.signalForcedTime[i] = util.UpdateTimer(self.signalForcedTime[i], dt)
+				if i ~= self.def.skipSignal then
+					self.signalForcedTime[i] = util.UpdateTimer(self.signalForcedTime[i], dt)
+				end
 			end
 		end
 	end
@@ -233,17 +242,19 @@ local function NewRoad(self, terrain)
 			drawQueue:push({y=100 + self.pos[2]*0.01; f=function()
 				local timeProp = self.signalTime / self.def.signalTimeMax[self.autoSignalState] / Global.MANUAL_CLICK_BOOST
 				for i = 0, self.def.signalCount - 1 do
-					local alpha = math.min(1, timeProp + 0.5)*0.8
-					local lightImage = self.signal[i] and "traffic_red" or "traffic_green"
-					local color = self.signal[i] and Global.TRAFFIC_RED or Global.TRAFFIC_GREEN
-					if self.signalForcedTime[i] then
-						color = Global.TRAFFIC_ORANGE
-						alpha = ((self.signalForcedTime[i])%0.3 > 0.18) and 1 or 0.6
-					end
-					Resources.DrawImage(lightImage, self.worldPos[1], self.worldPos[2], self.worldRot + i*math.pi/2, false, LevelHandler.TileScale())
-					Resources.DrawImage(self.def.stateImage, self.worldPos[1], self.worldPos[2], self.worldRot + i*math.pi/2, alpha, LevelHandler.TileScale(), color)
-					if hoveredSignal == i then
-						Resources.DrawImage(self.def.stateImage, self.worldPos[1], self.worldPos[2], self.worldRot + i*math.pi/2, 0.6, LevelHandler.TileScale())
+					if i ~= self.def.skipSignal then
+						local alpha = math.min(1, timeProp + 0.5)*0.8
+						local lightImage = self.signal[i] and "traffic_red" or "traffic_green"
+						local color = self.signal[i] and Global.TRAFFIC_RED or Global.TRAFFIC_GREEN
+						if self.signalForcedTime[i] then
+							color = Global.TRAFFIC_ORANGE
+							alpha = ((self.signalForcedTime[i])%0.3 > 0.18) and 1 or 0.6
+						end
+						Resources.DrawImage(lightImage, self.worldPos[1], self.worldPos[2], self.worldRot + i*math.pi/2, false, LevelHandler.TileScale())
+						Resources.DrawImage(self.def.stateImage, self.worldPos[1], self.worldPos[2], self.worldRot + i*math.pi/2, alpha, LevelHandler.TileScale(), color)
+						if hoveredSignal == i then
+							Resources.DrawImage(self.def.stateImage, self.worldPos[1], self.worldPos[2], self.worldRot + i*math.pi/2, 0.6, LevelHandler.TileScale())
+						end
 					end
 				end
 			end})

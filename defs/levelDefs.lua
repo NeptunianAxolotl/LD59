@@ -66,7 +66,7 @@ local levelDefs = {
 			houseBecomeSick = 1,
 		},
 		carLimit = {
-			drunk = 3,
+			drunk = 1,
 		},
 		redrawChance = {
 			house = 0.6,
@@ -80,7 +80,8 @@ local levelDefs = {
 			"doctorVisitHouse",
 		},
 		flashStat = {
-			drunkArrivals_sinceAccident = true,
+			doctorVisitHouse = true,
+			returnedToDoctor = true,
 		},
 		advanceRequirement = {
 			doctorVisitHouse = 10,
@@ -89,6 +90,40 @@ local levelDefs = {
 	},
 	{
 		map = "level_3",
+		spawnMult = {
+			highway = 0.8,
+			pub = 1.3,
+			house = 0.8,
+			houseBecomeSick = 0.8,
+		},
+		carLimit = {
+			drunk = 4,
+		},
+		redrawChance = {
+			house = 0.6,
+		},
+		heading = "More Drunks",
+		text = "A growing population means more drunk drivers. Try to see them home without a crash.",
+		showStats = {
+			"accidents",
+			"sickDeaths",
+			"returnedToDoctor",
+			"doctorVisitHouse",
+		},
+		showStats = {
+			"accidents",
+			"sickDeaths",
+			"drunkArrivals_sinceAccident",
+		},
+		flashStat = {
+			drunkArrivals_sinceAccident = true,
+		},
+		advanceRequirement = {
+			drunkArrivals_sinceAccident = 3,
+		},
+	},
+	{
+		map = "level_4",
 	},
 	{
 		map = "level_5",

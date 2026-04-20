@@ -44,6 +44,7 @@ local function EnterRoad(self, road, entry)
 	end
 	self.blockedInFrontTime = false
 	self.blockedInFront = false
+	self.onRoadTimer = 0
 	
 	self.currentRoad = road
 	self.currentRoadPos = road.GetPos()
@@ -304,7 +305,7 @@ local function FindReturnAfterVisit(self)
 end
 
 local function LookOutForCollision(self)
-	if self.def.ignoreCollision then
+	if self.def.ignoreCollision or self.ignoreCollisionTimer then
 		return false
 	end
 	if self.collision and self.currentPath and self.currentPath.ignoreCollisionUntil and self.travel < self.currentPath.ignoreCollisionUntil then
@@ -396,7 +397,8 @@ local function UpdateMovement(self, dt)
 	self.pos, self.rotation = GetPositionOnRoad(self, self.currentPath, self.roadWorldPos, self.roadWorldRot, self.travel)
 	self.body:setPosition(self.pos[1], self.pos[2])
 	self.body:setAngle(self.rotation)
-	local vel = util.PolarToCart(self.speed*Global.BODY_SPEED, self.rotation)
+	local speed = self.ignoreCollisionTimer and Global.ANGRY_SPEED or Global.BODY_SPEED
+	local vel = util.PolarToCart(self.speed*speed, self.rotation)
 	self.body:setLinearVelocity(vel[1], vel[2])
 end
 
@@ -418,6 +420,13 @@ local function UpdateCrash(self, dt)
 end
 
 local function UpdateBlocked(self, dt)
+	self.onRoadTimer = (self.onRoadTimer or 0) + dt
+	if self.onRoadTimer > Global.ON_SAME_ROAD_ANGRY_TIMER then
+		self.blockedInFront = true
+		if not self.blockedInFrontTime then
+			self.blockedInFrontTime = Global.SWEAR_AT_LIGHT_TIME
+		end
+	end
 	if self.blockedInFront then
 		self.blockedInFrontTime = (self.blockedInFrontTime or 0) + dt*GameHandler.GetLevelRate("forceRedLight")
 	elseif self.blockedInFrontTime then
@@ -437,6 +446,9 @@ local function UpdateBlocked(self, dt)
 	end
 	if self.blockedInFrontTime > Global.RUN_RED_LIGHT_TIME then
 		local nextRoad = TerrainHandler.GetRoadAtPos(self.currentRoadPos, self.destination)
+		if not self.ignoreCollisionTimer and self.blockedInFrontTime > Global.IGNORE_COLLISION_ANGRY_TIME then
+			self.ignoreCollisionTimer = Global.IGNORE_COLLISION_WHILE_ANGRY_FOR
+		end
 		if nextRoad then
 			nextRoad.ForceSignal(self.destination, Global.FORCE_SIGNAL_TIME)
 		end
@@ -523,7 +535,7 @@ local function NewCar(self, new_gridPos, targetPos, targetBuildingPos, wrongSide
 			return
 		end
 		local newCrash = not self.crashProgress
-		self.crashProgress = (self.crashProgress or 0) + progress
+		self.crashProgress = (self.crashProgress or 0) + progress *(self.ignoreCollisionTimer and Global.ANGRY_CRASH_RESIST or 1)
 		if newCrash or math.random() < 0.03 then
 			EffectsHandler.SpawnEffect("fireball_explode", self.pos, {spawnRadius = 12, scale = 0.1 + math.random()*0.03})
 		end
@@ -536,6 +548,7 @@ local function NewCar(self, new_gridPos, targetPos, targetBuildingPos, wrongSide
 		end
 		self.spawnTimer = util.UpdateTimer(self.spawnTimer, dt)
 		self.crashProgress = util.UpdateTimer(self.crashProgress, dt)
+		self.ignoreCollisionTimer = util.UpdateTimer(self.ignoreCollisionTimer, dt)
 		self.arriveTimer, self.arrived = util.UpdateTimer(self.arriveTimer, dt)
 		if self.arrived then
 			self.arrived = false

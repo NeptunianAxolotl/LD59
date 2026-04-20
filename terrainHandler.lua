@@ -28,11 +28,11 @@ end
 		end
 	endendfunction api.IsInBounds(gPos)	return self.dimensions.left <= gPos[1] and self.dimensions.right > gPos[1] and self.dimensions.top <= gPos[2] and self.dimensions.bottom > gPos[2]end
 
-local function RoadMatches(pos, roadType, rotation)
+local function RoadMatches(pos, roadType)
 	local x, y = pos[1], pos[2]
 	if self.roadPos[x] and self.roadPos[x][y] then
 		local oldRoad = IterableMap.Get(self.roadList, self.roadPos[x][y])
-		if oldRoad.roadType == roadType and oldRoad.rotation == rotation then
+		if oldRoad.roadType == roadType then
 			return true
 		end
 	end
@@ -40,7 +40,7 @@ local function RoadMatches(pos, roadType, rotation)
 endfunction api.RemoveRoad(pos)	local x, y = pos[1], pos[2]	if self.roadPos[x] and self.roadPos[x][y] then		local oldRoad = IterableMap.Get(self.roadList, self.roadPos[x][y])		if oldRoad then			oldRoad.toDestroy = true		end		IterableMap.Remove(self.roadList, self.roadPos[x][y])
 		self.roadPos[x][y] = nil	endend
 function api.AddRoad(pos, roadType, rotation, setData)
-	if RoadMatches(pos, roadType, rotation) then
+	if RoadMatches(pos, roadType) then
 		return
 	end	local x, y = pos[1], pos[2]
 	local prexistingRoad = self.roadPos[x] and self.roadPos[x][y]	self.roadPos[x] = self.roadPos[x] or {}	api.RemoveRoad(pos)
