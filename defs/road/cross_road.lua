@@ -26,6 +26,7 @@ return {
 			length = 1,
 			turn = "straight",
 			trafficFromRight = true,
+			trafficFromLeft = true,
 			speedMult = Global.BIG_ROAD_SPEED,
 		},
 		{ -- left to right
@@ -40,6 +41,7 @@ return {
 			length = 1,
 			turn = "straight",
 			trafficFromRight = true,
+			trafficFromLeft = true,
 			speedMult = Global.BIG_ROAD_SPEED,
 		},
 		{ -- bot to top
@@ -54,6 +56,7 @@ return {
 			length = 1,
 			turn = "straight",
 			trafficFromRight = true,
+			trafficFromLeft = true,
 			speedMult = Global.BIG_ROAD_SPEED,
 		},
 		{ -- top to bot
@@ -68,6 +71,7 @@ return {
 			length = 1,
 			turn = "straight",
 			trafficFromRight = true,
+			trafficFromLeft = true,
 			speedMult = Global.BIG_ROAD_SPEED,
 		},
 		{ -- Inner corner, right to bottom
@@ -82,6 +86,7 @@ return {
 			length = roadUtil.GetInnerLength(),
 			turn = "left",
 			trafficFromRight = true,
+			trafficFromLeft = true,
 		},
 		{ -- Inner corner, bottom to left
 			posFunc = function (t, enterOffset, destOffset)
@@ -95,6 +100,7 @@ return {
 			length = roadUtil.GetInnerLength(),
 			turn = "left",
 			trafficFromRight = true,
+			trafficFromLeft = true,
 		},
 		{ -- Inner corner, left to top
 			posFunc = function (t, enterOffset, destOffset)
@@ -108,6 +114,7 @@ return {
 			length = roadUtil.GetInnerLength(),
 			turn = "left",
 			trafficFromRight = true,
+			trafficFromLeft = true,
 		},
 		{ -- Inner corner, top to right
 			posFunc = function (t, enterOffset, destOffset)
@@ -121,6 +128,7 @@ return {
 			length = roadUtil.GetInnerLength(),
 			turn = "left",
 			trafficFromRight = true,
+			trafficFromLeft = true,
 		},
 		{ -- Outer corner, bottom to right
 			posFunc = function (t, enterOffset, destOffset)
@@ -148,6 +156,8 @@ return {
 			length = roadUtil.GetFullLanedOuterLength(),
 			turn = "right",
 			acrossTraffic = true,
+			trafficFromRight = true,
+			trafficFromLeft = true,
 		},
 		{ -- Outer corner, top to left
 			posFunc = function (t, enterOffset, destOffset)
@@ -162,6 +172,8 @@ return {
 			length = roadUtil.GetFullLanedOuterLength(),
 			turn = "right",
 			acrossTraffic = true,
+			trafficFromRight = true,
+			trafficFromLeft = true,
 		},
 		{ -- Outer corner, right to top
 			posFunc = function (t, enterOffset, destOffset)
@@ -176,6 +188,8 @@ return {
 			length = roadUtil.GetFullLanedOuterLength(),
 			turn = "right",
 			acrossTraffic = true,
+			trafficFromRight = true,
+			trafficFromLeft = true,
 		},
 	},
 }

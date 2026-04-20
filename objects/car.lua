@@ -182,17 +182,23 @@ local function CheckImpendingCollision(self)
 			unit = util.RotateVector(unit, 0.12)
 		end
 	end
-	local thirdRayLength = 28
+	local secondRayLength = 26
+	local secondRayRotate = 0
 	if self.currentPath.turn == "straight" and self.wantTurn ~= "right" then
-		thirdRayLength = 52
+		secondRayLength = 40
+	end
+	if self.currentPath and self.nextPath and not self.currentPath.trafficFromLeft and not self.nextPath.trafficFromLeft then
+		secondRayRotate = -0.5
+		secondRayLength = 55
 	end
 	if (self.maxSpeedMult or 1) > 1 then
 		rayLength = rayLength * (self.maxSpeedMult or 1)
 	end
 	
+	
 	self.secondRay = {}
 	self.secondRay[1] = util.Add(self.pos, util.Mult(12, util.RotateVector(baseUnit, -0.8)))
-	self.secondRay[2] = util.Add(self.secondRay[1], util.Mult(thirdRayLength, util.RotateVector(baseUnit, sideRayRotate * 0.5)))
+	self.secondRay[2] = util.Add(self.secondRay[1], util.Mult(secondRayLength, util.RotateVector(baseUnit, sideRayRotate * 0.5 + secondRayRotate)))
 	
 	self.thirdRay = {}
 	self.thirdRay[1] = util.Add(baseRay, util.Mult(6, util.RotateVector(baseUnit, 1.55)))
@@ -324,7 +330,7 @@ local function NewCar(self, new_gridPos, targetPos, targetBuildingPos, wrongSide
 	local shape = love.physics.newRectangleShape(self.def.length, self.def.width)
 	self.fixture = love.physics.newFixture(self.body, shape, 1)
 	self.body:setLinearDamping(Global.BODY_DAMPENING)
-	self.body:setAngularDamping(Global.BODY_DAMPENING*0.75)
+	self.body:setAngularDamping(Global.BODY_DAMPENING*0.9)
 	local physicsData = {carID = carID}
 	self.fixture:setUserData(physicsData)
 	
