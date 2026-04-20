@@ -222,10 +222,11 @@ local function CheckCurrentRoadStop(self)
 		travelRemaining = travelRemaining*1.1
 	end
 	local signalBlocked = self.currentRoad.SignalActive(self.currentPath.entry)
+	local sneaking = signalBlocked or self.currentRoad.SignalActive((self.currentPath.entry - 2)%4)
 	if travelRemaining > 0.95 and signalBlocked then
-		return true, signalBlocked
+		return true, sneaking
 	end
-	return false, signalBlocked
+	return false, sneaking
 end
 
 local function CheckNextRoadStop(self)
@@ -371,6 +372,10 @@ local function NewCar(self, new_gridPos, targetPos, targetBuildingPos, wrongSide
 			GameHandler.ResetStat("drunkArrivals_sinceAccident")
 		end
 		self.isCrashed = true
+	end
+	
+	function self.CountIfMatch(toMatch)
+		return (self.carType == toMatch) and 1
 	end
 	
 	function self.AddCrashProgress(progress)

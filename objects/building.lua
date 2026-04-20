@@ -36,6 +36,9 @@ local function SpawnRegularCar(self)
 		return false
 	end
 	local roadPos = self.roadSpawn.GetPos()
+	if not GameHandler.CarSpawnAllowed(self.def.spawnCar.carType) then
+		return false
+	end
 	local targetType = GameHandler.GetTargetType(self.def.spawnCar.targets)
 	if not targetType then
 		return false

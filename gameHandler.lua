@@ -38,6 +38,14 @@ function api.GetStat(name)
 	return self.stats[name] or 0
 end
 
+function api.CarSpawnAllowed(name)
+	if not (self.levelData.carLimit and self.levelData.carLimit[name]) then
+		return true
+	end
+	local limit = self.levelData.carLimit[name]
+	return limit > CarHandler.GetCarCount(name)
+end
+
 --------------------------------------------------
 -- API
 --------------------------------------------------
@@ -166,7 +174,7 @@ function api.DrawInterface()
 	end
 	local drawX = 40
 	local width = 660
-	local height = 500
+	local height = 470
 	local offset = 20
 	if self.world.GetCosmos().GetLocalisation() then
 		drawX = Global.WINDOW_X - width - drawX
@@ -192,7 +200,7 @@ function api.DrawInterface()
 	offset = offset + 75
 	love.graphics.printf(self.levelData.text or "NO DESC", drawX + 40, offset, width - 50, "left")
 	
-	offset = 495
+	offset = height - 5
 	if self.levelData.showStats then
 		local req = self.levelData.advanceRequirement
 		for i = 1, #self.levelData.showStats do

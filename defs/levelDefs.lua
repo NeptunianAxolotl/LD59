@@ -8,7 +8,10 @@ local levelDefs = {
 			pub = 0,
 		},
 		redrawChance = {
-			house = 0.8,
+			house = 0.65,
+		},
+		carLimit = {
+			basic_car = 80,
 		},
 		sickRate = 0,
 		heading = "Traffic Terror",
@@ -29,14 +32,18 @@ local levelDefs = {
 		spawnMult = {
 			highway = 3.2,
 			house = 0.2,
-			pub = 1.8,
+			pub = 2.4,
+		},
+		carLimit = {
+			basic_car = 80,
+			drunk = 1,
 		},
 		redrawChance = {
-			house = 0.8,
+			house = 0.6,
 		},
 		sickRate = 0,
 		heading = "Drink Driving",
-		text = "The pub is emptying. Make sure the drunks get home safely.",
+		text = "The pub is emptying and all the drink drivers need to get home safely. Try to have three arrive home without a crash.",
 		showStats = {
 			"accidents",
 			"drunkArrivals_sinceAccident",

@@ -44,6 +44,11 @@ function api.NotifyGameLoss()
 	-- Blow up all the cars
 end
 
+
+function api.GetCarCount(carType)
+	return IterableMap.SumWithFunction(self.carList, "CountIfMatch", carType)
+end
+
 function api.Update(dt)
 	self.lastDt = dt
 	IterableMap.ApplySelfRandomOrder(self.carList, "Update", dt)
