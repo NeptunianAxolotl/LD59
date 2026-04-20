@@ -102,7 +102,7 @@ local function ZoomCamera(zoomAmount)
 	return self.cameraPos[1], self.cameraPos[2], self.cameraScale
 end
 
-local function UpdateTransform(cameraTransform, cameraX, cameraY, cameraScale, focusOffset, minRatio)
+local function UpdateTransform(cameraTransform, cameraX, cameraY, cameraScale, focusOffset, minRatio, flip)
 	local fullX, fullY = love.window.getMode()
 	local windowX = fullX * (1 - self.windowPadding.left - self.windowPadding.right)
 	local windowY = fullY * (1 - self.windowPadding.top - self.windowPadding.bot)
@@ -128,7 +128,7 @@ local function UpdateTransform(cameraTransform, cameraX, cameraY, cameraScale, f
 		windowX * (focusOffset and focusOffset[1] or 0.5) + fullX * self.windowPadding.left,
 		windowY * (focusOffset and focusOffset[2] or 0.5) + fullY * self.windowPadding.top,
 		0,
-		scale, scale * self.squashRatio,
+		scale * (flip and -1 or 1), scale * self.squashRatio,
 		cameraX, cameraY)
 end
 

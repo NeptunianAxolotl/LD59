@@ -7,7 +7,8 @@ local menuOptions = {
 	"Restart",
 	"Music Volume",
 	"Fullscreen",
-	"Brutal",
+	"Drive on the Right",
+	--"Brutal",
 }
 local menuTooltip = {
 	Brutal = function ()
@@ -69,6 +70,12 @@ function api.MousePressed(x, y, button)
 		love.window.setFullscreen(self.fullscreen)
 	elseif self.hoveredMenuAction == "Brutal" then
 		self.cosmos.ToggleBrutal()
+	elseif self.hoveredMenuAction == "Drive on the Right" then
+		menuOptions[5] = "Drive on the Left"
+		self.cosmos.ToggleLocalisation()
+	elseif self.hoveredMenuAction == "Drive on the Left" then
+		menuOptions[5] = "Drive on the Right"
+		self.cosmos.ToggleLocalisation()
 	elseif self.menuOpen then
 		self.menuOpen = false
 		return true
@@ -80,24 +87,36 @@ function api.ToggleMenu()
 	self.menuOpen = not self.menuOpen
 end
 
+function api.IsMenuOpen()
+	return self.menuOpen
+end
+
 function api.DrawInterface()
 	self.hoveredMenuAction = false
 	local mousePos = self.cosmos.GetWorld().GetMousePositionInterface()
 	
-	local sx, sy = 60, 1000
+	local sx, sy = Global.WINDOW_X - 135 - 20, 1000
+	local overX = Global.WINDOW_X - 350 - 20
+	if self.cosmos.GetLocalisation() then
+		sx = 20
+		overX = 20
+	end
+	
 	self.hoveredMenuAction = InterfaceUtil.DrawButton(sx, sy, 135, 60, mousePos, "Menu", false, false, false, false, 2, 8) or self.hoveredMenuAction
 	
 	if not self.menuOpen then
 		return
 	end
-	local overX = 150
-	local offset = Global.WINDOW_Y * 0.035 + 80*6
+	local offset = Global.WINDOW_Y * 0.4 + 80*6
 	for i = 1, #menuOptions do
 		local slider = menuSliders[menuOptions[i]]
 		if slider and not slider.extents then
 			slider.extents = {x = overX + 20, width = 350}
 		end
-		local hovered = InterfaceUtil.DrawButton(overX + 20, offset, 350, 60, mousePos, menuOptions[i], false, false, false, false, 2, 8, false, false, slider and slider.drawFunc())
+		local hovered = InterfaceUtil.DrawButton(overX, offset, 350, 60, mousePos, menuOptions[i], false, false, false, false, 2, 8, false, false, slider and slider.drawFunc())
+		if hovered then
+			self.hoveredMenuAction = hovered
+		end
 		offset = offset - 80
 	end
 end

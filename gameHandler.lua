@@ -117,7 +117,12 @@ function api.DrawInterface()
 	if LevelHandler.InEditMode() then
 		return
 	end
-	InterfaceUtil.DrawPanel(20, 20, 660, 500, 8)
+	local drawX = 20
+	local width = 660
+	if self.world.GetCosmos().GetLocalisation() then
+		drawX = Global.WINDOW_X - width - drawX
+	end
+	InterfaceUtil.DrawPanel(drawX, 20, width, 500, 8)
 	
 	love.graphics.setColor(0, 0, 0, 1)
 	Font.SetSize(2)

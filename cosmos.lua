@@ -103,12 +103,24 @@ function api.DrawPhysicsEnabled()
 	return self.drawDebug
 end
 
+function api.QuitGame()
+	love.event.quit()
+end
+
 function api.DrawDebug()
 	return self.drawDebug
 end
 
 function api.ToggleDebug()
 	self.drawDebug = not self.drawDebug
+end
+
+function api.ToggleLocalisation()
+	self.localisation = not self.localisation
+end
+
+function api.GetLocalisation()
+	return self.localisation
 end
 
 --------------------------------------------------

@@ -12,17 +12,7 @@ function api.Update(dt, pad)
 	self.cameraPos[1] = cameraX
 	self.cameraPos[2] = cameraY
 	self.cameraScale = cameraScale
-	Camera.UpdateTransform(self.cameraTransform, self.cameraPos[1], self.cameraPos[2], self.cameraScale)
-end
-
-local function UpdateCamera(dt, vector)
-	local cameraX, cameraY, cameraScale = Camera.PushCamera(dt, vector, 0.55)
-	Camera.UpdateTransform(self.cameraTransform, cameraX, cameraY, cameraScale)
-	--if ((cameraX - self.cameraPos[1])*10 < 150 or (cameraX - self.cameraPos[1])*10 > 180) and (cameraX - self.cameraPos[1])*10 > 40 then
-	--	print(math.floor((cameraX - self.cameraPos[1])*10))
-	--end
-	self.cameraPos[1] = cameraX
-	self.cameraPos[2] = cameraY
+	Camera.UpdateTransform(self.cameraTransform, self.cameraPos[1], self.cameraPos[2], self.cameraScale, false, false, self.world.GetCosmos().GetLocalisation())
 end
 
 function api.Initialize(world, padding)
@@ -42,7 +32,7 @@ function api.Initialize(world, padding)
 	self.cameraPos[1] = cameraX
 	self.cameraPos[2] = cameraY
 	self.cameraScale = cameraScale
-	Camera.UpdateTransform(self.cameraTransform, cameraX, cameraY, cameraScale)
+	Camera.UpdateTransform(self.cameraTransform, cameraX, cameraY, cameraScale, false, false, self.world.GetCosmos().GetLocalisation())
 end
 
 return api

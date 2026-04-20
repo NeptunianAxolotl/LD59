@@ -35,7 +35,7 @@ function api.ToggleMenu()
 end
 
 function api.GetPaused()
-	return self.paused or self.menuState
+	return MainMenuHandler.IsMenuOpen()
 end
 
 function api.GetGameOver()
@@ -74,12 +74,6 @@ end
 function api.KeyPressed(key, scancode, isRepeat)
 	if TerrainHandler.KeyPressed and TerrainHandler.KeyPressed(key, scancode, isRepeat) then
 		return
-	end
-	if key == "escape" then
-		api.ToggleMenu()
-	end
-	if key == "p" then
-		api.ToggleMenu()
 	end
 	if api.GetGameOver() then
 		return -- No doing actions
@@ -185,7 +179,7 @@ function api.GetCameraExtents(buffer)
 end
 
 local function UpdateCamera(dt)
-	CameraHandler.Update(dt)
+	CameraHandler.Update(dt, self.cosmos.GetLocalisation())
 end
 
 function api.GetCameraInitalPosition()
