@@ -2,9 +2,9 @@ local shared = util.CopyTable(require('defs/cars/shared'))
 
 local def = {
 	image = "medic",
-	maxSpeed = 1.2,
-	accel = 2.2,
-	deccel = 4.2,
+	maxSpeed = 1.15,
+	accel = 1.7,
+	deccel = 3,
 	slowDeccel = 2,
 	crashEndurance = 3,
 	crashDamage = 1,

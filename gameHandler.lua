@@ -27,6 +27,10 @@ function api.MousePressed(x, y)
 	local drawPos = world.ScreenToInterface({windowX, 0})
 end
 
+function api.LightWasClicked()
+	
+end
+
 --------------------------------------------------
 -- Filtering
 --------------------------------------------------

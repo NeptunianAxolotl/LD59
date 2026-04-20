@@ -23,9 +23,10 @@ end
 local function ToggleAdjacentSignal(self)
 	local other, direction = GetNearbySignalRoad(self)
 	if not other then
-		return
+		return false
 	end
 	other.ToggleSignal((direction - 2)%4)
+	return true
 end
 
 local function SetupSignal(self)
@@ -55,6 +56,13 @@ local function GetHoveredMouseDrawing(self)
 		end
 	end
 	return lockAlpha, hoveredSignal
+end
+
+local function ClickNotify(self)
+	if not self.clickNotifyCooldown then
+		self.clickNotifyCooldown = Global.LIGHT_CLICK_NOTIFY_COOLDOWN
+		GameHandler.LightWasClicked()
+	end
 end
 
 local function NewRoad(self, terrain)
@@ -123,6 +131,7 @@ local function NewRoad(self, terrain)
 		local myDir = (worldDir + self.rotation)%4
 		self.signal[myDir] = not self.signal[myDir]
 		self.signalTime = self.def.signalTimeMax[self.autoSignalState]
+		ClickNotify(self)
 	end
 	
 	function self.SetUsedState(newState, entry)
@@ -169,6 +178,7 @@ local function NewRoad(self, terrain)
 	function self.MousePressed()
 		if self.signalTime then
 			self.automaticSignal = not self.automaticSignal
+			ClickNotify(self)
 		else
 			ToggleAdjacentSignal(self)
 		end
@@ -181,6 +191,7 @@ local function NewRoad(self, terrain)
 		if self.def.updateFunc then
 			self.def.updateFunc(self, dt)
 		end
+		self.clickNotifyCooldown = util.UpdateTimer(self.clickNotifyCooldown, dt)
 		if self.automaticSignal then
 			self.signalTime = self.signalTime - dt
 			if self.signalTime <= 0 then

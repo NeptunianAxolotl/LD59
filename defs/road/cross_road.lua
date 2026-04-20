@@ -6,7 +6,7 @@ return {
 	baseImage = "cross_small",
 	intersection = true,
 	hasSignal = true,
-	orangeTimeMax = 0.3,
+	orangeTimeMax = 0.5,
 	signalCount = 4,
 	stateImage = "road_stop_single",
 	signalTimeMax = {

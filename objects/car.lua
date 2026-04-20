@@ -90,7 +90,7 @@ local function UpdateWobble(self, dt)
 	local wobble = self.def.wobble
 	self.wobbleAccel = (self.wobbleAccel or 0)
 	self.wobblePos = (self.wobblePos or 0)
-	self.wobbleAccel = self.wobbleAccel - (self.wobbleAccel*0.7*wobble*4 + math.random() - 0.5)*dt
+	self.wobbleAccel = self.wobbleAccel - (self.wobbleAccel*0.7 + math.random() - 0.5)*dt*wobble*4
 	self.wobblePos = self.wobblePos + (self.wobbleAccel*5 - self.wobblePos)*dt
 end
 
@@ -214,10 +214,10 @@ local function CheckCurrentRoadStop(self)
 	end
 	local travelRemaining = 1 - self.travel / self.currentPath.length
 	if self.currentPath.turn == "left" then
-		travelRemaining = travelRemaining*1.05
+		travelRemaining = travelRemaining*1.1
 	end
 	local signalBlocked = self.currentRoad.SignalActive(self.currentPath.entry)
-	if travelRemaining > 0.96 and signalBlocked then
+	if travelRemaining > 0.95 and signalBlocked then
 		return true, signalBlocked
 	end
 	return false, signalBlocked
@@ -229,10 +229,10 @@ local function CheckNextRoadStop(self)
 	end
 	local travelRemaining = 1 - self.travel / self.currentPath.length
 	if self.currentPath.turn == "left" then
-		travelRemaining = travelRemaining * 0.5
+		travelRemaining = travelRemaining * 0.4
 	end
 	local myLightsBlocked = self.nextRoad.SignalActive(self.nextRoadEntry)
-	if travelRemaining < 0.15 * (self.maxSpeedMult or 1) and myLightsBlocked then
+	if travelRemaining < 0.2 * (self.maxSpeedMult or 1) and myLightsBlocked then
 		return true
 	end
 	return false
