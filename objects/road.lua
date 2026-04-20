@@ -240,17 +240,19 @@ local function NewRoad(self, terrain)
 				if self.def.extraDrawFunc then
 					self.def.extraDrawFunc(self, self.worldPos, self.worldRot)
 				end
-				
-				if DrawDebug() then
+			end})
+		
+			if DrawDebug() then
+				drawQueue:push({y=0 + self.pos[2]*0.01; f=function()
 					if self.ray then
 						love.graphics.setLineWidth(2)
-						love.graphics.setColor(0.8, 0.8, 0.8, 0.8)
+						love.graphics.setColor(0.8, 0.8, 0.8, 1)
 						for i = 1, #self.ray do
 							love.graphics.line(self.ray[i][1][1], self.ray[i][1][2], self.ray[i][2][1], self.ray[i][2][2])
 						end
 					end
-				end
-			end})
+				end})
+			end
 		end
 		if DRAW_DEBUG then
 			love.graphics.circle('line',self.pos[1], self.pos[2], def.radius)

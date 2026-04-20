@@ -139,12 +139,11 @@ end
 
 function roadUtil.IsAnythingOnRoad(self)
 	local world = PhysicsHandler.GetPhysicsWorld()
-	local scale = LevelHandler.TileSize() * 0.4
+	local scale = LevelHandler.TileSize() * 0.45
 	rayWasHit = false
 	world:queryBoundingBox(self.worldPos[1] - scale, self.worldPos[2] - scale, self.worldPos[1] + scale, self.worldPos[2] + scale, RayHit)
 	return rayWasHit
 end
-
 
 local circleLength = 1.3
 
@@ -209,7 +208,7 @@ end
 local clearZones = {}
 clearZones[0] = {
 	{{-0.15, -0.6}, {0.45, -Global.DRIVE_OFFSET * 0.35}},
-	{{-0.55, -Global.DRIVE_OFFSET}, {0.45, -Global.DRIVE_OFFSET}},
+	{{-1.2, -Global.DRIVE_OFFSET}, {0.4, -Global.DRIVE_OFFSET}},
 }
 
 for i = 1, 3 do

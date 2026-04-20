@@ -341,6 +341,7 @@ local function NewCar(self, new_gridPos, targetPos, targetBuildingPos, wrongSide
 	
 	function self.DoHardBrake()
 		self.speed = 0
+		--self.travel = math.max(0, self.travel - 0.1)
 	end
 	
 	function self.Crash()
