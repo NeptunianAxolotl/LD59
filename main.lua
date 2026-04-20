@@ -52,6 +52,7 @@ local accumulateDt = 0
 local MAX_DT = 0.004
 local FIXED_DT = 0.004
 function love.update(dt)
+	print(dt)
 	local realDt = dt
 	frames = frames + 1
 	if dt > 0.05 then
