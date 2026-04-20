@@ -67,6 +67,7 @@ function love.update(dt)
 		dt = dt + toReturn
 		missingDt = missingDt - toReturn
 	end
+	print(dt)
 	Cosmos.Update(dt, realDt)
 end
 

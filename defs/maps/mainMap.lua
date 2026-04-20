@@ -37,10 +37,10 @@ return {
 		},
 	},
 	dimensions = {
-		bottom = 8,
-		left = -13,
-		right = 13,
-		top = -8,
+		bottom = 7,
+		left = -10,
+		right = 10,
+		top = -7,
 	},
 	doodads = {
 	},

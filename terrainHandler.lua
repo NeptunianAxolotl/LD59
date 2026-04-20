@@ -41,8 +41,19 @@ local function UpdateHover()
 		return
 	end
 	self.hoveredPos = LevelHandler.WorldToGrid(worldPos)
-endfunction api.Update(dt)
-	UpdateHover()	IterableMap.ApplySelfRandomOrder(self.roadList, "Update", dt)endfunction api.Draw(drawQueue)	IterableMap.ApplySelf(self.roadList, "Draw", drawQueue)	drawQueue:push({y=0; f=function()		local dim = api.GetDimensions()		local size = LevelHandler.TileSize()		love.graphics.setLineWidth(1)		love.graphics.setColor(1, 1, 1, 1)		love.graphics.rectangle("line", 0, 0, 1, 1)				leftPos = dim.left*size		topPos = dim.top*size		rightPos = dim.right*size		bottomPos = dim.bottom*size				for i = dim.left, dim.right do			love.graphics.line(i*size, topPos, i*size, bottomPos)		end		for i = dim.top, dim.bottom do			love.graphics.line(leftPos, i*size, rightPos, i*size)		end	end})end
+end
+function api.Update(dt)
+	UpdateHover()	IterableMap.ApplySelfRandomOrder(self.roadList, "Update", dt)endfunction api.Draw(drawQueue)	IterableMap.ApplySelf(self.roadList, "Draw", drawQueue)	drawQueue:push({y=0; f=function()		local dim = api.GetDimensions()		local size = LevelHandler.TileSize()		love.graphics.setLineWidth(1)		love.graphics.setColor(1, 1, 1, 1)		love.graphics.rectangle("line", 0, 0, 1, 1)				leftPos = dim.left*size		topPos = dim.top*size		rightPos = dim.right*size		bottomPos = dim.bottom*size				for i = dim.left, dim.right do			love.graphics.line(i*size, topPos, i*size, bottomPos)		end		for i = dim.top, dim.bottom do			love.graphics.line(leftPos, i*size, rightPos, i*size)		end	end})
+	
+	if LevelHandler.InEditMode() then
+		local tile, rotation = LevelHandler.GetSelectedTile()
+		drawQueue:push({y=0; f=function()
+			if tile and RoadDefs[tile] and self.hoveredPos then
+				local pos = LevelHandler.GridToWorld(self.hoveredPos)
+				Resources.DrawImage(RoadDefs[tile].baseImage, pos[1], pos[2], rotation * math.pi/2, 0.7, LevelHandler.TileScale())
+			end
+		end})
+	endend
 function api.Initialize(world, mapDataOverride)
 	self = {
 		world = world,		roadList = IterableMap.New(),		roadPos = {},

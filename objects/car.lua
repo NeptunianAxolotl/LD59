@@ -90,7 +90,7 @@ local function UpdateWobble(self, dt)
 	local wobble = self.def.wobble
 	self.wobbleAccel = (self.wobbleAccel or 0)
 	self.wobblePos = (self.wobblePos or 0)
-	self.wobbleAccel = self.wobbleAccel - (self.wobbleAccel*0.7 + math.random() - 0.5)*dt*wobble*4
+	self.wobbleAccel = self.wobbleAccel - (self.wobbleAccel*0.7*wobble*4 + math.random() - 0.5)*dt
 	self.wobblePos = self.wobblePos + (self.wobbleAccel*5 - self.wobblePos)*dt
 end
 
@@ -348,6 +348,9 @@ local function NewCar(self, new_gridPos, targetPos, targetBuildingPos, wrongSide
 	end
 	
 	function self.AddCrashProgress(progress)
+		if self.isCrashed then
+			return
+		end
 		local newCrash = not self.crashProgress
 		self.crashProgress = (self.crashProgress or 0) + progress
 		if newCrash or math.random() < 0.03 then

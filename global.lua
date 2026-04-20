@@ -34,7 +34,7 @@ local globals = {
 	TEXT_COL            = {9/255, 11/255, 17/255},
 	FLOATING_TEXT_COL   = {0.95,0.95,0.9},
 	
-	BIG_ROAD_SPEED = 1.3,
+	BIG_ROAD_SPEED = 1.35,
 	HIGHWAY_EXTRA = 2,
 	
 	MEDIC_EXPECTED_TIMER = 18,
@@ -53,7 +53,7 @@ local globals = {
 	CRASH_PROGRESS_MULT = 4,
 	CRASH_THRESHOLD_MULT = 1,
 	SPECIAL_SPAWN_MULT = 0.2,
-	INIT_LEVEL = "smallMap",
+	INIT_LEVEL = "mainMap",
 	GRID_SIZE = 100,
 	VIEW_PADDING = 50,
 	DRIVE_OFFSET = 0.22,

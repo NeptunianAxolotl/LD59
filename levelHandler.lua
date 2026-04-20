@@ -204,6 +204,10 @@ function api.KeyPressed(key, scancode, isRepeat)
 	end
 end
 
+function api.GetSelectedTile()
+	return self.editor and self.editor.tile, self.editor and self.editor.rotation
+end
+
 function api.DrawInterface()
 	local gameOver, gameWon, gameLost = self.world.GetGameOver()
 	local windowX, windowY = love.window.getMode()
