@@ -455,6 +455,25 @@ local function UpdateBlocked(self, dt)
 	end
 end
 
+local function SetColorFromHouse(self)
+	if not self.def.imageSelection then
+		return false
+	end
+	local building = self.targetBuildingPos and BuildingHandler.GetBuildingAtPos(self.targetBuildingPos)
+	if building and building.image and self.def.imageSelection[building.image] then
+		self.image = self.def.imageSelection[building.image]
+		return true
+	end
+	return false
+end
+
+local function SetMyImage(self)
+	self.image = self.def.image
+	if self.def.randomImage then
+		self.image = util.SampleList(self.def.randomImage)
+	end
+end
+
 local function NewCar(self, new_gridPos, targetPos, targetBuildingPos, wrongSideSpawn, carID, entry, dest, fullSpeed)
 	self.def = CarDefs[self.carType]
 	
@@ -475,6 +494,10 @@ local function NewCar(self, new_gridPos, targetPos, targetBuildingPos, wrongSide
 		end
 	end
 	self.pos, self.rotation = GetPositionOnRoad(self, self.currentPath, self.roadWorldPos, self.roadWorldRot, self.travel)
+	
+	if not SetColorFromHouse(self) then
+		SetMyImage(self)
+	end
 	
 	if self.pos then
 		self.body = love.physics.newBody(PhysicsHandler.GetPhysicsWorld(), self.pos[1], self.pos[2], "dynamic")
@@ -564,6 +587,11 @@ local function NewCar(self, new_gridPos, targetPos, targetBuildingPos, wrongSide
 				return true
 			end
 		end
+		if self.def.isDrunk then
+			if math.random() < 0.03 then
+				EffectsHandler.SpawnEffect("drunk_popup", self.pos, {velocity = util.Add({0, -0.2 - 0.5*math.random()}, util.RandomPointInCircle(0.15))})
+			end
+		end
 		if self.sickness then
 			self.sickness = self.sickness + dt*GameHandler.GetLevelRate("sickness")
 			if self.sickness > 1 then
@@ -597,7 +625,7 @@ local function NewCar(self, new_gridPos, targetPos, targetBuildingPos, wrongSide
 					color[1] = 1 - 0.9* math.max(0, self.sickness*0.1)
 					color[3] = color[1]
 				end
-				Resources.DrawImage(self.def.image, self.pos[1], self.pos[2], self.rotation, alpha, LevelHandler.TileScale(), color)
+				Resources.DrawImage(self.image, self.pos[1], self.pos[2], self.rotation, alpha, LevelHandler.TileScale(), color)
 				if DrawDebug() then
 					--if self.nextRoad and self.nextRoadEntry and self.nextRoad.SignalActive(self.nextRoadEntry) then
 					--	love.graphics.setLineWidth(3)

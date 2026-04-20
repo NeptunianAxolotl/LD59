@@ -84,12 +84,24 @@ local function SpawnRegularCar(self)
 	return true
 end
 
+local function SetupImage(self)
+	if not self.def.imageList then
+		self.image = self.def.baseImage
+		return
+	end
+	GameHandler.AddStat("houseCreated")
+	local myIndex = GameHandler.GetStat("houseCreated")
+	self.image = self.def.imageList[myIndex] or self.def.baseImage
+end
+
 local function NewBuilding(self)
 	self.def = BuildingDefs[self.buildingType]
 	
 	self.toDestroy = false
 	self.worldPos = CalculateWorldPos(self)
 	self.roadSpawn, self.roadDirectionFromSelf = FindRoadSpawn(self)
+	
+	SetupImage(self)
 	
 	function self.GetPos()
 		return self.pos
@@ -176,13 +188,13 @@ local function NewBuilding(self)
 				end
 			end
 			drawQueue:push({y=-50 + self.pos[2]; f=function()
-				local image = self.def.baseImage
-				local color = {1, 1, 1}
+				Resources.DrawImage(self.image, self.worldPos[1], self.worldPos[2], self.worldRot, false, LevelHandler.TileScale())
 				if self.sickness then
+					local color = {1, 1, 1}
 					color[1] = 1 - 0.9* math.max(0, self.sickness*0.1)
 					color[3] = color[1]
+					Resources.DrawImage("sickness_popup", self.worldPos[1], self.worldPos[2], self.worldRot, math.max(0, self.sickness*0.1)*0.8, LevelHandler.TileScale()*0.4, color)
 				end
-				Resources.DrawImage(image, self.worldPos[1], self.worldPos[2], self.worldRot, false, LevelHandler.TileScale(), color)
 				if self.def.extraDrawFunc then
 					self.def.extraDrawFunc(self, self.worldPos, self.worldRot)
 				end
