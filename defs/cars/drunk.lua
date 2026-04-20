@@ -39,6 +39,7 @@ local def = {
 			GameHandler.AddStat("drunkArrivals_sinceAccident")
 			GameHandler.AddStat("drunkArrivals_sinceDrunkAccident")
 			GameHandler.AddStat("drunkArrivals")
+			GameHandler.AddStat("drunkArrivals_new")
 		elseif building and building.def.name == "kebab" then
 			GameHandler.AddStat("kebabEaten")
 		end

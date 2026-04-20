@@ -17,7 +17,7 @@ local levelDefs = {
 			drunk = 0,
 		},
 		heading = "Traffic Control Publican",
-		text = "Control the traffic signals to ensure your patrons make it home in one piece.\n - Toggle lights with Left Mouse Button.\n - Toggle control lock with Left Mouse Button.\n\nToggle a few lights to continue.",
+		text = "Control the traffic signals to ensure your patrons make it home in one piece.\n - Toggle lights with Left Mouse Button.\n - Lock intersections with Left Mouse Button.\n\nToggle a few lights to continue.",
 		showStats = {
 			"lightClicks",
 		},
@@ -46,7 +46,7 @@ local levelDefs = {
 			house = 0.2,
 		},
 		heading = "Closing Time",
-		text = "The pub is emptying out - time to get the drivers home safely. They are blind to lights and other cars. Have two reach home in a row without crashing.",
+		text = "The pub is emptying out - time to get the patrons home safely. They ignore lights and other cars. Have two in a row reach home without crashing.",
 		showStats = {
 			"accidents",
 			"drunkArrivals_sinceDrunkAccident",
@@ -113,16 +113,16 @@ local levelDefs = {
 		showStats = {
 			"accidents",
 			"sickDeaths",
-			"drunkArrivals_sinceDrunkAccident",
+			"drunkArrivals_new",
 		},
 		flashStat = {
-			drunkArrivals_sinceDrunkAccident = true,
+			drunkArrivals_new = true,
 		},
 		resetStats = {
-			"drunkArrivals_sinceDrunkAccident"
+			"drunkArrivals_new"
 		},
 		advanceRequirement = {
-			drunkArrivals_sinceDrunkAccident = 3,
+			drunkArrivals_new = 5,
 		},
 	},
 	{
@@ -142,7 +142,7 @@ local levelDefs = {
 			police = 1,
 		},
 		heading = "Police Presence",
-		text = "Some thing that our growing population requires policing. See to it that our valued customers make it home without being arrested - three in a row. Crashing is fine.",
+		text = "Some people think that our growing town needs policing. See to it that our valued customers make it home without being arrested - three in a row. Crashing is fine.",
 		showStats = {
 			"accidents",
 			"sickDeaths",
@@ -167,7 +167,7 @@ local levelDefs = {
 			house = 0.8,
 			station = 1,
 			houseBecomeSick = 0.6,
-			houseBecomeFire = 0.8,
+			houseBecomeFire = 1.35,
 			forceRedLight = 0.9,
 		},
 		carLimit = {
@@ -175,8 +175,8 @@ local levelDefs = {
 			police = 2,
 			firetruck = 3,
 		},
-		heading = "Fire Time!",
-		text = "The newly established fire department is great for all the fires that are about to occur.\nDon't worry too much about the trucks, they are well armoured.",
+		heading = "Incendiary",
+		text = "The newly established fire department will help immensely with all the fires that are about to occur. Don't worry too much about the trucks, they are well armoured.",
 		showStats = {
 			"accidents",
 			"sickDeaths",
@@ -205,7 +205,7 @@ local levelDefs = {
 			police = 1,
 			firetruck = 3,
 		},
-		heading = "Kebab Shop",
+		heading = "Just a Snack",
 		text = "A kebab shop has opened on the edge of town. Perfect for a bite on the way home. Send some patrons its way.",
 		showStats = {
 			"accidents",
@@ -227,8 +227,8 @@ local levelDefs = {
 			pub = 0.9,
 			house = 1.1,
 			station = 1,
-			houseBecomeSick = 0.6,
-			houseBecomeFire = 0.18,
+			houseBecomeSick = 0.8,
+			houseBecomeFire = 0.35,
 		},
 		carLimit = {
 			drunk = 6,
@@ -237,11 +237,11 @@ local levelDefs = {
 		},
 		redrawChance = {
 			kebab = 0.7,
-			house = 0.93,
-			highway = 0.95,
+			house = 0.85,
+			highway = 0.9,
 		},
-		heading = "Cinema",
-		text = "Everyone from near and far wants to see the latest movie.",
+		heading = "The Advent of Cinema",
+		text = "A town with a cinema has everything. People from near and far wants to see the latest movie. Clear them path through the chaos.",
 		showStats = {
 			"accidents",
 			"sickDeaths",
@@ -271,7 +271,7 @@ local levelDefs = {
 		},
 		heading = "The End",
 		makeRecord = true,
-		text = "Your time as traffic signal operator is coming to an end. Thanks for playing!",
+		text = "Your time as traffic signal operator has come to an end. Thanks for playing!",
 		showStats = {
 			"totalTime",
 			"totalDeaths",

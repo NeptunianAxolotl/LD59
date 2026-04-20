@@ -19,7 +19,7 @@ local def = {
 		right = 0.2,
 	},
 	cureFire = true,
-	friendlyCollision = true,
+	friendlyCollision = false,
 	ignoreSignal = true,
 	ignoreCollision = true,
 	stopTimer = 0.2,

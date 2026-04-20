@@ -18,7 +18,7 @@ local function NewTrack(self, terrain)
 	end
 	
 	function self.Draw(drawQueue)
-		drawQueue:push({y=0 + self.pos[2]*0.01 - 0.001 + (self.def.drawY or 0); f=function()
+		drawQueue:push({y=40 + self.pos[2]*0.01 - 0.001*self.pos[1] + (self.def.drawY or 0); f=function()
 			Resources.DrawImage(self.def.image, self.worldPos[1], self.worldPos[2], 0, false, LevelHandler.TileScale())
 		end})
 		if self.def.topImage then
