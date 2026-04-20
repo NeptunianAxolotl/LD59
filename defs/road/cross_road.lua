@@ -143,6 +143,7 @@ return {
 			length = roadUtil.GetFullLanedOuterLength(),
 			turn = "right",
 			acrossTraffic = true,
+			ignoreCollisionAfter = Global.RIGHT_ACROSS_ROAD_IGNORE_AFTER,
 		},
 		{ -- Outer corner, left to bottom
 			posFunc = function (t, enterOffset, destOffset)
@@ -159,6 +160,7 @@ return {
 			acrossTraffic = true,
 			trafficFromRight = true,
 			trafficFromLeft = true,
+			ignoreCollisionAfter = Global.RIGHT_ACROSS_ROAD_IGNORE_AFTER,
 		},
 		{ -- Outer corner, top to left
 			posFunc = function (t, enterOffset, destOffset)
@@ -175,6 +177,7 @@ return {
 			acrossTraffic = true,
 			trafficFromRight = true,
 			trafficFromLeft = true,
+			ignoreCollisionAfter = Global.RIGHT_ACROSS_ROAD_IGNORE_AFTER,
 		},
 		{ -- Outer corner, right to top
 			posFunc = function (t, enterOffset, destOffset)
@@ -191,6 +194,7 @@ return {
 			acrossTraffic = true,
 			trafficFromRight = true,
 			trafficFromLeft = true,
+			ignoreCollisionAfter = Global.RIGHT_ACROSS_ROAD_IGNORE_AFTER,
 		},
 	},
 }

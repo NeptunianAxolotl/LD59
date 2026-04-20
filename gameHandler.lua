@@ -168,6 +168,8 @@ function api.Update(dt)
 			self.flashStat[name] = nil
 		end
 	end
+	api.AddStat("timeTaken", dt)
+	api.AddStat("timeTakenLevel_" .. self.level, dt)
 	CheckLevelAdvance()
 end
 

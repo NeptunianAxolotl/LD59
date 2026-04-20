@@ -31,14 +31,18 @@ local function GetSpawnTime(self)
 	return self.def.spawnCar.baseRate * (1 - self.def.spawnCar.randomProp * math.random())
 end
 
+local function CarSpawnAllowed(self)
+	if not (self.def.spawnCar and GameHandler.CarSpawnAllowed(self.def.spawnCar.carType)) then
+		return false
+	end
+	return true
+end
+
 local function SpawnRegularCar(self)
-	if not self.roadSpawn then
+	if not (self.roadSpawn and CarSpawnAllowed(self)) then
 		return false
 	end
 	local roadPos = self.roadSpawn.GetPos()
-	if not GameHandler.CarSpawnAllowed(self.def.spawnCar.carType) then
-		return false
-	end
 	local targetType = GameHandler.GetTargetType(self.def.spawnCar.targets)
 	if not targetType then
 		return false
@@ -141,13 +145,13 @@ local function NewBuilding(self)
 			end
 		end
 		self.medicOnTheWayTimer = util.UpdateTimer(self.medicOnTheWayTimer, dt)
-		if self.def.spawnCar then
+		if self.def.spawnCar and CarSpawnAllowed(self) then
 			self.spawnTimer = (self.spawnTimer or GetSpawnTime(self)) - dt * GameHandler.GetLevelRate(self.buildingType)
 			if self.spawnTimer <= 0 then
 				if SpawnRegularCar(self) then
 					self.spawnTimer = GetSpawnTime(self)
 				else
-					self.spawnTimer = math.random()*0.5
+					self.spawnTimer = math.random()*0.3
 				end
 			end
 		end
@@ -170,6 +174,17 @@ local function NewBuilding(self)
 				Resources.DrawImage(image, self.worldPos[1], self.worldPos[2], self.worldRot, false, LevelHandler.TileScale(), color)
 				if self.def.extraDrawFunc then
 					self.def.extraDrawFunc(self, self.worldPos, self.worldRot)
+				end
+				if self.roadSpawn and self.spawnTimer and self.spawnTimer > 0.3 then
+					local roadPos = self.roadSpawn.GetWorldPos()
+					love.graphics.setLineWidth(math.max(0, ((self.spawnTimer or 0) - 0.3)*10))
+					love.graphics.setColor(0.8, 0.8, 0.8, 0.5)
+					local pos = util.Average(self.worldPos, roadPos, 0.45)
+					if math.abs(pos[1] - roadPos[1]) > math.abs(pos[2] - roadPos[2]) then
+						love.graphics.line(pos[1] - 10, pos[2], pos[1] + 10, pos[2])
+					else
+						love.graphics.line(pos[1], pos[2] - 10, pos[1], pos[2] + 10)
+					end
 				end
 				if DrawDebug() then
 					if self.roadSpawn then

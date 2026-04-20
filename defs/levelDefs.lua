@@ -12,6 +12,7 @@ local levelDefs = {
 			house = 0.65,
 		},
 		carLimit = {
+			drunk = 0,
 		},
 		heading = "Traffic Terror",
 		text = "You control the signals.\n - Click a light to toggle it.\n - Click the middle of an intersection to lock it.\n - Drivers ignore lights that are red for too long.\nToggle a few lights to continue.",

@@ -94,6 +94,7 @@ return {
 			length = roadUtil.GetFullLanedOuterLength(),
 			turn = "right",
 			acrossTraffic = true,
+			ignoreCollisionAfter = Global.RIGHT_ACROSS_ROAD_IGNORE_AFTER,
 		},
 	},
 }
