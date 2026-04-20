@@ -35,7 +35,7 @@ function getCurrentPhaseTable()
   end
 
 function setLevels(table)
-    local netVolume = Global.MUSIC_VOLUME
+    local netVolume = self.cosmos.GetMusicVolume()
     local specificVolume = 1
     local musicTable = getCurrentPhaseTable()
     if (table ~= nil)
@@ -182,6 +182,8 @@ function api.Initialize(newCosmos)
 	if DISABLED then
 		return
 	end
+  
+	self.cosmos = newCosmos
   
   -- Load all the sounds
   -- IDS: 1: BASS+PK5, 2: KIT, 3: SAX 1, 4: BRASS 1, 5: SAX 2, 6: BRASS 2, 7: BRASS 4, 8: BRASS 3, 9: ORGAN
