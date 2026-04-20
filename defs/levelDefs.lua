@@ -34,6 +34,7 @@ local levelDefs = {
 			house = 0.2,
 			pub = 2,
 			houseBecomeSick = 0,
+			forceRedLight = 0.6,
 		},
 		carLimit = {
 			basic_car = 80,
