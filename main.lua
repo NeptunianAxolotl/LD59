@@ -48,8 +48,7 @@ end
 local longFrames = 0
 local frames = 0
 local missingDt = 0
-local MAX_DT = 0.004
-local FIXED_DT = 0.004
+local MAX_DT = 0.035
 function love.update(dt)
 	print(dt)
 	local realDt = dt
