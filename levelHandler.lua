@@ -48,7 +48,9 @@ local function SetupLevel()
 	DoodadHandler.SetupLevel()
 	for i = 1, #self.map.road do
 		local road = self.map.road[i]
-		TerrainHandler.AddRoad(road.pos, road.roadType, road.rot)
+		if TerrainHandler.IsInBounds(road.pos) then
+			TerrainHandler.AddRoad(road.pos, road.roadType, road.rot)
+		end
 	end
 	for i = 1, #self.map.building do
 		local building = self.map.building[i]

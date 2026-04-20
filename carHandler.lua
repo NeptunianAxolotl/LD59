@@ -23,14 +23,10 @@ function api.HandleCollision(carID, otherID)
 	end
 	local carDef = car.GetDef()
 	local otherDef = other.GetDef()
-	local damage = carDef.crashDamage * otherDef.crashDamage * (1 + car.GetSpeed() + other.GetSpeed())
-	car.AddCrashProgress(self.lastDt * (1 + Global.CRASH_PROGRESS_MULT * damage))
-	other.AddCrashProgress(self.lastDt * (1 + Global.CRASH_PROGRESS_MULT * damage))
-	if carDef.friendlyCollision then
-		car.DoCrashBackup(other)
-	end
-	if otherDef.friendlyCollision then
-		other.DoCrashBackup(car)
+	if not (carDef.friendlyCollision and otherDef.friendlyCollision and car.OnSamePath(other)) then
+		local damage = carDef.crashDamage * otherDef.crashDamage * (1 + car.GetSpeed() + other.GetSpeed())
+		car.AddCrashProgress(self.lastDt * (1 + Global.CRASH_PROGRESS_MULT * damage))
+		other.AddCrashProgress(self.lastDt * (1 + Global.CRASH_PROGRESS_MULT * damage))
 	end
 	
 	if carDef.friendlyCollision and otherDef.friendlyCollision and (not car.isCrashed) and (not other.isCrashed) then

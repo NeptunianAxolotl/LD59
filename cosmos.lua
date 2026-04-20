@@ -2,6 +2,7 @@
 local World = require("world")
 SoundHandler = require("soundHandler")
 BGMHandler = require("bgmHandler")
+MainMenuHandler = require("mainMenuHandler")
 
 local MapDefs = util.LoadDefDirectory("defs/maps")
 
@@ -12,19 +13,39 @@ local api = {}
 -- and things that persist between worlds.
 
 --------------------------------------------------
+-- Get
+--------------------------------------------------
+
+function api.GetWorld()
+	return World
+end
+
+--------------------------------------------------
 -- Music
 --------------------------------------------------
 
 function api.ToggleMusic()
 	self.musicEnabled = not self.musicEnabled
 	if not self.musicEnabled then
-		BGMHandler.Stop()
+		MusicHandler.StopCurrentTrack()
 	end
 end
 
 function api.MusicEnabled()
-  BGMHandler.Start()
 	return self.musicEnabled
+end
+
+function api.GetMusicVolume()
+	return self.musicVolume
+end
+
+function api.SetMusicVolume(volume)
+	self.musicVolume = volume
+	if volume <= 0 then
+		self.musicEnabled = false
+		return
+	end
+	self.musicEnabled = true
 end
 
 --------------------------------------------------
@@ -118,6 +139,10 @@ end
 --------------------------------------------------
 
 function api.KeyPressed(key, scancode, isRepeat)
+	if key == "escape" then
+		MainMenuHandler.ToggleMenu()
+		return true
+	end
 	if key == "r" and (love.keyboard.isDown("lctrl") or love.keyboard.isDown("rctrl")) then
 		api.RestartWorld()
 		return true
@@ -171,6 +196,7 @@ end
 function api.Initialize()
 	self = {
 		realTime = 0,
+		musicVolume = Global.MUSIC_VOLUME,
 		inbuiltLevelName = Global.INIT_LEVEL,
 		musicEnabled = true,
 		drawDebug = Global.DRAW_DEBUG,
@@ -178,6 +204,7 @@ function api.Initialize()
 	self.curLevelData = MapDefs[self.inbuiltLevelName]
 	BGMHandler.Initialize(api)
 	SoundHandler.Initialize(api)
+	MainMenuHandler.Initialize(api)
 	World.Initialize(api, self.curLevelData)
 end
 

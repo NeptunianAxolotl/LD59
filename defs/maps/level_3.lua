@@ -67,7 +67,7 @@ return {
 	dimensions = {
 		bottom = 4,
 		left = -4,
-		right = 9,
+		right = Global.LEVEL_RIGHT,
 		top = -4,
 	},
 	doodads = {

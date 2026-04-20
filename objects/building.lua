@@ -36,7 +36,7 @@ local function SpawnRegularCar(self)
 		return false
 	end
 	local roadPos = self.roadSpawn.GetPos()
-	local targetType = util.SampleListWeighted(self.def.spawnCar.targets)
+	local targetType = GameHandler.GetTargetType(self.def.spawnCar.targets)
 	if not targetType then
 		return false
 	end
@@ -136,7 +136,7 @@ local function NewBuilding(self)
 		end
 		self.medicOnTheWayTimer = util.UpdateTimer(self.medicOnTheWayTimer, dt)
 		if self.def.spawnCar then
-			self.spawnTimer = (self.spawnTimer or GetSpawnTime(self)) - dt
+			self.spawnTimer = (self.spawnTimer or GetSpawnTime(self)) - dt * GameHandler.GetSpawnMult(self.buildingType)
 			if self.spawnTimer <= 0 then
 				if SpawnRegularCar(self) then
 					self.spawnTimer = GetSpawnTime(self)

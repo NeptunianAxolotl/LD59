@@ -93,6 +93,9 @@ function api.KeyPressed(key, scancode, isRepeat)
 end
 
 function api.MousePressed(x, y, button)
+	if MainMenuHandler.MousePressed(x, y, button) then
+		return
+	end
 	local wPos = api.ScreenToWorld({x, y})
 	if GameHandler.MousePressed(wPos[1], wPos[2], button) then
 		return
@@ -126,10 +129,13 @@ end
 function api.MouseReleased(x, y, button)
 	x, y = CameraHandler.GetCameraTransform():inverse():transformPoint(x, y)
 	-- Send event to game components
+	MainMenuHandler.MouseReleased(x, y, button)
 end
 
 function api.MouseMoved(x, y, dx, dy)
-	
+	if MainMenuHandler.MouseMoved(x, y, dx, dy) then
+		return true
+	end
 end
 
 --------------------------------------------------
@@ -243,6 +249,7 @@ function api.Draw()
 	LevelHandler.DrawInterface()
 	GameHandler.DrawInterface()
 	EffectsHandler.DrawInterface()
+	MainMenuHandler.DrawInterface()
 	
 	love.graphics.replaceTransform(self.emptyTransform)
 end

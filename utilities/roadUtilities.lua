@@ -152,7 +152,8 @@ local function DoFullTurn(t, enterOffset, destOffset)
 		local prop = math.pi*t/circleLength
 		local radius = (enterOffset + destOffset)*0.35
 		local cent = {0, destOffset - radius}
-		return {cent[1] + radius * math.sin(prop), cent[2] - radius * math.cos(prop)}
+		local turn = {cent[1] + radius * math.sin(prop) * 0.8, cent[2] - radius * math.cos(prop)}
+		return turn
 	else
 		return {circleLength - t, destOffset}
 	end
@@ -179,7 +180,7 @@ function roadUtil.GetWrongSideSpawnPath(car, entry, dest, worldRot)
 		entry = entry,
 		destination = dest,
 		length = circleLength + 0.5,
-		ignoreCollisionUntil = 0.6,
+		ignoreCollisionUntil = 0.8,
 		turn = "right",
 	}
 end
@@ -199,7 +200,7 @@ function roadUtil.GetWrongSideArrivePath(car, entry, dest, worldRot)
 		end,
 		entry = entry,
 		destination = dest,
-		ignoreCollisionAfter = 0.4,
+		ignoreCollisionAfter = 2,
 		length = circleLength + 0.65,
 		turn = "right",
 	}

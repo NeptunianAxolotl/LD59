@@ -34,7 +34,7 @@ local function SetupSignal(self)
 		return 
 	end
 	self.automaticSignal = true
-	self.autoSignalState = 0
+	self.autoSignalState = 1
 	self.signalTime = self.def.signalTimeMax[self.autoSignalState]
 	self.signal = {}
 	UpdateSignalFromAuto(self)

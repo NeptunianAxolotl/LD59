@@ -180,26 +180,27 @@ local function CheckImpendingCollision(self)
 			unit = util.RotateVector(unit, 0.23)
 		end
 	end
-	local secondRayLength = 26
+	local secondRayLength = 25
 	local secondRayRotate = 0
 	if self.currentPath.turn == "straight" and self.wantTurn ~= "right" then
-		secondRayLength = 40
+		secondRayLength = 32
+	elseif self.currentPath.turn == "left" then
+		secondRayLength = 16
 	end
-	if self.currentPath and self.nextPath and not self.currentPath.trafficFromLeft and not self.nextPath.trafficFromLeft then
+	if self.currentPath and self.nextPath and not self.currentPath.trafficFromLeft and not self.nextPath.trafficFromLeft and self.currentPath.turn == "straight" then
 		secondRayRotate = -0.5
-		secondRayLength = 55
+		secondRayLength = 45
 	end
 	if (self.maxSpeedMult or 1) > 1 then
 		rayLength = rayLength * (self.maxSpeedMult or 1)
 	end
-	
 	
 	self.secondRay = {}
 	self.secondRay[1] = util.Add(self.pos, util.Mult(9, util.RotateVector(baseUnit, -0.8)))
 	self.secondRay[2] = util.Add(self.secondRay[1], util.Mult(secondRayLength, util.RotateVector(baseUnit, sideRayRotate * 0.5 + secondRayRotate)))
 	
 	self.thirdRay = {}
-	self.thirdRay[1] = util.Add(baseRay, util.Mult(6, util.RotateVector(baseUnit, 1.55)))
+	self.thirdRay[1] = util.Add(baseRay, util.Mult(8, util.RotateVector(baseUnit, 1.55)))
 	self.thirdRay[2] = util.Add(self.thirdRay[1], util.Mult(22, util.RotateVector(baseUnit, sideRayRotate)))
 	
 	self.ray[2] = util.Add(self.ray[1], util.Mult(rayLength, unit))
@@ -307,8 +308,9 @@ end
 local function NewCar(self, new_gridPos, targetPos, targetBuildingPos, wrongSideSpawn, carID, entry, dest, fullSpeed)
 	self.def = CarDefs[self.carType]
 	
+	self.speedRand = math.random()*self.def.speedRand
 	self.spawnTimer = (not fullSpeed) and Global.SPAWN_FADE_TIME
-	self.travel = fullSpeed and 0 or Global.SPAWN_TRAVEL
+	self.travel = fullSpeed and (math.random()*0.6) or Global.SPAWN_TRAVEL
 	self.speed = fullSpeed and self.def.maxSpeed or 0
 	self.toDestroy = false
 	self.driveOffset = Global.DRIVE_OFFSET
@@ -350,16 +352,17 @@ local function NewCar(self, new_gridPos, targetPos, targetBuildingPos, wrongSide
 		self.speed = 0
 	end
 	
-	function self.DoCrashBackup(other)
-		if other and other.travel < self.travel and not self.isCrashed and not other.isCrashed then
+	function self.OnSamePath(other)
+		if other and not self.isCrashed and not other.isCrashed then
 			if util.Eq(other.currentRoadPos, self.currentRoadPos) then
 				local mP = self.currentPath
 				local oP = other.currentPath
-				if mp and oP and mP.entry == oP.entry and mP.destination == oP.destination then
-					self.travel = math.max(0, self.travel - 0.02)
+				if mP and oP and mP.entry == oP.entry and mP.destination == oP.destination then
+					return true
 				end
 			end
 		end
+		return false
 	end
 	
 	function self.Crash()
@@ -389,7 +392,7 @@ local function NewCar(self, new_gridPos, targetPos, targetBuildingPos, wrongSide
 		local allBlocked, someBlocked = false, false
 		local stopOffset = 0
 		local deccelMult = (self.maxSpeedMult or 1)
-		local maxSpeed = (self.maxSpeedMult or 1) * self.def.maxSpeed * spawn * WobbleSpeedMult(self)
+		local maxSpeed = (self.maxSpeedMult or 1) * (self.def.maxSpeed + self.speedRand) * spawn * WobbleSpeedMult(self)
 		local mult = spawn
 		
 		self.signalBlocked, self.sneakingThrough = CheckStopSignal(self)

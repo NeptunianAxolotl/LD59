@@ -25,6 +25,7 @@ return {
 			destination = 2,
 			length = 1,
 			turn = "straight",
+			trafficFromLeft = true,
 			speedMult = Global.BIG_ROAD_SPEED,
 		},
 		{ -- left to right
@@ -38,7 +39,6 @@ return {
 			destination = 0,
 			length = 1,
 			turn = "straight",
-			trafficFromLeft = true,
 			speedMult = Global.BIG_ROAD_SPEED,
 		},
 		{ -- Inner corner, right to bottom

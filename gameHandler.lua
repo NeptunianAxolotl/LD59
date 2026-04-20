@@ -42,13 +42,33 @@ end
 -- Game Stage
 --------------------------------------------------
 
+function api.GetSpawnMult(bType)
+	return self.levelData.spawnMult and self.levelData.spawnMult[bType] or 1
+end
+
+function api.GetTargetType(distribution)
+	if #distribution == 1 then
+		return distribution[1]
+	end
+	local result = util.SampleListWeighted(distribution)
+	if not self.levelData.redrawChance then
+		return result
+	end
+	while self.levelData.redrawChance[result] or 0 > math.random() do
+		result = util.SampleListWeighted(distribution)
+	end
+	return result
+end
+
 function api.AdvanceLevel()
 	if not LevelDefs[self.level + 1] then
 		return
 	end
 	self.level = self.level + 1
 	self.levelData = LevelDefs[self.level]
-	LevelHandler.UpdateMap(self.levelData.map)
+	if self.levelData.map then
+		LevelHandler.UpdateMap(self.levelData.map)
+	end
 end
 
 
@@ -69,13 +89,13 @@ end
 --------------------------------------------------
 
 function api.Update(dt)
-	self.sicknessTimer = util.UpdateTimer(self.sicknessTimer, dt)
+	self.sicknessTimer = util.UpdateTimer(self.sicknessTimer, dt*(self.levelData.sickRate or 1))
 	if not self.sicknessTimer then
 		local building = BuildingHandler.GetRandomMatchingBuilding(false, false, CanInfect)
 		if building then
 			building.sickness = 0
 		end
-		self.sicknessTimer = 5
+		self.sicknessTimer = 1
 	end
 	self.drunkTimer = util.UpdateTimer(self.drunkTimer, dt)
 	if not self.drunkTimer then
@@ -94,15 +114,22 @@ function api.Update(dt)
 end
 
 function api.DrawInterface()
-	local windowX, windowY = love.window.getMode()
+	if LevelHandler.InEditMode() then
+		return
+	end
+	InterfaceUtil.DrawPanel(20, 20, 660, 500, 8)
+	
+	love.graphics.setColor(0, 0, 0, 1)
+	Font.SetSize(2)
+	offset = 20
 end
 
 function api.Initialize(parentWorld)
 	self = {}
 	self.level = 1
-	self.levelData = LevelDefs[self.level]
+	self.levelData = util.CopyTable(LevelDefs[self.level])
 	
-	self.sicknessTimer = 2
+	self.sicknessTimer = 1
 	self.drunkTimer = 2
 	self.world = parentWorld
 end

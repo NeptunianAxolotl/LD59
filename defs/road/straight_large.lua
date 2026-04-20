@@ -1,6 +1,8 @@
 
 return {
 	baseImage = "straight_large",
+	createOnSpawn = "basic_car",
+	createOnSpawnChance = 0.6,
 	paths = {
 		{ -- right to left
 			posFunc = function (t, enterOffset, destOffset)

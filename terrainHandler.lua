@@ -20,13 +20,13 @@ end
 function api.GetDimensions()	return self.dimensionsendfunction api.SetDimensions(dimensions)
 	local oldDimensions = self.dimensions	self.dimensions = util.CopyTable(dimensions)
 	local ends = {self.dimensions.left - Global.HIGHWAY_EXTRA, self.dimensions.right + Global.HIGHWAY_EXTRA - 1}
+	BuildingHandler.ReplaceHighwayEnds(ends)
 	for i = ends[1], ends[2] do
 		local pos = {i, 0}
 		if not api.GetRoadAtPos(pos) then
 			api.AddRoad(pos, "straight_large", 0)
 		end
-	end
-	BuildingHandler.ReplaceHighwayEnds(ends)endfunction api.IsInBounds(gPos)	return self.dimensions.left <= gPos[1] and self.dimensions.right > gPos[1] and self.dimensions.top <= gPos[2] and self.dimensions.bottom > gPos[2]end
+	endendfunction api.IsInBounds(gPos)	return self.dimensions.left <= gPos[1] and self.dimensions.right > gPos[1] and self.dimensions.top <= gPos[2] and self.dimensions.bottom > gPos[2]end
 
 local function RoadMatches(pos, roadType, rotation)
 	local x, y = pos[1], pos[2]
@@ -42,8 +42,18 @@ endfunction api.RemoveRoad(pos)	local x, y = pos[1], pos[2]	if self.roadPos[
 function api.AddRoad(pos, roadType, rotation, setData)
 	if RoadMatches(pos, roadType, rotation) then
 		return
-	end	local x, y = pos[1], pos[2]	self.roadPos[x] = self.roadPos[x] or {}	api.RemoveRoad(pos)
-	BuildingHandler.RemoveBuilding(pos)	local def = RoadDefs[roadType]	local roadData = (setData and util.CopyTable(setData)) or {}	roadData.pos = pos	roadData.roadType = roadType	roadData.rotation = rotation	self.roadPos[x][y] = IterableMap.Add(self.roadList, NewRoad(roadData, api))endfunction api.GetRoadAtPos(gridPos, addDirection)	local x, y = gridPos[1], gridPos[2]	if addDirection == 0 then		x = x + 1	elseif addDirection == 1 then		y = y + 1	elseif addDirection == 2 then		x = x - 1	elseif addDirection == 3 then		y = y - 1	end	if not (self.roadPos[x] and self.roadPos[x][y]) then		return false	end	return IterableMap.Get(self.roadList, self.roadPos[x][y])end
+	end	local x, y = pos[1], pos[2]
+	local prexistingRoad = self.roadPos[x] and self.roadPos[x][y]	self.roadPos[x] = self.roadPos[x] or {}	api.RemoveRoad(pos)
+	BuildingHandler.RemoveBuilding(pos)	local def = RoadDefs[roadType]	local roadData = (setData and util.CopyTable(setData)) or {}	roadData.pos = pos	roadData.roadType = roadType	roadData.rotation = rotation	self.roadPos[x][y] = IterableMap.Add(self.roadList, NewRoad(roadData, api))
+	
+	if def.createOnSpawn and (not prexistingRoad) and math.random() < def.createOnSpawnChance then
+		local entry = math.random() > 0.5 and 0 or 2
+		CarHandler.AddCar(def.createOnSpawn, pos, false, false, false, entry, 2 - entry, true)
+		if math.random() < def.createOnSpawnChance then
+			entry = 2 - entry
+			CarHandler.AddCar(def.createOnSpawn, pos, false, false, false, entry, 2 - entry, true)
+		end
+	endendfunction api.GetRoadAtPos(gridPos, addDirection)	local x, y = gridPos[1], gridPos[2]	if addDirection == 0 then		x = x + 1	elseif addDirection == 1 then		y = y + 1	elseif addDirection == 2 then		x = x - 1	elseif addDirection == 3 then		y = y - 1	end	if not (self.roadPos[x] and self.roadPos[x][y]) then		return false	end	return IterableMap.Get(self.roadList, self.roadPos[x][y])end
 
 function api.Blocked(gridPos)
 	return api.GetRoadAtPos(gridPos) or BuildingHandler.GetBuildingAtPos(gridPos)
@@ -59,8 +69,9 @@ local function UpdateHover()
 	self.hoveredPos = LevelHandler.WorldToGrid(worldPos)
 end
 function api.Update(dt)
-	UpdateHover()	IterableMap.ApplySelfRandomOrder(self.roadList, "Update", dt)endfunction api.Draw(drawQueue)	IterableMap.ApplySelf(self.roadList, "Draw", drawQueue)	drawQueue:push({y=0; f=function()		local dim = api.GetDimensions()		local size = LevelHandler.TileSize()		love.graphics.setLineWidth(1)		love.graphics.setColor(1, 1, 1, 1)		love.graphics.rectangle("line", 0, 0, 1, 1)				leftPos = dim.left*size		topPos = dim.top*size		rightPos = dim.right*size		bottomPos = dim.bottom*size				for i = dim.left, dim.right do			love.graphics.line(i*size, topPos, i*size, bottomPos)		end		for i = dim.top, dim.bottom do			love.graphics.line(leftPos, i*size, rightPos, i*size)		end	end})
-	
+	UpdateHover()	IterableMap.ApplySelfRandomOrder(self.roadList, "Update", dt)endfunction api.Draw(drawQueue)	IterableMap.ApplySelf(self.roadList, "Draw", drawQueue)
+	if DrawDebug() then		drawQueue:push({y=0; f=function()			local dim = api.GetDimensions()			local size = LevelHandler.TileSize()			love.graphics.setLineWidth(1)			love.graphics.setColor(1, 1, 1, 1)			love.graphics.rectangle("line", 0, 0, 1, 1)						leftPos = dim.left*size			topPos = dim.top*size			rightPos = dim.right*size			bottomPos = dim.bottom*size						for i = dim.left, dim.right do				love.graphics.line(i*size, topPos, i*size, bottomPos)			end			for i = dim.top, dim.bottom do				love.graphics.line(leftPos, i*size, rightPos, i*size)			end		end})
+	end
 	if LevelHandler.InEditMode() then
 		local tile, rotation = LevelHandler.GetSelectedTile()
 		drawQueue:push({y=0; f=function()

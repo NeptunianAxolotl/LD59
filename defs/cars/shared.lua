@@ -5,4 +5,5 @@ return {
 	crossTrafficRay = 98,
 	length = 23,
 	width = 10,
+	speedRand = 0.08,
 }
