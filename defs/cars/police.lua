@@ -6,8 +6,8 @@ local def = {
 	accel = 1.7,
 	deccel = 3.2,
 	slowDeccel = 2,
-	crashEndurance = 1.7,
-	crashDamage = 0.8,
+	crashEndurance = 1.6,
+	crashDamage = 0.85,
 	choiceRatio = {
 		straight = 0.35,
 		left = 0.25,
@@ -15,7 +15,7 @@ local def = {
 	},
 	friendlyCollision = true,
 	stopTimer = 0.4,
-	wrongTurnChance = 0.2,
+	wrongTurnChance = 0.9,
 }
 
 return util.MergeTable(def, shared)

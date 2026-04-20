@@ -36,6 +36,7 @@ local def = {
 	onArrive = function (self, building)
 		if building and building.def.name == "house" then
 			GameHandler.AddStat("drunkArrivals_sinceAccident")
+			GameHandler.AddStat("drunkArrivals_sinceDrunkAccident")
 			GameHandler.AddStat("drunkArrivals")
 		end
 	end,

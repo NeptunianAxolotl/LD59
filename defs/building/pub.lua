@@ -7,6 +7,7 @@ return {
 		straight_large = true,
 	},
 	spawnWhenBlocked = true,
+	drawTargetPos = true,
 	spawnMatchFunc = function (other)
 		return other.isDrunk and not other.drunkArriving
 	end,
@@ -20,7 +21,11 @@ return {
 		targets = util.NormaliseWeightedList({
 			{
 				target = "house",
-				probability = 1.8,
+				probability = 1,
+			},
+			{
+				target = "kebab",
+				probability = 1,
 			},
 		})
 	},

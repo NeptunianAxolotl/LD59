@@ -12,7 +12,7 @@ local api = {}
 local statName = {
 	lightClicks = "Toggle Lights",
 	accidents = "Crashes",
-	drunkArrivals_sinceAccident = "Drunks returned home since last crash",
+	drunkArrivals_sinceDrunkAccident = "Drunks home without incident",
 	sickDeaths = "Succumbed to Illness",
 	returnedToDoctor = "Patients in Hospital",
 	doctorVisitHouse = "Patients picked up",
@@ -110,6 +110,11 @@ function api.AdvanceLevel()
 		LevelHandler.UpdateMap(self.levelData.map)
 	end
 	self.nextLevelTimer = Global.LEVEL_DONE_EXPAND_TIMER
+	if self.levelData.resetStats then
+		for i = 1, #self.levelData.resetStats do
+			api.ResetStat(self.levelData.resetStats[i])
+		end
+	end
 end
 
 

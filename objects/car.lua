@@ -544,6 +544,9 @@ local function NewCar(self, new_gridPos, targetPos, targetBuildingPos, wrongSide
 			GameHandler.ResetStat("doctorVisitHouse_sinceAccident")
 			GameHandler.ResetStat("returnedToDoctor_sinceAccident")
 			GameHandler.ResetStat("drunkArrivals_sinceAccident")
+			if self.def.isDrunk then
+				GameHandler.ResetStat("drunkArrivals_sinceDrunkAccident")
+			end
 			EffectsHandler.SpawnEffect("fireball_explode", self.pos, {scale = 0.2 + math.random()*0.1})
 		end
 		self.isCrashed = true
@@ -626,6 +629,12 @@ local function NewCar(self, new_gridPos, targetPos, targetBuildingPos, wrongSide
 					color[3] = color[1]
 				end
 				Resources.DrawImage(self.image, self.pos[1], self.pos[2], self.rotation, alpha, LevelHandler.TileScale(), color)
+				if self.targetBuildingPos and self.def.isDrunk or self.def.cureSickness then
+					local draw = LevelHandler.GridToWorld(self.targetBuildingPos)
+					love.graphics.setLineWidth(1)
+					love.graphics.setColor(0.8, 0.8, 0.8, 0.35)
+					love.graphics.line(self.pos[1], self.pos[2], draw[1], draw[2])
+				end
 				if DrawDebug() then
 					--if self.nextRoad and self.nextRoadEntry and self.nextRoad.SignalActive(self.nextRoadEntry) then
 					--	love.graphics.setLineWidth(3)

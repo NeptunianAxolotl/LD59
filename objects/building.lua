@@ -39,20 +39,33 @@ local function CouldSpawnCar(self)
 		return false
 	end
 	local roadPos = self.roadSpawn.GetPos()
-	local targetType = GameHandler.GetTargetType(self.def.spawnCar.targets)
-	if not targetType then
-		return false
+	local targetBuilding = false
+	if self.nextTargetBuildingPos then
+		targetBuilding = BuildingHandler.GetBuildingAtPos(self.nextTargetBuildingPos)
+		if not (targetBuilding and targetBuilding.MatchAndExcludeID(self.nextTargetType, false, self.def.spawnMatchFunc)) then
+			targetBuilding = false
+		end
 	end
-	local targetBuilding = BuildingHandler.GetRandomMatchingBuilding(targetType.target, self.buildingID, self.def.spawnMatchFunc)
-	if not (targetBuilding and targetBuilding.roadSpawn) then
-		return false
+	if not self.nextTargetBuildingPos then
+		local targetType = GameHandler.GetTargetType(self.def.spawnCar.targets)
+		if not targetType then
+			return false
+		end
+		targetBuilding = BuildingHandler.GetRandomMatchingBuilding(targetType.target, self.buildingID, self.def.spawnMatchFunc)
+		if not (targetBuilding and targetBuilding.roadSpawn) then
+			return false
+		end
+		self.nextTargetType = targetType.target
 	end
+	self.nextTargetBuildingPos = targetBuilding and targetBuilding.GetPos()
 	return roadPos, targetBuilding
 end
 
 local function SpawnRegularCar(self)
 	local roadPos, targetBuilding = CouldSpawnCar(self)
-	if not roadPos then
+	if not (roadPos and targetBuilding) then
+		self.nextTargetBuildingPos = false
+		self.nextTargetType = false
 		return false
 	end
 	local targetRoadPos = targetBuilding.roadSpawn.GetPos()
@@ -81,6 +94,8 @@ local function SpawnRegularCar(self)
 	if self.def.onDispatchCar then
 		self.def.onDispatchCar(self, targetBuilding)
 	end
+	self.nextTargetBuildingPos = false
+	self.nextTargetType = false
 	return true
 end
 
@@ -186,6 +201,14 @@ local function NewBuilding(self)
 				if not LevelHandler.InEditMode() then
 					return
 				end
+			end
+			if self.nextTargetBuildingPos and self.def.drawTargetPos then
+				drawQueue:push({y=100 + self.pos[2]; f=function()
+					local draw = LevelHandler.GridToWorld(self.nextTargetBuildingPos)
+					love.graphics.setLineWidth(1)
+					love.graphics.setColor(0.8, 0.8, 0.8, 0.35)
+					love.graphics.line(self.worldPos[1], self.worldPos[2], draw[1], draw[2])
+				end})
 			end
 			drawQueue:push({y=-50 + self.pos[2]; f=function()
 				Resources.DrawImage(self.image, self.worldPos[1], self.worldPos[2], self.worldRot, false, LevelHandler.TileScale())
