@@ -6,13 +6,28 @@ local Resources = require("resourceHandler")
 local BGMHandler = require("bgmHandler")
 local LevelDefs = require("defs/levelDefs")
 
-
 local self = {}
 local api = {}
+
+local statName = {
+	lightClicks = "Toggle Lights"
+}
 
 --------------------------------------------------
 -- Updating
 --------------------------------------------------
+
+function api.AddStat(name, count)
+	count = count or 1
+	self.stats[name] = (self.stats[name] or 0) + count
+	if count > 0 and self.levelData.flashStat and self.levelData.flashStat[name] then
+		self.flashStat[name] = Global.FLASH_STAT_TIME
+	end
+end
+
+function api.GetStat(name)
+	return self.stats[name] or 0
+end
 
 --------------------------------------------------
 -- API
@@ -30,6 +45,7 @@ end
 
 function api.LightWasClicked()
 	BGMHandler.addPoints(1)
+	api.AddStat("lightClicks")
 end
 
 function api.RegisterCollision()
@@ -73,6 +89,7 @@ function api.AdvanceLevel()
 	if self.levelData.map then
 		LevelHandler.UpdateMap(self.levelData.map)
 	end
+	self.nextLevelTimer = Global.LEVEL_DONE_EXPAND_TIMER
 end
 
 
@@ -92,6 +109,19 @@ end
 -- Updating
 --------------------------------------------------
 
+local function CheckLevelAdvance()
+	local req = self.levelData.advanceRequirement
+	if not req then
+		return
+	end
+	for name, count in pairs(req) do
+		if count > api.GetStat(name) then
+			return
+		end
+	end
+	api.AdvanceLevel()
+end
+
 function api.Update(dt)
 	self.sicknessTimer = util.UpdateTimer(self.sicknessTimer, dt*(self.levelData.sickRate or 1))
 	if not self.sicknessTimer then
@@ -110,11 +140,15 @@ function api.Update(dt)
 		self.drunkTimer = Global.REDRUNK_TIMER
 	end
 	
-	self.levelTimer = (self.levelTimer or 5)
-	--self.levelTimer = util.UpdateTimer(self.levelTimer, dt)
-	if not self.levelTimer then
-		api.AdvanceLevel()
+	self.nextLevelTimer = util.UpdateTimer(self.nextLevelTimer, dt)
+	
+	for name, data in pairs(self.flashStat) do
+		self.flashStat[name] = util.UpdateTimer(self.flashStat[name], dt)
+		if not self.flashStat[name] then
+			self.flashStat[name] = nil
+		end
 	end
+	CheckLevelAdvance()
 end
 
 function api.DrawInterface()
@@ -123,20 +157,53 @@ function api.DrawInterface()
 	end
 	local drawX = 20
 	local width = 660
+	local height = 500
+	local offset = 20
 	if self.world.GetCosmos().GetLocalisation() then
 		drawX = Global.WINDOW_X - width - drawX
 	end
-	InterfaceUtil.DrawPanel(drawX, 20, width, 500, 8)
+	local expand = (self.nextLevelTimer or 0)
+	expand = 1 + expand * (Global.LEVEL_DONE_EXPAND_TIMER - expand) * 0.4
+	InterfaceUtil.DrawPanel(drawX - (expand - 1)*width/2, offset - (expand - 1)*height/2, width * expand, height * expand, 8)
 	
 	love.graphics.setColor(0, 0, 0, 1)
-	Font.SetSize(2)
-	offset = 20
+	Font.SetSize(1)
+	
+	offset = 40
+	love.graphics.printf(self.levelData.heading or "NO HEADING", drawX + 40, offset, width - 50, "left")
+	
+	Font.SetSize(3)
+	
+	offset = offset + 60
+	love.graphics.printf(self.levelData.text or "NO DESC", drawX + 40, offset, width - 50, "left")
+	
+	offset = 495
+	if self.levelData.showStats then
+		local req = self.levelData.advanceRequirement
+		for i = 1, #self.levelData.showStats do
+			local name = self.levelData.showStats[i]
+			offset = offset - 40
+			if self.flashStat[name] and (self.flashStat[name])%0.3 < 0.15 then
+				love.graphics.setColor(0.8, 0.8, 0.8, 1)
+			else
+				love.graphics.setColor(0, 0, 0, 1)
+			end
+			if req and req[name] then
+				love.graphics.printf(statName[name] .. ": " .. math.floor(api.GetStat(name)) .. " / " .. req[name], drawX + 40, offset, width - 50, "left")
+			else
+				love.graphics.printf(statName[name] .. ": " .. math.floor(api.GetStat(name)), drawX + 40, offset, width - 50, "left")
+			end
+		end
+	end
+	
 end
 
 function api.Initialize(parentWorld)
 	self = {}
+	self.stats = {}
 	self.level = 1
-	self.levelData = util.CopyTable(LevelDefs[self.level])
+	self.levelData = LevelDefs[self.level]
+	self.flashStat = {}
 	
 	self.sicknessTimer = 1
 	self.drunkTimer = 2
