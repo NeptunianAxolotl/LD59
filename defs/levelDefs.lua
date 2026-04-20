@@ -32,7 +32,7 @@ local levelDefs = {
 		spawnMult = {
 			highway = 3.2,
 			house = 0.3,
-			pub = 2,
+			pub = 2.8,
 			houseBecomeSick = 0,
 			forceRedLight = 0.8,
 		},

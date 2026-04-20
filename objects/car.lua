@@ -553,6 +553,16 @@ local function NewCar(self, new_gridPos, targetPos, targetBuildingPos, wrongSide
 		end
 		if self.sickness then
 			self.sickness = self.sickness + dt*GameHandler.GetLevelRate("sickness")
+			if self.sickness > 1 then
+				self.sickDeathTimer = self.sickDeathTimer or Global.SICK_DEATH_TIME
+				self.sickDeathTimer = util.UpdateTimer(self.sickDeathTimer, dt)
+				if not self.sickDeathTimer then
+					EffectsHandler.SpawnEffect("sickness_popup", self.pos, {velocity = {0, -0.3 - 0.6*math.random()}})
+					GameHandler.AddStat("sickDeaths")
+				end
+			end
+		else
+			self.sickDeathTimer = nil
 		end
 		UpdateMovement(self, dt)
 		UpdateCrash(self, dt)

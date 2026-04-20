@@ -22,7 +22,7 @@ local def = {
 	returnAfterVisit = "doctor",
 	onArrive = function (self, building)
 		if building and building.def.name == "house" then
-			self.sickness = (building.sickness or 0) / 3
+			self.sickness = math.min(1, (building.sickness or 0)) *0.25
 			GameHandler.AddStat("doctorVisitHouse_sinceAccident")
 			GameHandler.AddStat("doctorVisitHouse")
 		end

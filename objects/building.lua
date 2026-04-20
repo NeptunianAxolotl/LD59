@@ -31,15 +31,11 @@ local function GetSpawnTime(self)
 	return self.def.spawnCar.baseRate * (1 - self.def.spawnCar.randomProp * math.random())
 end
 
-local function CarSpawnAllowed(self)
-	if not (self.def.spawnCar and GameHandler.CarSpawnAllowed(self.def.spawnCar.carType)) then
+local function CouldSpawnCar(self)
+	if not self.roadSpawn then
 		return false
 	end
-	return true
-end
-
-local function SpawnRegularCar(self)
-	if not (self.roadSpawn and CarSpawnAllowed(self)) then
+	if not (self.def.spawnCar and GameHandler.CarSpawnAllowed(self.def.spawnCar.carType)) then
 		return false
 	end
 	local roadPos = self.roadSpawn.GetPos()
@@ -49,6 +45,14 @@ local function SpawnRegularCar(self)
 	end
 	local targetBuilding = BuildingHandler.GetRandomMatchingBuilding(targetType.target, self.buildingID, self.def.spawnMatchFunc)
 	if not (targetBuilding and targetBuilding.roadSpawn) then
+		return false
+	end
+	return roadPos, targetBuilding
+end
+
+local function SpawnRegularCar(self)
+	local roadPos, targetBuilding = CouldSpawnCar(self)
+	if not roadPos then
 		return false
 	end
 	local targetRoadPos = targetBuilding.roadSpawn.GetPos()
@@ -141,11 +145,18 @@ local function NewBuilding(self)
 		if self.sickness then
 			self.sickness = self.sickness + dt*GameHandler.GetLevelRate("sickness")
 			if self.sickness > 1 then
-				
+				self.sickDeathTimer = self.sickDeathTimer or Global.SICK_DEATH_TIME
+				self.sickDeathTimer = util.UpdateTimer(self.sickDeathTimer, dt)
+				if not self.sickDeathTimer then
+					EffectsHandler.SpawnEffect("sickness_popup", self.worldPos, {velocity = {0, -0.3 - 0.6*math.random()}})
+					GameHandler.AddStat("sickDeaths")
+				end
 			end
+		else
+			self.sickDeathTimer = nil
 		end
 		self.medicOnTheWayTimer = util.UpdateTimer(self.medicOnTheWayTimer, dt)
-		if self.def.spawnCar and CarSpawnAllowed(self) then
+		if self.def.spawnCar and CouldSpawnCar(self) then
 			self.spawnTimer = (self.spawnTimer or GetSpawnTime(self)) - dt * GameHandler.GetLevelRate(self.buildingType)
 			if self.spawnTimer <= 0 then
 				if SpawnRegularCar(self) then
@@ -164,7 +175,7 @@ local function NewBuilding(self)
 					return
 				end
 			end
-			drawQueue:push({y=-90 + self.pos[2]*0.01; f=function()
+			drawQueue:push({y=-50 + self.pos[2]; f=function()
 				local image = self.def.baseImage
 				local color = {1, 1, 1}
 				if self.sickness then
