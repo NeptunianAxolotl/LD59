@@ -38,6 +38,7 @@ local def = {
 		if building and building.def.name == "house" then
 			GameHandler.AddStat("drunkArrivals_sinceAccident")
 			GameHandler.AddStat("drunkArrivals_sinceDrunkAccident")
+			GameHandler.AddStat("drunkArrivals_sinceCaught")
 			GameHandler.AddStat("drunkArrivals")
 			GameHandler.AddStat("drunkArrivals_new")
 		elseif building and building.def.name == "kebab" then

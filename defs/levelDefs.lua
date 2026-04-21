@@ -136,10 +136,11 @@ local levelDefs = {
 			houseBecomeSick = 0.7,
 			houseBecomeFire = 0,
 			forceRedLight = 0.8,
+			policeHighlight = 3,
 		},
 		carLimit = {
 			drunk = 3,
-			police = 1,
+			police = 2,
 		},
 		heading = "Police Presence",
 		text = "Some people think that our growing town needs policing. See to it that our valued customers make it home without being arrested - three in a row. Crashing is fine.",

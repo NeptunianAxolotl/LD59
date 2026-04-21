@@ -444,6 +444,7 @@ local function UpdateBlocked(self, dt)
 			EffectsHandler.SpawnEffect("angry_popup", self.pos, {text = "$#%@", velocity = {0, -0.3 - 0.6*math.random()}})
 		end
 	end
+	
 	if self.blockedInFrontTime > Global.RUN_RED_LIGHT_TIME then
 		local nextRoad = TerrainHandler.GetRoadAtPos(self.currentRoadPos, self.destination)
 		if not self.ignoreCollisionTimer and self.blockedInFrontTime > Global.IGNORE_COLLISION_ANGRY_TIME then
@@ -626,6 +627,13 @@ local function NewCar(self, new_gridPos, targetPos, targetBuildingPos, wrongSide
 		UpdateMovement(self, dt)
 		UpdateCrash(self, dt)
 		UpdateBlocked(self, dt)
+		if self.def.isPolice then
+			local chance = dt*GameHandler.GetLevelRate("policeHighlight")*2
+			if math.random() < chance then
+				EffectsHandler.SpawnEffect("police_popup", self.pos, {text = "!!", velocity = {0, -0.3 - 0.6*math.random()}})
+			end
+		end
+		
 		if self.def.animate then
 			self.anim = (self.anim or 0) + dt
 		end

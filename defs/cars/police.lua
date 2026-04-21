@@ -20,6 +20,7 @@ local def = {
 	policeRadius = Global.DRUNK_FIND_DISTANCE,
 	ignoreSignal = true,
 	friendlyCollision = true,
+	isPolice = true,
 	stopTimer = 0.4,
 	wrongTurnChance = 0.9,
 }
