@@ -5,6 +5,5 @@ return {
 	exitRoadTypes = {
 		straight = true,
 	},
-	canCatchFire = true,
 	isCinema = true,
 }

@@ -7,7 +7,6 @@ return {
 		straight_large = true,
 	},
 	spawnWhenBlocked = true,
-	canCatchFire = true,
 	drawTargetPos = true,
 	spawnMatchFunc = function (other)
 		return (other.isDrunk and not other.drunkArriving) or other.def.alwaysDrunk
