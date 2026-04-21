@@ -140,7 +140,7 @@ local levelDefs = {
 		},
 		carLimit = {
 			drunk = 3,
-			police = 2,
+			police = 1,
 		},
 		heading = "Police Presence",
 		text = "Some people think that our growing town needs policing. See to it that our valued customers make it home without being arrested - three in a row. Crashing is fine.",
@@ -173,7 +173,7 @@ local levelDefs = {
 		},
 		carLimit = {
 			drunk = 6,
-			police = 2,
+			police = 1,
 			firetruck = 3,
 		},
 		heading = "Incendiary",
@@ -233,7 +233,7 @@ local levelDefs = {
 		},
 		carLimit = {
 			drunk = 6,
-			police = 3,
+			police = 1,
 			firetruck = 3,
 		},
 		redrawChance = {
@@ -264,7 +264,7 @@ local levelDefs = {
 		},
 		carLimit = {
 			drunk = 12,
-			police = 3,
+			police = 1,
 			firetruck = 3,
 		},
 		redrawChance = {
