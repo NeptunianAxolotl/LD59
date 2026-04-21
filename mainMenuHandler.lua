@@ -81,10 +81,10 @@ function api.MousePressed(x, y, button)
 	elseif self.hoveredMenuAction == "Brutal" then
 		self.cosmos.ToggleBrutal()
 	elseif self.hoveredMenuAction == "Drive on the Right" then
-		menuOptions[5] = "Drive on the Left"
+		menuOptions[6] = "Drive on the Left"
 		self.cosmos.ToggleLocalisation()
 	elseif self.hoveredMenuAction == "Drive on the Left" then
-		menuOptions[5] = "Drive on the Right"
+		menuOptions[6] = "Drive on the Right"
 		self.cosmos.ToggleLocalisation()
 	elseif self.hoveredMenuAction == "Skip Task" then
 		GameHandler.AdvanceLevel(true)
@@ -123,8 +123,8 @@ function api.DrawInterface()
 	local offset = Global.WINDOW_Y * 0.4 + 80*6
 	for i = 1, #menuOptions do
 		local slider = menuSliders[menuOptions[i]]
-		if slider and not slider.extents then
-			slider.extents = {x = overX + 20, width = 350}
+		if slider then
+			slider.extents = {x = overX, width = 350}
 		end
 		local hovered = InterfaceUtil.DrawButton(overX, offset, 350, 60, mousePos, menuOptions[i], false, false, false, false, 2, 8, false, false, slider and slider.drawFunc())
 		if hovered then
