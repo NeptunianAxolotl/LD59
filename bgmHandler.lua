@@ -40,7 +40,7 @@ function getCurrentPhaseTable()
   end
 
 function setLevels(table)
-    local netVolume = self.cosmos.GetMusicVolume()
+    local netVolume = self.cosmos.GetMusicVolume() * Global.POST_VOLUME_MULT
     local specificVolume = 1
     local musicTable = getCurrentPhaseTable()
     if (table ~= nil)

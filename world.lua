@@ -198,11 +198,11 @@ function api.ViewResize(width, height)
 end
 
 function api.Update(dt)
-	GameHandler.Update(dt)
 	if api.GetPaused() then
 		UpdateCamera(dt)
 		return
 	end
+	GameHandler.Update(dt)
 	
 	self.lifetime = self.lifetime + dt
 	Delay.Update(dt)
