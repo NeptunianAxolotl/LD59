@@ -95,18 +95,18 @@ local levelDefs = {
 		-- Second round of drunks
 		map = "level_3",
 		spawnMult = {
-			highway = 0.8,
+			highway = 0.9,
 			pub = 3.5,
-			house = 0.7,
+			house = 0.8,
 			houseBecomeSick = 0.7,
 			houseBecomeFire = 0,
-			forceRedLight = 0.7,
+			forceRedLight = 0.8,
 		},
 		carLimit = {
 			drunk = 2,
 		},
 		redrawChance = {
-			house = 0.2,
+			highway = 0.7,
 		},
 		heading = "Big Party",
 		text = "The town is growing at an alarming rate. More people need to be guided home safely.",

@@ -48,6 +48,19 @@ function api.SetMusicVolume(volume)
 	self.musicEnabled = true
 end
 
+function api.GetSoundVolume()
+	return self.soundVolume
+end
+
+function api.SetSoundVolume(volume)
+	self.soundVolume = volume
+	if volume <= 0 then
+		self.soundEnabled = false
+		return
+	end
+	self.soundEnabled = true
+end
+
 --------------------------------------------------
 -- Resets etc
 --------------------------------------------------
@@ -209,8 +222,10 @@ function api.Initialize()
 	self = {
 		realTime = 0,
 		musicVolume = Global.MUSIC_VOLUME,
+		soundVolume = Global.SFX_VOLUME,
 		inbuiltLevelName = Global.INIT_LEVEL,
 		musicEnabled = true,
+		soundEnabled = true,
 		drawDebug = Global.DRAW_DEBUG,
 	}
 	self.curLevelData = MapDefs[self.inbuiltLevelName]

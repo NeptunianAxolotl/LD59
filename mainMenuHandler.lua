@@ -8,6 +8,7 @@ local menuOptions = {
 	"Skip Task",
 	"Fullscreen",
 	"Music Volume",
+	"SFX Volume",
 	"Drive on the Right",
 	--"Brutal",
 }
@@ -24,7 +25,15 @@ local menuSliders = {
 		changeFunc = function (frac)
 			self.cosmos.SetMusicVolume(frac*2)
 		end,
-	}
+	},
+	["SFX Volume"] = {
+		drawFunc = function ()
+			return self.cosmos.GetSoundVolume()/2
+		end,
+		changeFunc = function (frac)
+			self.cosmos.SetSoundVolume(frac*2)
+		end,
+	},
 }
 
 if Global.DEV_TOOLS_ENABLED then
