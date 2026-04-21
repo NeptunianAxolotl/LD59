@@ -439,7 +439,7 @@ local function UpdateBlocked(self, dt)
 		return
 	end
 	if self.blockedInFrontTime > Global.SWEAR_AT_LIGHT_TIME then
-		local chance = 0.01*(self.blockedInFrontTime - Global.SWEAR_AT_LIGHT_TIME) / Global.RUN_RED_LIGHT_TIME
+		local chance = dt*4*math.pow((self.blockedInFrontTime - Global.SWEAR_AT_LIGHT_TIME) / Global.RUN_RED_LIGHT_TIME, 1.3)
 		if math.random() < chance then
 			EffectsHandler.SpawnEffect("angry_popup", self.pos, {text = "$#%@", velocity = {0, -0.3 - 0.6*math.random()}})
 		end
