@@ -4,11 +4,11 @@ local api = {}
 
 local menuOptions = {
 	"Quit",
-	"Restart",
-	"Music Volume",
-	"Fullscreen",
-	"Drive on the Right",
+	"Restart Game",
 	"Skip Task",
+	"Fullscreen",
+	"Music Volume",
+	"Drive on the Right",
 	--"Brutal",
 }
 local menuTooltip = {
@@ -64,7 +64,7 @@ function api.MousePressed(x, y, button)
 		api.ToggleMenu()
 	elseif self.hoveredMenuAction == "Quit" then
 		self.cosmos.QuitGame()
-	elseif self.hoveredMenuAction == "Restart" then
+	elseif self.hoveredMenuAction == "Restart Game" then
 		self.cosmos.RestartWorld()
 	elseif self.hoveredMenuAction == "Fullscreen" then
 		self.fullscreen = not self.fullscreen
