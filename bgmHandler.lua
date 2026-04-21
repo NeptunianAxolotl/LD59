@@ -205,12 +205,12 @@ function api.RegisterCollision()
   
   bang:stop()
   crash:stop()
-  bang:setVolume(self.cosmos.GetSoundVolume())
-  crash:setVolume(self.cosmos.GetSoundVolume())
+  bang:setVolume(self.cosmos.GetSoundVolume()*0.1)
+  crash:setVolume(self.cosmos.GetSoundVolume()*0.1)
   crash:setPitch( 0.9 + math.random() / 5)
   
-  bang:play()
-  crash:play()
+  --bang:play()
+  --crash:play()
   
 end
   

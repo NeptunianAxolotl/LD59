@@ -8,7 +8,7 @@ local menuOptions = {
 	"Skip Task",
 	"Fullscreen",
 	"Music Volume",
-	"SFX Volume",
+	--"SFX Volume",
 	"Drive on the Right",
 	--"Brutal",
 }
