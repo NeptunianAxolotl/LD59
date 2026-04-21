@@ -15,6 +15,9 @@ local funkLength = 63.998
 local irishLength = 5.342
 local turnLength = 10.688
 
+local bangTable = {}
+local crashTable = {}
+
 local funkCount = 0
 
 local funkTable = {}
@@ -186,12 +189,29 @@ function api.Update(dt)
 	
 end
 
+-- the audio crash handler
 function api.addPoints(mult)
     immediateBgmPoints = immediateBgmPoints + mult * Global.BGM_POINTS_PER_INTERACTION
   end
   
 function api.RegisterCollision()
 	chaosPoints = chaosPoints + Global.BGM_CHAOS_POINTS_PER_CRASH
+  -- this is very very not the place to do this but I'm hacking this together quickly lol
+  local crashNum = math.random(1,10)
+  local bangNum = math.random(1,10)
+  
+  local crash = crashTable[crashNum]
+  local bang = bangTable[bangNum]
+  
+  bang:stop()
+  crash:stop()
+  bang:setVolume(self.cosmos.GetSoundVolume())
+  crash:setVolume(self.cosmos.GetSoundVolume())
+  crash:setPitch( 0.9 + math.random() / 5)
+  
+  bang:play()
+  crash:play()
+  
 end
   
   function api.Stop()
@@ -228,6 +248,13 @@ function api.Initialize(newCosmos)
   loadSounds("BRASS 4",7)
   loadSounds("BRASS 3",8)
   loadSounds("ORGAN",9)
+  
+  -- crash/bang sounds
+  for i = 1, 10 do
+    crashTable[i] = love.audio.newSource("resources/sounds/crash " .. i .. ".ogg", "static")
+    bangTable[i] = love.audio.newSource("resources/sounds/bang " .. i .. ".ogg", "static")
+  end
+  
   
 end
 
