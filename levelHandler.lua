@@ -5,6 +5,7 @@ local api = {}
 local RoadDefs = util.LoadDefDirectory("defs/road")
 local BuildingDefs = util.LoadDefDirectory("defs/building")
 local DoodadDefs = util.LoadDefDirectory("defs/doodads")
+local LightDefs = util.LoadDefDirectory("defs/lights")
 
 function api.Width()
 	return self.width
@@ -52,6 +53,7 @@ end
 local function SetupLevel()
 	TerrainHandler.SetDimensions(self.map.dimensions)
 	DoodadHandler.SetupLevel()
+	LightHandler.SetupLevel()
 	for i = 1, #self.map.road do
 		local road = self.map.road[i]
 		if TerrainHandler.IsInBounds(road.pos) then
@@ -63,10 +65,6 @@ local function SetupLevel()
 		local building = self.map.building[i]
 		BuildingHandler.AddBuilding(building.pos, building.buildingType)
 		DoodadHandler.RemoveDoodads(building.pos)
-	end
-	for i = 1, #self.map.doodads do
-		local doodad = self.map.doodads[i]
-		DoodadHandler.AddDoodad(doodad.pos, doodad.doodadType)
 	end
 	TerrainHandler.SetDimensions(self.map.dimensions)
 	BuildingHandler.UpdateRoadChanges()
@@ -109,6 +107,7 @@ function api.SaveLevel(name)
 		road = TerrainHandler.ExportObjects(),
 		building = BuildingHandler.ExportObjects(),
 		doodads = DoodadHandler.ExportObjects(),
+		lights = LightHandler.ExportObjects(),
 	}
 	
 	local saveTable = util.TableToString(save)
@@ -140,6 +139,7 @@ function api.MousePressed(mx, my, button)
 	if self.editor.tile == "delete" then
 		TerrainHandler.RemoveRoad(clickPos)
 		DoodadHandler.RemoveDoodads(clickPos)
+		LightHandler.RemoveLights(clickPos)
 		BuildingHandler.RemoveBuilding(clickPos)
 		BuildingHandler.UpdateRoadChanges()
 	elseif RoadDefs[self.editor.tile] then
@@ -149,6 +149,8 @@ function api.MousePressed(mx, my, button)
 		BuildingHandler.AddBuilding(clickPos, self.editor.tile)
 	elseif DoodadDefs[self.editor.tile] then
 		DoodadHandler.AddDoodad(api.WorldToGridSpaceNoSnap({mx, my}), self.editor.tile)
+	elseif LightDefs[self.editor.tile] then
+		LightHandler.AddLight(api.WorldToGridSpaceNoSnap({mx, my}), self.editor.tile)
 	end
 end
 
@@ -237,6 +239,8 @@ function api.KeyPressed(key, scancode, isRepeat)
 		self.editor.tile = "tree2"
 	elseif key == "kp3" then
 		self.editor.tile = "tree3"
+	elseif key == "l" then
+		self.editor.tile = "streetlight"
 	end
 	print(key)
 end
